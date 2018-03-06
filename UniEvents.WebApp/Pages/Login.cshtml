@@ -1,0 +1,19 @@
+﻿@page
+@model UniEvents.WebApp.Pages.SignUpModel
+@{
+    ViewData["Title"] = "SignUp";
+    Layout = "~/Pages/_Layout.cshtml";
+  
+}
+
+<h2>SignUp</h2>
+<input id="UserName" type="text" />
+<input id="UserPassword" type="password" />
+<input id="LoginButton" type="button" value="Login"/>
+
+<a asp-page="/SignUp" >
+    <input id="SignUpButton" type="button" value="Sign-Up" />
+</a>
+<a asp-page="/Home">
+    <input id="GuestSignUp" type="button" value="Sign in as Guest"  />
+</a>
