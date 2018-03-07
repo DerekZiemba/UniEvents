@@ -73,7 +73,7 @@
     </SqlCmdVariable>
   </ItemGroup>
   <ItemGroup>
-    <None Include="StoredProcedures\dbo.sp_Account_Create.sql" />
+    <Compile Include="StoredProcedures\dbo.sp_Account_Create.sql" />
     <None Include="StoredProcedures\dbo.sp_Location_Create.sql" />
     <None Include="StoredProcedures\dbo.sp_Location_Get.sql" />
     <None Include="StoredProcedures\dbo.sp_Location_Update.sql" />
