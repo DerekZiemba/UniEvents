@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniEvents.WebAPI", "UniEven
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniEvents.Core", "UniEvents.Core\UniEvents.Core.csproj", "{C6A41AC3-4B4D-4DC0-A149-74F56E5750D9}"
 EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "UniEvents.TSQL", "UniEvents.TSQL\UniEvents.TSQL.sqlproj", "{3EB91968-F41B-455E-BA90-5DB1AD74AA75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,12 @@ Global
 		{C6A41AC3-4B4D-4DC0-A149-74F56E5750D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6A41AC3-4B4D-4DC0-A149-74F56E5750D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6A41AC3-4B4D-4DC0-A149-74F56E5750D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EB91968-F41B-455E-BA90-5DB1AD74AA75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EB91968-F41B-455E-BA90-5DB1AD74AA75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EB91968-F41B-455E-BA90-5DB1AD74AA75}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{3EB91968-F41B-455E-BA90-5DB1AD74AA75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EB91968-F41B-455E-BA90-5DB1AD74AA75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EB91968-F41B-455E-BA90-5DB1AD74AA75}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

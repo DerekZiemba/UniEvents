@@ -7,45 +7,45 @@ GO
 
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ( NULL, 'Solar System', NULL, NULL, NULL, NULL, 'Milky Way', NULL, NULL, 'Our Solar System');
+	 VALUES ( NULL, 'Solar System', NULL, NULL, NULL, NULL, 'Milky Way', NULL, NULL, 'Our Solar System');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.[Name] = 'Solar System'), 'Earth', NULL, NULL, NULL, NULL, 'Solar System', NULL, NULL, 'Planet');
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.[Name] = 'Solar System'), 'Earth', NULL, NULL, NULL, NULL, 'Solar System', NULL, NULL, 'Planet');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.[Name] = 'Earth'), 'North America', NULL, NULL, NULL, NULL, 'Earth', 54526000, -105255100, 'Continent');
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.[Name] = 'Earth'), 'North America', NULL, NULL, NULL, NULL, 'Earth', 54526000, -105255100, 'Continent');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.[Name] = 'North America'), 'United States of America', NULL, NULL, NULL, NULL, 'USA', 37090200, -95712900, 'Murica');
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.[Name] = 'North America'), 'United States of America', NULL, NULL, NULL, NULL, 'USA', 37090200, -95712900, 'Murica');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.CountryRegion = 'USA'), 'Nebraska', NULL, NULL, 'Nebraska', NULL, 'USA', 41492500, -99901800, 'Home of the Huskers');
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.CountryRegion = 'USA'), 'Nebraska', NULL, NULL, 'Nebraska', NULL, 'USA', 41492500, -99901800, 'Home of the Huskers');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.AdminDistrict = 'Nebraska'), NULL, NULL, 'Lincoln', 'Nebraska', NULL, 'USA', 40825800, -96685200, 'City of Lincoln Nebraska');
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.AdminDistrict = 'Nebraska'), NULL, NULL, 'Lincoln', 'Nebraska', NULL, 'USA', 40825800, -96685200, 'City of Lincoln Nebraska');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
 		'UNL', '1400R Street', 'Lincoln', 'Nebraska', 68588, 'USA', 40824310, -96698840, 'University of Nebraska at Lincoln');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Name = 'UNL' AND locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Name = 'UNL' AND locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
 		'Love Library', '14th & R Street', 'Lincoln', 'Nebraska', 68588, 'USA', 40818010, -96704760, NULL);
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Name = 'UNL' AND locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Name = 'UNL' AND locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
 		'Avery Hall', '1144 T Street', 'Lincoln', 'Nebraska', 68588, 'USA', 40819460, -96706640, NULL);
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Name = 'UNL' AND locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Name = 'UNL' AND locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
 		'College of Business', '730 North 14th Street', 'Lincoln', 'Nebraska', 68588, 'USA', 40820180, -96703390, 'University of Nebraska-Lincoln College of Business');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Name = 'UNL' AND locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.Name = 'UNL' AND locs.Locality = 'Lincoln' AND locs.AdminDistrict = 'Nebraska'),
 		'Memorial Stadium', 'One Memorial Stadium Drive', 'Lincoln', 'Nebraska', 68588, 'USA', -96707830, -96707830, 'Home field of Nebraska Cornhuskers holding over 85,000 football fans with a history dating to 1922.');
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
-    VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.AdminDistrict ='Nebraska'), NULL, NULL, 'Columbus', 'Nebraska', NULL, 'USA', 41429734, -97368375, null);
+	 VALUES ((select top 1 locs.LocationID from [dbo].Locations as locs where locs.AdminDistrict ='Nebraska'), NULL, NULL, 'Columbus', 'Nebraska', NULL, 'USA', 41429734, -97368375, null);
 
 GO
 
