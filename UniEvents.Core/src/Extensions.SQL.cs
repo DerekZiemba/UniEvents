@@ -19,8 +19,8 @@ namespace UniEvents.Core {
 			return cmd.Parameters.Add(param);
 		}
 
-		public static async Task<List<T>> ReadDataModelsAsync<T>(this SqlCommand cmd, Func<IDataReader, T> constructor, Int32 predictedRows = 4) {
-			await cmd.Connection.OpenAsync().ConfigureAwait(false);
+		public static async Task<List<T>> ReadDataModelsAsync<T>(this SqlCommand cmd, Func<IDataReader, T> constructor, Int32 predictedRows = 4) {		
+			if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
 			List<T> ls = new List<T>(predictedRows);
 			using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
 				while (await reader.ReadAsync().ConfigureAwait(false)) {
@@ -30,8 +30,17 @@ namespace UniEvents.Core {
 			return ls;
 		}
 
+		public static IEnumerable<T> ReadDataModels<T>(this SqlCommand cmd, Func<IDataReader, T> constructor) {
+			if(cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+			using (SqlDataReader reader = cmd.ExecuteReader()) {
+				while (reader.Read()) {
+					yield return constructor(reader);
+				}
+			}
+		}
+
 		public static async Task<int> ExecuteStoredProcedureAsync(this SqlCommand cmd) {
-			await cmd.Connection.OpenAsync().ConfigureAwait(false);
+			if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
 			int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 			return rowsAffected;
 		}

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UniEvents.Core.CoreModels {
+namespace UniEvents.Core.ApiModels {
 
 	public struct GPSCoordinate {
 		public double Latitude;

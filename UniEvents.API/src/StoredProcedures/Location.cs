@@ -115,6 +115,56 @@ namespace UniEvents.WebAPI {
 			}
 
 
+			internal static async Task<List<DBLocation>> SearchAsync(long? @ParentLocationID = null, 
+																						string @Name = null,
+																						string @AddressLine = null,
+																						string @Locality = null,
+																						string @AdminDistrict = null,
+																						string @PostalCode = null,
+																						string @Description = null) {
+
+				SqlConnection conn = TakeDbUniHangoutsConn();
+				try {
+					using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), @ParentLocationID);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), @Name);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), @AddressLine);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), @Locality);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), @AdminDistrict);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), @PostalCode);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), @Description);
+
+						return await cmd.ReadDataModelsAsync(DBLocation.CreateModel, 16);
+					}
+				} catch { throw; } finally { ReturnDbUniHangoutsConn(conn); }
+			}
+
+			internal static IEnumerable<DBLocation> Search(long? @ParentLocationID = null,
+																			string @Name = null,
+																			string @AddressLine = null,
+																			string @Locality = null,
+																			string @AdminDistrict = null,
+																			string @PostalCode = null,
+																			string @Description = null) {
+
+				SqlConnection conn = TakeDbUniHangoutsConn();
+				try {
+					using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), @ParentLocationID);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), @Name);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), @AddressLine);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), @Locality);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), @AdminDistrict);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), @PostalCode);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), @Description);
+
+						return cmd.ReadDataModels(DBLocation.CreateModel);
+					}
+				} catch { throw; } finally { ReturnDbUniHangoutsConn(conn); }
+			}
+
+
+
 		}
 	}
 }
