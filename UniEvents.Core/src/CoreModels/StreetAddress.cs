@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UniEvents.Core.CommonModels {
+namespace UniEvents.Core.CoreModels {
 
 	public class StreetAddress {
 		protected string _Name;
