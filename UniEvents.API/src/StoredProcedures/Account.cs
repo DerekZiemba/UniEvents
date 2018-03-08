@@ -31,29 +31,30 @@ namespace UniEvents.WebAPI {
 																		long? LocationID = null) {
 
 				Contract.Requires<ArgumentNullException>(!UserName.IsNullOrWhitespace(), "UserName cannot be empty");
-
 				if (!PasswordHash.IsEmpty()) { Password = null; }
 
-				using (SqlConnection conn = new SqlConnection(Settings.SqlDbUniHangoutsConnStr))
-				using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), UserName);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Password), Password);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.Binary, nameof(PasswordHash), PasswordHash);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.NVarChar, nameof(DisplayName), DisplayName);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.NVarChar, nameof(FirstName), FirstName);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.NVarChar, nameof(LastName), LastName);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.VarChar, nameof(ContactEmail), ContactEmail);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.VarChar, nameof(PhoneNumber), PhoneNumber);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.BigInt, nameof(LocationID), LocationID);
+				SqlConnection conn = TakeDbUniHangoutsConn();
+				try {
+					using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), UserName);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Password), Password);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.Binary, nameof(PasswordHash), PasswordHash);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(DisplayName), DisplayName);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(FirstName), FirstName);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(LastName), LastName);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(ContactEmail), ContactEmail);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(PhoneNumber), PhoneNumber);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(LocationID), LocationID);
 
-					SqlParameter AccountID = cmd.Parameters.AddWithValue(ParameterDirection.Output, SqlDbType.BigInt, nameof(AccountID), null);
+						SqlParameter AccountID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(AccountID), null);
 
-					await cmd.Connection.OpenAsync().ConfigureAwait(false);
-					int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+						int rowsAffected = await cmd.ExecuteStoredProcedureAsync().ConfigureAwait(false);
 
-					return (long)AccountID.Value;
-				}
+						return (long)AccountID.Value;
+					}
+				} catch { throw; } finally { ReturnDbUniHangoutsConn(conn); }
+
 			}
 
 

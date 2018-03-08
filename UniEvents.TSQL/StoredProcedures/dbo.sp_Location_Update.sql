@@ -11,7 +11,6 @@ GO
 CREATE OR ALTER PROCEDURE dbo.sp_Location_Update
 	-- Add the parameters for the stored procedure here
 	@LocationID bigint,	
-	
 	@ParentLocationID bigint = NULL,
 	@Name varchar(80) = NULL,
 	@AddressLine varchar(80) = NULL,
@@ -19,9 +18,9 @@ CREATE OR ALTER PROCEDURE dbo.sp_Location_Update
 	@AdminDistrict varchar(40) = NULL,
 	@PostalCode varchar(20) = NULL,
 	@CountryRegion varchar(40) = NULL,
+	@Description varchar(140) = NULL,
 	@Latitude real = NULL,
-	@Longitude real = NULL,
-	@Description varchar(140) = NULL
+	@Longitude real = NULL
 AS
 SET NOCOUNT ON;
 

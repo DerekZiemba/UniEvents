@@ -10,13 +10,13 @@ namespace UniEvents.Core {
 	public static partial class Extensions {
 
 
-		public static SqlParameter AddWithValue(this SqlParameterCollection col, ParameterDirection direction, SqlDbType dbtype, string name, object value) {
-			return col.Add(new SqlParameter(name[ 0 ] != '@' ? '@' + name : name, dbtype) { Direction = direction, Value = value });
+		public static SqlParameter AddParam(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, object value) {
+			return cmd.Parameters.Add(new SqlParameter(name[ 0 ] != '@' ? '@' + name : name, dbtype) { Direction = direction, Value = value });
 		}
-		public static SqlParameter AddWithValue<T>(this SqlParameterCollection col, ParameterDirection direction, SqlDbType dbtype, string name, T? value) where T : struct, IConvertible, IFormattable, IComparable {
+		public static SqlParameter AddParam<T>(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, T? value) where T : struct, IConvertible, IFormattable, IComparable {
 			SqlParameter param = new SqlParameter(name[ 0 ] != '@' ? '@' + name : name, dbtype) { Direction = direction };
 			if (value.HasValue) { param.Value = value; }
-			return col.Add(param);
+			return cmd.Parameters.Add(param);
 		}
 
 		public static async Task<List<T>> ReadDataModelsAsync<T>(this SqlCommand cmd, Func<IDataReader, T> constructor, Int32 predictedRows = 4) {
@@ -28,6 +28,12 @@ namespace UniEvents.Core {
 				}
 			}
 			return ls;
+		}
+
+		public static async Task<int> ExecuteStoredProcedureAsync(this SqlCommand cmd) {
+			await cmd.Connection.OpenAsync().ConfigureAwait(false);
+			int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+			return rowsAffected;
 		}
 
 

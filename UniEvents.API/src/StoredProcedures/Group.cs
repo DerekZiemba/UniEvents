@@ -30,25 +30,25 @@ namespace UniEvents.WebAPI {
 				Contract.Requires<ArgumentNullException>(@GroupOwnerAccountID > 0, "GroupOwnerAccountID must be valid.");
 				Contract.Requires<ArgumentNullException>(!@GroupName.IsNullOrWhitespace(), "@GroupName cannot be empty.");
 
-				using (SqlConnection conn = new SqlConnection(Settings.SqlDbUniHangoutsConnStr))
-				using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Group_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.VarChar, nameof(@GroupName), @GroupName);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@DisplayName), @DisplayName);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.VarChar, nameof(@ContactEmail), @ContactEmail);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), @PhoneNumber);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@Description), @Description);
-					cmd.Parameters.AddWithValue(ParameterDirection.Input, SqlDbType.BigInt, nameof(@LocationID), @LocationID);
+				SqlConnection conn = TakeDbUniHangoutsConn();
+				try {
+					using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Group_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@GroupName), @GroupName);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@DisplayName), @DisplayName);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@ContactEmail), @ContactEmail);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), @PhoneNumber);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@Description), @Description);
+						cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@LocationID), @LocationID);
 
-					SqlParameter @GroupID = cmd.Parameters.AddWithValue(ParameterDirection.Output, SqlDbType.BigInt, nameof(@GroupID), null);
+						SqlParameter @GroupID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(@GroupID), null);
 
-					await cmd.Connection.OpenAsync().ConfigureAwait(false);
-					int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+						int rowsAffected = await cmd.ExecuteStoredProcedureAsync().ConfigureAwait(false);
 
-					return (long)@GroupID.Value;
-				}
+						return (long)@GroupID.Value;
+					}
+				} catch { throw; } finally { ReturnDbUniHangoutsConn(conn); }
+
 			}
-
-
 
 		}
 	}
