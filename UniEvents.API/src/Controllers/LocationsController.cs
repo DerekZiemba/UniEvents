@@ -24,17 +24,16 @@ namespace UniEvents.WebAPI.Controllers {
 			}
 		}
 
-		//[HttpGet("{plid}{name}{address}{city}{state}{zip}{desc}", Name = "Search")]
-		[HttpGet, Route("search/{plid?}/{name?}/{address?}/{city?}/{state?}/{zip?}/{desc?}")]
-		public IEnumerable<StreetAddress> Search(long? plid = null,
-																string name = null,
-																string address = null,
-																string city = null,
-																string state = null,
-																string zip = null,
-																string desc = null) {
-			var ls = StoredProcedures.Location.Search(ParentLocationID:plid, Name:name, AddressLine:address, Locality:city, AdminDistrict:state, PostalCode:zip, Description:desc);
-			foreach (var loc in ls) {
+		[HttpGet, Route("search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
+		public IEnumerable<StreetAddress> Search(long? ParentLocationID = null,
+																string Name = null,
+																string AddressLine = null,
+																string Locality = null,
+																string AdminDistrict = null,
+																string PostalCode = null,
+																string Description = null) {
+			var ls = StoredProcedures.Location.Search(ParentLocationID:ParentLocationID, Name:Name, AddressLine:AddressLine, Locality:Locality, AdminDistrict:AdminDistrict, PostalCode:PostalCode, Description:Description);
+			foreach (Core.DBModels.DBLocation loc in ls) {
 				yield return new Core.ApiModels.StreetAddress(loc);
 			}
 		}

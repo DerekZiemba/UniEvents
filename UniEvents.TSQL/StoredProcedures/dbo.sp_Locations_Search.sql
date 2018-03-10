@@ -28,21 +28,14 @@ DECLARE @bHasName bit = IIF(LEN(@Name) >= 3, 1, 0),
 			@bHasCountryRegion bit = IIF(LEN(@CountryRegion) >= 2, 1, 0),
 			@bHasDescription BIT = IIF(LEN(@Description) >= 5, 1, 0)
 
-DECLARE	@sName varchar = '%' + @Name + '%',
-			@sAddressLine varchar = '%' + @AddressLine + '%',
-			@sLocality varchar = '%' + @Locality + '%',
-			@sAdminDistrict varchar = @AdminDistrict + '%',
-			@sPostalCode varchar = @PostalCode + '%',
-			@sDescription varchar = '%' + @Description + '%'
-
-	SELECT * FROM dbo.Locations AS loc
+SELECT * FROM dbo.Locations AS loc
 	WHERE (@ParentLocationID IS NULL OR loc.ParentLocationID = @ParentLocationID)
-		AND (@bHasName = 0 OR loc.Name LIKE @sName)
-		AND (@bHasAddressLine = 0 OR loc.AddressLine LIKE @sAddressLine)
-		AND (@bHasLocality = 0 OR loc.Locality LIKE @sLocality)
-		AND (@bHasAdminDistrict = 0 OR loc.AdminDistrict LIKE @sAdminDistrict)
-		AND (@bHasPostalCode = 0 OR loc.PostalCode LIKE @sPostalCode)
+		AND (@bHasName = 0 OR loc.Name LIKE '%' + @Name + '%')
+		AND (@bHasAddressLine = 0 OR loc.AddressLine LIKE '%' + @AddressLine + '%')
+		AND (@bHasLocality = 0 OR loc.Locality LIKE '%' + @Locality + '%')
+		AND (@bHasAdminDistrict = 0 OR loc.AdminDistrict LIKE @AdminDistrict + '%')
+		AND (@bHasPostalCode = 0 OR loc.PostalCode LIKE @PostalCode + '%')
 		AND (@bHasCountryRegion = 0 OR loc.CountryRegion LIKE @CountryRegion)
-		AND (@bHasDescription = 0 OR loc.[Description] LIKE @sDescription)
-	RETURN
+		AND (@bHasDescription = 0 OR loc.[Description] LIKE '%' + @Description + '%')
+
 GO

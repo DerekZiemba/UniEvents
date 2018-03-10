@@ -28,7 +28,7 @@ namespace UniEvents.WebAPI {
 					var dict = appSettings.SelectNodes("add").Cast<XmlNode>().ToDictionary(n=>n.Attributes["key"].Value, n=>n.Attributes["value"].Value, StringComparer.OrdinalIgnoreCase);
 
 					SqlDbUniHangoutsConnStr = dict[nameof(SqlDbUniHangoutsConnStr)];
-					var breakpoint = 1;
+
 				}
 			}
 

@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniEvents.Core", "UniEvents
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "UniEvents.TSQL", "UniEvents.TSQL\UniEvents.TSQL.sqlproj", "{3EB91968-F41B-455E-BA90-5DB1AD74AA75}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupFiles", "SetupFiles", "{FB161FF3-212F-4787-B42F-A1F79011FC5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -1,0 +1,61 @@
+//https://raw.githubusercontent.com/madskristensen/WebCompiler/master/src/WebCompilerVsix/JSON/compilerdefaults-schema.json
+
+{
+	"compilers": {
+		"less": {
+			"autoPrefix": "",
+			"cssComb": "none",
+			"ieCompat": true,
+			"strictMath": false,
+			"strictUnits": false,
+			"relativeUrls": true,
+			"rootPath": "",
+			"sourceMapRoot": "",
+			"sourceMapBasePath": "",
+			"sourceMap": false
+		},
+		"sass": {
+			"includePath": "",
+			"indentType": "tab",
+			"indentWidth": 1,
+			"lineFeed": "lf",
+			//"outputStyle": "nested",
+			"outputStyle": "compact",
+			"Precision": 5,
+			"relativeUrls": true,
+			"sourceMapRoot": "",
+			"sourceMap": false
+		},
+		"stylus": {
+			"sourceMap": false
+		},
+		"babel": {
+			"sourceMap": false
+		},
+		"coffeescript": {
+			"bare": false,
+			"runtimeMode": "node",
+			"sourceMap": false
+		}
+	},
+
+	"minifiers": {
+		"css": {
+			"enabled": true,
+			"termSemicolons": true,
+			"gzip": false,
+			"outputMode": "multipleLines",
+			"commentMode": "important",
+			"indentSize": 1,
+		},
+		"javascript": {
+			"enabled": true,
+			"termSemicolons": true,
+			"gzip": false,
+			"outputMode": "multipleLines",
+			"commentMode": "important",
+			"indentSize": 1,
+			"renameLocals": true
+		}
+	}
+}
