@@ -2,3 +2,65 @@
 @model LoginModel
 @{
 }
+
+<h2>SignUp</h2>
+<br />
+<h4>Personal Info</h4>
+<input id="FirstName" type="text" placeholder="First Name" />
+<input id="LastName" type="text" placeholder="Last Name"/>
+<input id="Email" type="text" placeholder="Email" />
+<input id="PhoneNumber" type="text" placeholder="Phone Number"/>
+
+<h4>Account Info</h4>
+<input id="UserName" type="text" placeholder="User Name"/>
+<input id="UserPassword" type="password" placeholder="Password"/>
+<input id="DisplayName" type="text" placeholder="Name displayed"/>
+
+<input id="SignUpButton" type="button" value="SignUp" />
+
+<script> 
+     //https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Sending_forms_through_JavaScript
+
+
+    var ya = document.getElementById("SignUpButton"); 
+
+    ya.addEventListener("click", function () {
+
+        var FirstName = document.getElementById("FirstName");
+        var LastName = document.getElementById("LastName");
+        var Email = document.getElementById("Email");
+        var PhoneNumber = document.getElementById("PhoneNumber");
+        var UserName = document.getElementById("UserName");
+        var UserPassword = document.getElementById("UserPassword");
+        var DisplayName = document.getElementById("DisplayName");
+        var data = { "FirstName": FirstName.value, "LastName": LastName.value, "Email": Email.value, "PhoneNumber": PhoneNumber.value, "UserName": UserName.value, "UserPassword": UserPassword.value, "DisplayName": DisplayName.value };
+       
+        console.log(data);
+        console.log(JSON.stringify(data));
+        var xhr = new XMLHttpRequest;
+        var fd = new FormData;
+              //  xhr.setrequestheader
+
+            // push our data into our formdata object
+            for (name in data) {
+                fd.append(name, data[name]);
+            }
+
+            // define what happens on successful data submission
+            xhr.addEventListener('load', function (event) {
+                alert('yeah! data sent and response loaded.');
+            });
+
+            // define what happens in case of error
+            xhr.addEventListener('error', function (event) {
+                alert('oups! something went wrong.');
+            });
+
+            // set up our request
+            xhr.open('POST', 'http://108.167.59.103:1331/webapi/group');
+
+            // send our formdata object; http headers are set automatically
+            xhr.send(fd);
+    });
+    </script>
+
