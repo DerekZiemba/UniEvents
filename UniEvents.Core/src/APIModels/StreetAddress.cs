@@ -2,52 +2,33 @@
 using System.Collections.Generic;
 using System.Text;
 
+using static ZMBA.Common;
+
 namespace UniEvents.Core.ApiModels {
 
 	public class StreetAddress {
-		private string name;
-		private string addressLine;
-		private string locality; //city
-		private string adminDistrict; //state
-		private string postalCode;
-		private string countryRegion;
-		private string description;
+		private string _name;
+		private string _addressLine;
+		private string _locality; //city
+		private string _adminDistrict; //state
+		private string _postalCode;
+		private string _countryRegion;
+		private string _description;
+		private float _latitude;
+		private float _longitude;
 
-		//Unfortunately, unlike VisualBasic, C# properties don't allow pass by ref so we must expose the field. 
-		public GPSCoordinate GPSCoords;
-
-		public string Name { get => name; set => name = value; }
-		public string AddressLine { get => addressLine; set => addressLine = value; }
-		public string Locality { get => locality; set => locality = value; }
-		public string AdminDistrict { get => adminDistrict; set => adminDistrict = value; }
-		public string PostalCode { get => postalCode; set => postalCode = value; }
-		public string CountryRegion { get => countryRegion; set => countryRegion = value; }
-		public string Description { get => description; set => description = value; }
+		public string Name { get => _name; set => _name = value; }
+		public string AddressLine { get => _addressLine; set => _addressLine = value; }
+		public string Locality { get => _locality; set => _locality = value; }
+		public string AdminDistrict { get => _adminDistrict; set => _adminDistrict = value; }
+		public string PostalCode { get => _postalCode; set => _postalCode = value; }
+		public string CountryRegion { get => _countryRegion; set => _countryRegion = value; }
+		public string Description { get => _description; set => _description = value; }
+		public float Latitude { get => _latitude; set => _latitude = value; }
+		public float Longitude { get => _longitude; set => _longitude = value; }
 
 		public StreetAddress() {}
-
-		public StreetAddress(StreetAddress from) {
-			Name = from.Name;
-			AddressLine = from.AddressLine;
-			Locality = from.Locality;
-			AdminDistrict = from.AdminDistrict;
-			PostalCode = from.PostalCode;
-			CountryRegion = from.CountryRegion;
-			GPSCoords = from.GPSCoords;
-		}
-
-		public StreetAddress(DBModels.DBLocation from) {
-			Name = from.Name;
-			AddressLine = from.AddressLine;
-			Locality = from.Locality;
-			AdminDistrict = from.AdminDistrict;
-			PostalCode = from.PostalCode;
-			CountryRegion = from.CountryRegion;
-			Description = from.Description;
-			GPSCoords = new GPSCoordinate(from.Latitude, from.Longitude);
-		}
-
-
+ 
 
 		public override string ToString() => FormatAddress(Name, AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion);
 
@@ -61,7 +42,6 @@ namespace UniEvents.Core.ApiModels {
 																sCountry }.ToStringJoin(", "),
 							}.ToStringJoin(lineSeparator);
 		}
-
 
 	}
 }

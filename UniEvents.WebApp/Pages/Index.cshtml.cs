@@ -16,9 +16,6 @@ namespace UniEvents.WebApp.Pages {
 
 			LocationFields = typeof(WebAPI.Controllers.LocationsController).GetMethod("Search").GetParameters().Select(p => p.Name).ToArray();
 
-
-			var breakpointhere = false;
-
 		}
 	}
 }

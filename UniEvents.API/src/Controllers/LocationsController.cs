@@ -15,15 +15,6 @@ namespace UniEvents.WebAPI.Controllers {
 	[Route("Locations")]
 	public class LocationsController : Controller {
 
-		// GET: api/Locations/5
-		[HttpGet(Name = "Get")]
-		public IEnumerable<StreetAddress> Get() {
-			var ls = StoredProcedures.Location.Search();
-			foreach (var loc in ls) {
-				yield return new Core.ApiModels.StreetAddress(loc);
-			}
-		}
-
 		[HttpGet, Route("search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
 		public IEnumerable<StreetAddress> Search(long? ParentLocationID = null,
 																string Name = null,
@@ -34,7 +25,7 @@ namespace UniEvents.WebAPI.Controllers {
 																string Description = null) {
 			var ls = StoredProcedures.Location.Search(ParentLocationID:ParentLocationID, Name:Name, AddressLine:AddressLine, Locality:Locality, AdminDistrict:AdminDistrict, PostalCode:PostalCode, Description:Description);
 			foreach (Core.DBModels.DBLocation loc in ls) {
-				yield return new Core.ApiModels.StreetAddress(loc);
+				yield return ZMBA.Common.CopyPropsShallow(new Core.ApiModels.StreetAddress(), loc);
 			}
 		}
 

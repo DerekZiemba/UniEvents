@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 
-using static UniEvents.Core.Extensions;
+using static ZMBA.Common;
 
 namespace UniEvents.Core.DBModels {
 
-	public class DBAccount : DBModelBase<DBAccount> {
+	public class DBAccount {
 		private Int64 _AccountID;
 		private string _UserName;
 		private string _DisplayName;
@@ -15,8 +15,6 @@ namespace UniEvents.Core.DBModels {
 		private bool _IsGroup;
 
 		public DBAccount() { }
-
-		public DBAccount(DBAccount clone) : base(clone) { }
 
 		public Int64 AccountID { get => _AccountID; set => _AccountID = value; }
 		public string UserName { get => _UserName; set => _UserName = value; }

@@ -9,7 +9,7 @@ using System.Diagnostics.Contracts;
 
 
 using UniEvents.Core.DBModels;
-using static UniEvents.Core.Extensions;
+using static ZMBA.Common;
 
 
 namespace UniEvents.WebAPI {

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 
-using static UniEvents.Core.Extensions;
+using static ZMBA.Common;
 
 namespace UniEvents.Core.DBModels {
 
-	public class DBLocation : DBModelBase<DBLocation> {
+	public class DBLocation  {
 		private Int64 _LocationID;
 		private Int64? _ParentLocationID;
 		private string _Name;
@@ -22,7 +22,9 @@ namespace UniEvents.Core.DBModels {
 
 		public DBLocation() { }
 
-		public DBLocation(DBLocation clone) : base(clone) { }
+		public DBLocation(DBLocation clone) {
+			CopyFieldsShallow(this, clone);
+		}
 
 		public Int64 LocationID { get => _LocationID; set => _LocationID = value; }
 		public Int64? ParentLocationID { get => _ParentLocationID; set => _ParentLocationID = value; }
@@ -40,8 +42,6 @@ namespace UniEvents.Core.DBModels {
 		public double Latitude { get => _Latitude6x.UnBox()/10e6; set => _Latitude6x = (int)(value*10e6); }
 		public double Longitude { get => _Longitude6x.UnBox()/ 10e6; set => _Longitude6x = (int)(value*10e6); }
 
-
-
 		public static DBLocation CreateModel(IDataReader reader) {
 			DBLocation model = new DBLocation();
 			reader.PullValue(nameof(LocationID), out model._LocationID);
@@ -58,6 +58,7 @@ namespace UniEvents.Core.DBModels {
 			return model;
 		}
 
+		
 	}
 
 }
