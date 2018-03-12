@@ -79,7 +79,7 @@
     <None Include="StoredProcedures\dbo.sp_Location_Update.sql" />
     <None Include="StoredProcedures\dbo.sp_Locations_Search.sql" />
     <None Include="DBInit\AddInitialData.sql" />
-    <None Include="DBInit\CreateDatabase.sql" />
+    <None Include="DBInit\CreateDatabase.v1.sql" />
   </ItemGroup>
   <ItemGroup>
     <ArtifactReference Include="DataTier\dbUniHangouts.dacpac">
@@ -90,5 +90,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Group_Create.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Account_Login.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Account_Get.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Account_Search.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DBInit\CreateDatabase.v2.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DBInit\AddInitialData.v2.sql" />
   </ItemGroup>
 </Project>

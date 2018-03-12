@@ -2,24 +2,21 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
--- =============================================
--- Author:		<Derek Ziemba>
--- Create date: <3-7-2018>
--- =============================================
-USE [$(dbUniHangouts)]
+
+USE [dbUniHangouts]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Create]
-	@UserName VARCHAR(20),
+	@AccountID BIGINT OUTPUT,
+	@LocationID BIGINT = NULL,
 	@Password NVARCHAR(50) = NULL,
 	@PasswordHash BINARY(256) = NULL,
+	@UserName VARCHAR(20),
 	@DisplayName NVARCHAR(50) = NULL,		
-	@FirstName NVARCHAR(20) = NULL,
-	@LastName NVARCHAR(20) = NULL,
+	@FirstName NVARCHAR(50) = NULL,
+	@LastName NVARCHAR(50) = NULL,
+	@SchoolEmail VARCHAR(50) = NULL,
 	@ContactEmail VARCHAR(50) = NULL,
-	@PhoneNumber VARCHAR(20) = NULL,
-	@Description NVARCHAR(4000) = NULL,
-	@LocationID BIGINT = NULL,
-	@AccountID BIGINT OUTPUT
+	@PhoneNumber VARCHAR(20) = NULL
 AS
 SET NOCOUNT ON;
 
@@ -30,12 +27,9 @@ IF EXISTS (SELECT TOP 1 * FROM [dbo].Accounts WHERE UserName = @UserName) RAISER
 IF @Password IS NOT NULL AND @PasswordHash IS NULL SET @PasswordHash = HASHBYTES('SHA2_256', @Password + '.nevents');
 IF @PasswordHash IS NULL RAISERROR('Password_Invalid', 11, 4);
 
-INSERT INTO dbo.Accounts (UserName, DisplayName, PasswordHash, IsGroup) 
-	VALUES (@UserName, @DisplayName, @PasswordHash, 0);
+INSERT INTO dbo.Accounts (UserName, DisplayName, PasswordHash, LocationID, FirstName, LastName, SchoolEmail, ContactEmail, PhoneNumber, IsGroup) 
+	VALUES (@UserName, @DisplayName, @PasswordHash, @LocationID, @FirstName, @LastName, @SchoolEmail, @ContactEmail, @PhoneNumber, 0);
 
 SET @AccountID = SCOPE_IDENTITY();
-
-INSERT INTO [dbo].AccountDetails(AccountID, LocationID, FirstName, LastName, ContactEmail, PhoneNumber, [Description]) 
-	VALUES (@AccountID, @LocationID, @FirstName, @LastName, @ContactEmail, @PhoneNumber, @Description);
 
 GO

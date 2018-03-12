@@ -1,0 +1,14 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+USE [$(dbUniHangouts)]
+GO
+CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Get]
+	@AccountID BIGINT
+AS
+SET NOCOUNT ON;
+
+SELECT TOP 1 * FROM dbo.Accounts AS acct WHERE acct.AccountID = @AccountID;
+
+GO

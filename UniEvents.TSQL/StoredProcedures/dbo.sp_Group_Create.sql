@@ -11,10 +11,10 @@ GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Group_Create]
 	@GroupOwnerAccountID BIGINT,
 	@GroupName VARCHAR(20),
-	@DisplayName NVARCHAR(50) = NULL,		
+	@DisplayName NVARCHAR(50) = NULL,	
+	@SchoolEmail VARCHAR(50) = NULL,
 	@ContactEmail VARCHAR(50) = NULL,
 	@PhoneNumber VARCHAR(20) = NULL,
-	@Description NVARCHAR(4000) = NULL,
 	@LocationID BIGINT = NULL,
 	@GroupID BIGINT OUTPUT
 AS
@@ -26,15 +26,12 @@ IF EXISTS (SELECT TOP 1 * FROM [dbo].Accounts WHERE UserName = @GroupName) RAISE
 IF NOT EXISTS (SELECT TOP 1 * FROM [dbo].Accounts WHERE AccountID = @GroupOwnerAccountID) RAISERROR('GroupOwner_Invalid', 12, 1);
 
 
-INSERT INTO dbo.Accounts (UserName, DisplayName, PasswordHash, IsGroup) 
-	VALUES (@GroupName, @DisplayName, NULL, 1);
+INSERT INTO dbo.Accounts (UserName, DisplayName, PasswordHash, LocationID, FirstName, LastName, SchoolEmail, ContactEmail, PhoneNumber, IsGroup) 
+	VALUES (@GroupName, @DisplayName, null, @LocationID, null, null, @SchoolEmail, @ContactEmail, @PhoneNumber, 1);
 
 SET @GroupID = SCOPE_IDENTITY();
 
-INSERT INTO [dbo].AccountDetails(AccountID, LocationID, FirstName, LastName, ContactEmail, PhoneNumber, [Description]) 
-	VALUES (@GroupID, @LocationID, NULL, NULL, @ContactEmail, @PhoneNumber, @Description);
-
-INSERT INTO dbo.MapAccountsAndGroups(AccountID, GroupID, IsGroupOwner, IsGroupAdmin, IsGroupFriend, IsPendingFriend, IsGroupFollower) 
+INSERT INTO dbo.AccountGroupMap(AccountID, GroupID, IsGroupOwner, IsGroupAdmin, IsGroupFriend, IsPendingFriend, IsGroupFollower) 
 	VALUES (@GroupOwnerAccountID, @GroupID, 1, 0, 0, 0, 0);
 
 GO
