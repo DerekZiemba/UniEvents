@@ -1,0 +1,10 @@
+﻿[
+	{
+		"outputFile": "wwwroot/bundles/uni-events.css",
+		"inputFile": "wwwroot/scss/uni-events.scss"
+	},
+	{
+		"outputFile": "wwwroot/bundles/uni-events.es5.min.js",
+		"inputFile": "wwwroot/bundles/uni-events.es5.js"
+	}
+]

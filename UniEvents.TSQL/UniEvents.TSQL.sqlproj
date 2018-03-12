@@ -88,4 +88,7 @@
       <DatabaseSqlCmdVariable>dbUniHangouts</DatabaseSqlCmdVariable>
     </ArtifactReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Group_Create.sql" />
+  </ItemGroup>
 </Project>

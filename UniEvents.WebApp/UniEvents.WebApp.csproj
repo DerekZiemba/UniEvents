@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+	<TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+	<IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
+	 <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Pages\Index1.cshtml.cs" />
+    <Content Include="app_offline.html" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Remove="Pages\Index1.cshtml" />
-  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.2" />
@@ -16,6 +17,15 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\UniEvents.API\UniEvents.WebAPI.csproj" />
     <ProjectReference Include="..\UniEvents.Core\UniEvents.Core.csproj" />
   </ItemGroup>
-</Project>
+  <ItemGroup>
+    <Folder Include="wwwroot\css\" />
+    <Folder Include="wwwroot\fonts\" />
+    <Folder Include="wwwroot\icons\" />
+  </ItemGroup>
+  
+  <ProjectExtensions><VisualStudio><UserProperties compilerconfig_1json_1defaults__JSONSchema="https://raw.githubusercontent.com/madskristensen/WebCompiler/master/src/WebCompilerVsix/JSON/compilerdefaults-schema.json" compilerconfig_1json__JSONSchema="https://raw.githubusercontent.com/madskristensen/WebCompiler/master/src/WebCompilerVsix/JSON/compilerconfig-schema.json" /></VisualStudio></ProjectExtensions>
+
+  </Project>
