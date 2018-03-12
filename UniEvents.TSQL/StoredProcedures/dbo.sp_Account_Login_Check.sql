@@ -4,7 +4,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 USE [$(dbUniHangouts)]
 GO
-CREATE OR ALTER PROCEDURE [dbo].[sp_Account_LoginCheck]
+CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Login_Check]
 	@UserName VARCHAR(20),
 	@APIKey BINARY(256)
 AS
