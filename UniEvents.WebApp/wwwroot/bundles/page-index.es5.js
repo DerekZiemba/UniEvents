@@ -1,7 +1,7 @@
 "use strict";
-(function (window, document, $, U, factory) {
-    factory(window, document, $, U, factory);
-}(window, window.document, window.jQuery, window.U, function Factory(window, document, $, U, factory) {
+(function (factory) {
+    factory(window, window.document, window.jQuery, window.U);
+}(function Factory(window, document, $, U) {
     U.onReady(function () {
         var divLocationSearch = document.getElementById('LocationSearch');
         var btn = divLocationSearch.querySelector('button');

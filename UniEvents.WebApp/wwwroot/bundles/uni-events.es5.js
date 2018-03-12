@@ -4,8 +4,30 @@
     factory(window);
 }(window, window.jQuery, function Polyfills(window, $) {
     Object.assign = Object.assign || $.extend;
+    var ElemProto = Element.prototype;
+    if (!ElemProto.remove) {
+        ElemProto.remove = function remove() {
+            if (this.parentNode) {
+                this.parentNode.removeChild(this);
+            }
+        };
+    }
+    if (!ElemProto.matches) {
+        ElemProto.matches = ElemProto.matches
+            || ElemProto.matchesSelector
+            || ElemProto.webkitMatchesSelector
+            || ElemProto.msMatchesSelector
+            || ElemProto.mozMatchesSelector
+            || ElemProto.oMatchesSelector
+            || function polyMatch(selector) {
+                var matches = (this.document || this.ownerDocument).querySelectorAll(selector), i = matches.length;
+                while (--i >= 0 && matches.item(i) !== this) { }
+                ;
+                return i > -1;
+            };
+    }
 }, function ZMBAFactory(window) {
-    function extendBuiltInType(proto, obj, enumerable) {
+    function extendType(proto, obj, enumerable) {
         var descriptors = Object.getOwnPropertyDescriptors(obj);
         for (var desc in descriptors) {
             var prop = descriptors[desc];
@@ -14,7 +36,7 @@
         }
     }
     (function StringPrototypeExtensions() {
-        extendBuiltInType(String.prototype, {
+        extendType(String.prototype, {
             ReplaceAll: function ReplaceAll(sequence, value) {
                 return this.split(sequence).join(value);
             },
@@ -91,7 +113,7 @@
         });
     }());
     (function ElementExtensions() {
-        extendBuiltInType(Element, {
+        extendType(Element, {
             From: (function (doc, rgx) {
                 return function CreateElementFromHTML(html) {
                     html = html.trim();
@@ -115,8 +137,16 @@
             }(window.document, /(\S+)=(["'])(.*?)(?:\2)|(\w+)/g))
         });
     }());
+    (function DateExtensions() {
+        extendType(Date.prototype, {
+            AddHours: function (h) {
+                this.setHours(this.getHours() + h);
+                return this;
+            }
+        });
+    }());
     (function DOMTokenListExtensions() {
-        extendBuiltInType(DOMTokenList.prototype, {
+        extendType(DOMTokenList.prototype, {
             ToggleMultiple: function ToggleMultiple() {
                 var len = arguments.length - 1;
                 var bHasForce = typeof arguments[len - 1] === 'boolean';
@@ -129,7 +159,7 @@
         });
     }());
     (function RegexPrototypeExtensions() {
-        extendBuiltInType(RegExp.prototype, {
+        extendType(RegExp.prototype, {
             GetMatches: function GetMatches(str) {
                 this.lastIndex = 0;
                 var matches = [], match = null;
@@ -145,9 +175,9 @@
             get Last() { return this[this.length - 1]; },
             set Last(value) { this[this.length - 1] = value; }
         };
-        extendBuiltInType(NodeList.prototype, descriptor);
-        extendBuiltInType(HTMLCollection.prototype, descriptor);
-        extendBuiltInType(Array.prototype, descriptor);
+        extendType(NodeList.prototype, descriptor);
+        extendType(HTMLCollection.prototype, descriptor);
+        extendType(Array.prototype, descriptor);
         Array.forEach = function (arr, cb) {
             if (!arr) {
                 return;
@@ -203,13 +233,9 @@
                 }
             }
         };
-        extendBuiltInType(NodeList.prototype, descriptor);
-        extendBuiltInType(HTMLCollection.prototype, descriptor);
+        extendType(NodeList.prototype, descriptor);
+        extendType(HTMLCollection.prototype, descriptor);
     }());
-}));
-(function (window, document, $, factory) {
-    window.U = factory(window, document, $, factory);
-}(window, window.document, window.jQuery, function UniEventFactory(window, document, $, factory) {
     var ReadyListener = (function () {
         function addCallback(cb) {
             var i = 1, len = arguments.length, args = new Array(len - i + 1);
@@ -245,9 +271,16 @@
     }());
     var onReadyListener = new ReadyListener("DOMContentLoaded");
     var onLoadedListener = new ReadyListener("load");
+    window.ZMBA = {
+        extendType: extendType,
+        onReady: onReadyListener.add,
+        onLoad: onLoadedListener.add
+    };
+}));
+(function (window, document, $, ZMBA, factory) {
+    window.U = factory(window, document, $, ZMBA);
+}(window, window.document, window.jQuery, window.ZMBA, function UniEventFactory(window, document, $, ZMBA) {
     function UniEvents() {
-        this.onReady = onReadyListener.add;
-        this.onLoaded = onLoadedListener.add;
     }
     return new UniEvents();
 }));

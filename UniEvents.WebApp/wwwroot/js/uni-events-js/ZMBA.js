@@ -11,11 +11,34 @@ function Polyfills(window, $) {
 
 	Object.assign = Object.assign || $.extend; //IE
 
+	const ElemProto = Element.prototype;
+	if (!ElemProto.remove) {
+		ElemProto.remove = function remove() {
+			if (this.parentNode) {
+				this.parentNode.removeChild(this);
+			}
+		};
+	}
+
+	if (!ElemProto.matches) {
+		ElemProto.matches = ElemProto.matches
+			|| ElemProto.matchesSelector
+			|| ElemProto.webkitMatchesSelector
+			|| ElemProto.msMatchesSelector
+			|| ElemProto.mozMatchesSelector
+			|| ElemProto.oMatchesSelector
+			|| function polyMatch(selector) {
+				var matches = (this.document || this.ownerDocument).querySelectorAll(selector), i = matches.length;
+				while (--i >= 0 && matches.item(i) !== this) { };
+				return i > -1;
+			};
+	}
+
 },
 function ZMBAFactory(window) {
 
 
-	function extendBuiltInType(proto, obj, enumerable) {
+	function extendType(proto, obj, enumerable) {
 		var descriptors = Object.getOwnPropertyDescriptors(obj);
 		for (var desc in descriptors) {
 			var prop = descriptors[desc];
@@ -24,8 +47,9 @@ function ZMBAFactory(window) {
 		}
 	}
 
+
 	(function StringPrototypeExtensions() {
-		extendBuiltInType(String.prototype, {
+		extendType(String.prototype, {
 			ReplaceAll: function ReplaceAll(sequence, value) {
 				return this.split(sequence).join(value);
 			},
@@ -80,7 +104,7 @@ function ZMBAFactory(window) {
 
 
 	(function ElementExtensions() {
-		extendBuiltInType(Element, {
+		extendType(Element, {
 			From: (function (doc, rgx) {
 				//https://www.measurethat.net/Benchmarks/Show/2147/0/element-creation-speed
 				return function CreateElementFromHTML(html) {
@@ -105,8 +129,18 @@ function ZMBAFactory(window) {
 	}());
 
 
+	(function DateExtensions() {
+		extendType(Date.prototype, {
+			AddHours: function (h) {
+				this.setHours(this.getHours() + h);
+				return this;
+			}
+		});
+	}());
+
+
 	(function DOMTokenListExtensions() {
-		extendBuiltInType(DOMTokenList.prototype, {
+		extendType(DOMTokenList.prototype, {
 			ToggleMultiple: function ToggleMultiple() {
 				var len = arguments.length - 1;
 				var bHasForce = typeof arguments[len - 1] === 'boolean';
@@ -121,7 +155,7 @@ function ZMBAFactory(window) {
 
 
 	(function RegexPrototypeExtensions() {
-		extendBuiltInType(RegExp.prototype, {
+		extendType(RegExp.prototype, {
 			GetMatches: function GetMatches(str) {
 				this.lastIndex = 0;
 				var matches = [], match = null;
@@ -140,9 +174,9 @@ function ZMBAFactory(window) {
 			set Last(value) { this[this.length - 1] = value; }
 		};
 
-		extendBuiltInType(NodeList.prototype, descriptor);
-		extendBuiltInType(HTMLCollection.prototype, descriptor);
-		extendBuiltInType(Array.prototype, descriptor);
+		extendType(NodeList.prototype, descriptor);
+		extendType(HTMLCollection.prototype, descriptor);
+		extendType(Array.prototype, descriptor);
 
 
 		Array.forEach = (arr, cb) => {
@@ -190,9 +224,45 @@ function ZMBAFactory(window) {
 			}
 		};
 
-		extendBuiltInType(NodeList.prototype, descriptor);
-		extendBuiltInType(HTMLCollection.prototype, descriptor);
+		extendType(NodeList.prototype, descriptor);
+		extendType(HTMLCollection.prototype, descriptor);
 	}());
+
+	const ReadyListener = (function () {
+		function addCallback(cb) {
+			var i = 1, len = arguments.length, args = new Array(len - i + 1); for (; i < len; i++) { args[i - 1] = arguments[i]; }
+			this._isReady ? cb.apply(null, args) : this._callbacks.push({ cb, args });
+		}
+		function runQueued(ev) {
+			while (this._callbacks.length > 0) {
+				var ob = this._callbacks.shift();
+				try {
+					ob.cb.apply(null, ob.args);
+				} catch (ex) { console.error(ex, ob); }
+			}
+		}
+		function ReadyListener(evName) {
+			this._callbacks = [];
+			this._isReady = false;
+			this.add = addCallback.bind(this);
+			window.addEventListener(evName, runQueued.bind(this));
+		}
+		Object.assign(ReadyListener.prototype, {
+			get isReady() { return this._isReady; },
+			set isReady(value) { if ((this._isReady = value)) { this.runQueued(); } }
+		});
+		return ReadyListener;
+	}());
+
+	const onReadyListener = new ReadyListener("DOMContentLoaded");
+	const onLoadedListener = new ReadyListener("load");
+
+
+	window.ZMBA = {
+		extendType,
+		onReady: onReadyListener.add,
+		onLoad: onLoadedListener.add
+	}
 
 
 }));

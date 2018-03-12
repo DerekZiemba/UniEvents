@@ -1,12 +1,12 @@
 ﻿
-(function (window, document, $, U, factory) {
-	factory(window, document, $, U, factory);
+(function (factory) {
 
-}(window, window.document, window.jQuery, window.U,
-function Factory(window, document, $, U, factory) {
+	factory(window, window.document, window.jQuery, window.U, window.ZMBA);
+
+}(function Factory(window, document, $, U, ZMBA) {
 
 
-	U.onReady(() => {
+	ZMBA.onReady(() => {
 		var divLocationSearch = document.getElementById('LocationSearch');
 		var btn = divLocationSearch.querySelector('button');
 
