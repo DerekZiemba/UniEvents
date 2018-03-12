@@ -5,6 +5,9 @@
 	<IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
 	 <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="app_offline.html" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />

@@ -1,8 +1,8 @@
 "use strict";
 (function (factory) {
-    factory(window, window.document, window.jQuery, window.U);
-}(function Factory(window, document, $, U) {
-    U.onReady(function () {
+    factory(window, window.document, window.jQuery, window.U, window.ZMBA);
+}(function Factory(window, document, $, U, ZMBA) {
+    ZMBA.onReady(function () {
         var divLocationSearch = document.getElementById('LocationSearch');
         var btn = divLocationSearch.querySelector('button');
         btn.addEventListener('click', function (ev) {
