@@ -61,6 +61,7 @@
     <Folder Include="Properties" />
     <Folder Include="StoredProcedures" />
     <Folder Include="DBInit" />
+    <Folder Include="DataTier" />
   </ItemGroup>
   <ItemGroup>
     <SqlCmdVariable Include="dbUniHangouts">
@@ -80,6 +81,7 @@
     <None Include="StoredProcedures\dbo.sp_Locations_Search.sql" />
     <None Include="DBInit\AddInitialData.sql" />
     <None Include="DBInit\CreateDatabase.v1.sql" />
+    <None Include="DataTier\dbUniHangouts.dacpac" />
   </ItemGroup>
   <ItemGroup>
     <ArtifactReference Include="DataTier\dbUniHangouts.dacpac">
