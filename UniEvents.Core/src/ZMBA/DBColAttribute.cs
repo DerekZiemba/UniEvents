@@ -12,14 +12,20 @@ namespace ZMBA {
 
 		public readonly string Name;
 		public readonly SqlDbType DBType;
-		public readonly ParameterDirection Direction;
 		public readonly int Size;
+		public readonly bool AllowNull;
+		public readonly bool IsAutoValue;
+		public readonly ParameterDirection Direction;
+		
 
-		public DBColAttribute(string name, SqlDbType dbType, int size, ParameterDirection direction = ParameterDirection.InputOutput) {
+		public DBColAttribute(string name, SqlDbType dbType, int size, bool allowNull,
+									bool isAutoValue = false, ParameterDirection direction = ParameterDirection.InputOutput) {
 			this.Name = name;
 			this.DBType = dbType;
-			this.Direction = direction;
 			this.Size = size;
+			this.AllowNull = allowNull;
+			this.IsAutoValue = isAutoValue;
+			this.Direction = direction;			
 		}
 	}
 

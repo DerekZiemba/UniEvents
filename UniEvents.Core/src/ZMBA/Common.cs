@@ -243,147 +243,111 @@ namespace ZMBA {
 			return rowsAffected;
 		}
 
-
-		public static bool PullBytes(this IDataRecord record, string name, out byte[] result, int size, byte[] @default = default) {
+		public static byte[] GetBytes(this IDataRecord record, string name, int size) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
+			if (record.IsDBNull(ord)) { return null; }
 			Byte[] buffer = new byte[size];
 			record.GetBytes(ord, 0, buffer, 0, size);
-			result = buffer;
-			return true;
+			return buffer;
 		}
 
-		public static bool PullValue(this IDataRecord record, string name, out string result, string @default = default(string)) {
+		public static string GetString(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetString(ord);
-			return true;
+			return record.IsDBNull(ord) ? null : record.GetString(ord);
 		}
 
-		public static bool PullValue(this IDataRecord record, string name, out bool result, bool @default = default(bool)) {
+		public static bool GetBoolean(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetBoolean(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetBoolean(ord);
 		}
-		public static bool PullValue(this IDataRecord record, string name, out byte result, byte @default = default(byte)) {
+		public static byte GetByte(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetByte(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetByte(ord);
 		}
-		public static bool PullValue(this IDataRecord record, string name, out Int16 result, Int16 @default = default(Int16)) {
+		public static Int16 GetInt16(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetInt16(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetInt16(ord);
 		}
-		public static bool PullValue(this IDataRecord record, string name, out Int32 result, Int32 @default = default(Int32)) {
+		public static Int32 GetInt32(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetInt32(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetInt32(ord);
 		}
-		public static bool PullValue(this IDataRecord record, string name, out Int64 result, Int64 @default = default(Int64)) {
+		public static Int64 GetInt64(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetInt64(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetInt64(ord);
 		}
-		public static bool PullValue(this IDataRecord record, string name, out float result, float @default = default(float)) {
+		public static float GetFloat32(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetFloat(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetFloat(ord);
 		}
-		public static bool PullValue(this IDataRecord record, string name, out double result, double @default = default(double)) {
+		public static double GetFloat64(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetDouble(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetDouble(ord);
 		}
-		public static bool PullValue(this IDataRecord record, string name, out decimal result, decimal @default = default(decimal)) {
+		public static decimal GetDecimal(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetDecimal(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetDecimal(ord);
 		}
-		public static bool PullValue(this IDataRecord record, string name, out DateTime result, DateTime @default = default(DateTime)) {
+		public static DateTime GetDateTime(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetDateTime(ord);
-			return true;
-		}
-
-		public static bool PullValue(this IDataRecord record, string name, out bool? result, bool? @default = default(bool)) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetBoolean(ord);
-			return true;
-		}
-		public static bool PullValue(this IDataRecord record, string name, out byte? result, byte? @default = default(byte)) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetByte(ord);
-			return true;
-		}
-		public static bool PullValue(this IDataRecord record, string name, out Int16? result, Int16? @default = default(Int16)) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetInt16(ord);
-			return true;
-		}
-		public static bool PullValue(this IDataRecord record, string name, out Int32? result, Int32? @default = default(Int32)) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetInt32(ord);
-			return true;
-		}
-		public static bool PullValue(this IDataRecord record, string name, out Int64? result, Int64? @default = default(Int64)) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetInt64(ord);
-			return true;
-		}
-		public static bool PullValue(this IDataRecord record, string name, out float? result, float? @default = default(float)) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetFloat(ord);
-			return true;
-		}
-		public static bool PullValue(this IDataRecord record, string name, out double? result, double? @default = default(double)) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetDouble(ord);
-			return true;
-		}
-		public static bool PullValue(this IDataRecord record, string name, out decimal? result, decimal? @default = default(decimal)) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetDecimal(ord);
-			return true;
-		}
-		public static bool PullValue(this IDataRecord record, string name, out DateTime? result, DateTime? @default = null) {
-			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			result = record.GetDateTime(ord);
-			return true;
+			return record.IsDBNull(ord) ? default : record.GetDateTime(ord);
 		}
 
 
-		public static bool PullValue<T>(this IDataRecord record, string name, out T result, T @default = default(T)) where T : struct, IConvertible, IFormattable, IComparable {
-			System.Diagnostics.Contracts.Contract.Requires(typeof(T).IsEnum, "Must be Enum");
+		public static bool? GetNBoolean(this IDataRecord record, string name) {
 			int ord = record.GetOrdinal(name);
-			if (record.IsDBNull(ord)) { result = @default; return false; }
-			Type ftype = record.GetFieldType(ord);
-			if (ftype == typeof(string)) {
-				result = (T)Enum.Parse(typeof(T), record.GetString(ord), true);
-				return true;
-			} else {
-				result = (T)record.GetValue(ord);
-				return true;
-			}
+			return record.IsDBNull(ord) ? null : (bool?)record.GetBoolean(ord);
 		}
+		public static byte? GetNByte(this IDataRecord record, string name) {
+			int ord = record.GetOrdinal(name);
+			return record.IsDBNull(ord) ? null : (byte?)record.GetByte(ord);
+		}
+		public static Int16? GetNInt16(this IDataRecord record, string name) {
+			int ord = record.GetOrdinal(name);
+			return record.IsDBNull(ord) ? null : (Int16?)record.GetInt16(ord);
+		}
+		public static Int32? GetNInt32(this IDataRecord record, string name) {
+			int ord = record.GetOrdinal(name);
+			return record.IsDBNull(ord) ? null : (Int32?)record.GetInt32(ord);
+		}
+		public static Int64? GetNInt64(this IDataRecord record, string name) {
+			int ord = record.GetOrdinal(name);
+			return record.IsDBNull(ord) ? null : (Int64?)record.GetInt64(ord);
+		}
+		public static float? GetNFloat32(this IDataRecord record, string name) {
+			int ord = record.GetOrdinal(name);
+			return record.IsDBNull(ord) ? null : (float?)record.GetFloat(ord);
+		}
+		public static double? GetNFloat64(this IDataRecord record, string name) {
+			int ord = record.GetOrdinal(name);
+			return record.IsDBNull(ord) ? null : (double?)record.GetDouble(ord);
+		}
+		public static decimal? GetNDecimal(this IDataRecord record, string name) {
+			int ord = record.GetOrdinal(name);
+			return record.IsDBNull(ord) ? null : (decimal?)record.GetDecimal(ord);
+		}
+		public static DateTime? GetNDateTime(this IDataRecord record, string name) {
+			int ord = record.GetOrdinal(name);
+			return record.IsDBNull(ord) ? null : (DateTime?)record.GetDateTime(ord);
+		}
+
+
+
+
+
+		//public static bool PullValue<T>(this IDataRecord record, string name, out T result, T @default = default(T)) where T : struct, IConvertible, IFormattable, IComparable {
+		//	System.Diagnostics.Contracts.Contract.Requires(typeof(T).IsEnum, "Must be Enum");
+		//	int ord = record.GetOrdinal(name);
+		//	if (record.IsDBNull(ord)) { result = @default; return false; }
+		//	Type ftype = record.GetFieldType(ord);
+		//	if (ftype == typeof(string)) {
+		//		result = (T)Enum.Parse(typeof(T), record.GetString(ord), true);
+		//		return true;
+		//	} else {
+		//		result = (T)record.GetValue(ord);
+		//		return true;
+		//	}
+		//}
 
 
 		#endregion

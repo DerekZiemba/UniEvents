@@ -8,43 +8,40 @@ using ZMBA;
 namespace UniEvents.Core.DBModels {
 
 	public class DBAccountDetails {
-		private Int64 _AccountID;
-		private Int64? _LocationID;
-		private string _FirstName;
-		private string _LastName;
-		private string _ContactEmail;
-		private string _PhoneNumber;
-		private string _Description;
 
 		public DBAccountDetails() { }
 
-		[DBCol("AccountID", SqlDbType.BigInt, 1)]
-		public Int64 AccountID { get => _AccountID; set => _AccountID = value; }
+		[DBCol("AccountID", SqlDbType.BigInt, 1, false)]
+		public Int64 AccountID { get; set; }
 
-		[DBCol("LocationID", SqlDbType.BigInt, 1)]
-		public Int64? LocationID { get => _LocationID; set => _LocationID = value; }
+		[DBCol("LocationID", SqlDbType.BigInt, 1, true)]
+		public Int64? LocationID { get; set; }
 
-		[DBCol("FirstName", SqlDbType.BigInt, 1)]
-		public string FirstName { get => _FirstName; set => _FirstName = value; }
+		[DBCol("FirstName", SqlDbType.NVarChar, 20, true)]
+		public string FirstName { get; set; }
 
-		public string LastName { get => _LastName; set => _LastName = value; }
+		[DBCol("LastName", SqlDbType.NVarChar, 20, true)]
+		public string LastName { get; set; }
 
-		public string ContactEmail { get => _ContactEmail; set => _ContactEmail = value; }
+		[DBCol("ContactEmail", SqlDbType.VarChar, 50, true)]
+		public string ContactEmail { get; set; }
 
-		public string PhoneNumber { get => _PhoneNumber; set => _PhoneNumber = value; }
+		[DBCol("PhoneNumber", SqlDbType.VarChar, 20, true)]
+		public string PhoneNumber { get; set; }
 
-		public string Description { get => _Description; set => _Description = value; }
+		[DBCol("Description", SqlDbType.NVarChar, 4000, true)]
+		public string Description { get; set; }
 
 
 		public static DBAccountDetails CreateModel(IDataReader reader) {
 			DBAccountDetails model = new DBAccountDetails();
-			reader.PullValue(nameof(AccountID), out model._AccountID);
-			reader.PullValue(nameof(LocationID), out model._LocationID);
-			reader.PullValue(nameof(FirstName), out model._FirstName);
-			reader.PullValue(nameof(LastName), out model._LastName);
-			reader.PullValue(nameof(ContactEmail), out model._ContactEmail);
-			reader.PullValue(nameof(PhoneNumber), out model._PhoneNumber);
-			reader.PullValue(nameof(Description), out model._Description);
+			model.LocationID = reader.GetInt64(nameof(LocationID));
+			model.LocationID = reader.GetNInt64(nameof(LocationID));
+			model.FirstName = reader.GetString(nameof(FirstName));
+			model.LastName = reader.GetString(nameof(LastName));
+			model.ContactEmail = reader.GetString(nameof(ContactEmail));
+			model.PhoneNumber = reader.GetString(nameof(PhoneNumber));
+			model.Description = reader.GetString(nameof(Description));
 			return model;
 		}
 

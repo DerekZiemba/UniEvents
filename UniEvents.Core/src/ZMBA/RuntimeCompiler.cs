@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Data;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Linq;
@@ -11,9 +12,10 @@ namespace ZMBA {
 
 	public static class RuntimeCompiler {
 		public delegate void CopyIntoDelegate<T, S>(T location, S src);
+		public delegate T DataReaderDelegate<T>(IDataReader reader) where T : new();
 
-		private static class RCCache_Ctor<T> {
-			public static object Lock = new object();
+		private static class RCCache_Ctors<T> {
+			public static object CtorLock = new object();
 			public static Func<T> DefaultConstructor;
 			public static T MultiArgConstructor;
 		}
@@ -22,6 +24,11 @@ namespace ZMBA {
 			public static object Lock = new object();
 			public static CopyIntoDelegate<T, S> ShallowFieldCopier;
 			public static CopyIntoDelegate<T, S> ShallowPropertyCopier;
+		}
+
+		private static class RCCache_DB<T> where T : new() {
+			public static object Lock = new object();
+			public static DataReaderDelegate<T> DBDataReader;
 		}
 
 
@@ -135,6 +142,24 @@ namespace ZMBA {
 		}
 
 
+		//public static DataReaderDelegate<T> CompileDBDataReader<T>() where T : new() {
+		//	if (RCCache_DB<T>.DBDataReader is null) {
+		//		lock (RCCache_DB<T>.Lock) {
+		//			if (RCCache_DB<T>.DBDataReader != null) {
+		//				return RCCache_DB<T>.DBDataReader;
+		//			}
+		//			RCCache_DB<T>.DBDataReader = (DataReaderDelegate<T>)CreateDelegate();
+		//		}
+		//	}
+		//	return RCCache_DB<T>.DBDataReader;
+
+		//	Delegate CreateDelegate() {
+
+		//	}
+		//}
+
+
+
 		private static FieldInfo GetStaticConverterFieldByConverter(TypeConverter converter) {
 			Type type = typeof(TypeConversion);
 			if (converter == TypeConversion.StringConverter) { return type.GetField(nameof(TypeConversion.StringConverter)); }
@@ -158,30 +183,30 @@ namespace ZMBA {
 		}
 
 		public static Func<T> CompileGenericDefaultConstructor<T>() {
-			if (RCCache_Ctor<T>.DefaultConstructor is null) {
-				lock (RCCache_Ctor<T>.Lock) {
-					if (RCCache_Ctor<T>.DefaultConstructor != null) {
-						return RCCache_Ctor<T>.DefaultConstructor;
+			if (RCCache_Ctors<T>.DefaultConstructor is null) {
+				lock (RCCache_Ctors<T>.CtorLock) {
+					if (RCCache_Ctors<T>.DefaultConstructor != null) {
+						return RCCache_Ctors<T>.DefaultConstructor;
 					}
 					ConstructorInfo ctor = typeof(T).GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
 					NewExpression calleeExp = Expression.New(ctor);
 					LambdaExpression lambda = Expression.Lambda(typeof(Func<T>), calleeExp);
-					RCCache_Ctor<T>.DefaultConstructor = (Func<T>)(object)lambda.Compile();
+					RCCache_Ctors<T>.DefaultConstructor = (Func<T>)(object)lambda.Compile();
 				}
 			}
-			return RCCache_Ctor<T>.DefaultConstructor;
+			return RCCache_Ctors<T>.DefaultConstructor;
 		}
 
 		public static TDelegate CompileMultiArgumentConstructor<TDelegate>() where TDelegate : class {
-			if (RCCache_Ctor<TDelegate>.MultiArgConstructor is null) {
-				lock (RCCache_Ctor<TDelegate>.Lock) {
-					if (RCCache_Ctor<TDelegate>.MultiArgConstructor != null) {
-						return RCCache_Ctor<TDelegate>.MultiArgConstructor;
+			if (RCCache_Ctors<TDelegate>.MultiArgConstructor is null) {
+				lock (RCCache_Ctors<TDelegate>.CtorLock) {
+					if (RCCache_Ctors<TDelegate>.MultiArgConstructor != null) {
+						return RCCache_Ctors<TDelegate>.MultiArgConstructor;
 					}
-					RCCache_Ctor<TDelegate>.MultiArgConstructor = (TDelegate)CreateDelegate();
+					RCCache_Ctors<TDelegate>.MultiArgConstructor = (TDelegate)CreateDelegate();
 				}
 			}
-			return RCCache_Ctor<TDelegate>.MultiArgConstructor;
+			return RCCache_Ctors<TDelegate>.MultiArgConstructor;
 
 			object CreateDelegate() {
 				BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.IgnoreCase | BindingFlags.Instance;
