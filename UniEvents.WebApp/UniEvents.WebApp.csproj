@@ -17,7 +17,7 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\UniEvents.API\UniEvents.WebAPI.csproj" />
+    <ProjectReference Include="..\UniEvents.WebAPI\UniEvents.WebAPI.csproj" />
     <ProjectReference Include="..\UniEvents.Core\UniEvents.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

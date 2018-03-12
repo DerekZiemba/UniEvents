@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace UniEvents.API {
+namespace UniEvents.WebAPI {
 	public class Startup {
 		public Startup(IConfiguration configuration) {
 			Configuration = configuration;

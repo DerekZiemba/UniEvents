@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace UniEvents.API {
+namespace UniEvents.WebAPI {
 	public class Program {
 		public static void Main(string[] args) {
 			BuildWebHost(args).Run();

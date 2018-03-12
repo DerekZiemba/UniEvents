@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace UniEvents.API.Controllers
+namespace UniEvents.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     public class ValuesController : Controller

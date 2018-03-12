@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 
-using static ZMBA.Common;
+using ZMBA;
+
 
 namespace UniEvents.Core.DBModels {
 
@@ -16,10 +17,19 @@ namespace UniEvents.Core.DBModels {
 
 		public DBAccount() { }
 
+		[DBCol("AccountID", SqlDbType.BigInt, 1)]
 		public Int64 AccountID { get => _AccountID; set => _AccountID = value; }
+
+		[DBCol("UserName", SqlDbType.VarChar, 20)]
 		public string UserName { get => _UserName; set => _UserName = value; }
+
+		[DBCol("DisplayName", SqlDbType.NVarChar, 50)]
 		public string DisplayName { get => _DisplayName; set => _DisplayName = value; }
+
+		[DBCol("PasswordHash", SqlDbType.Binary, 256)]
 		public byte[] PasswordHash { get => _PasswordHash; set => _PasswordHash = value; }
+
+		[DBCol("IsGroup", SqlDbType.Bit, 1)]
 		public bool IsGroup { get => _IsGroup; set => _IsGroup = value; }
 
 		public static DBAccount CreateModel(IDataReader reader) {
