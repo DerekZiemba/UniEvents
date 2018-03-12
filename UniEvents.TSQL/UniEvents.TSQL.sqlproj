@@ -108,4 +108,13 @@
   <ItemGroup>
     <None Include="DBInit\AddInitialData.v2.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Account_LoginCheck.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Account_Logout.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Account_LoginsGet.sql" />
+  </ItemGroup>
 </Project>
