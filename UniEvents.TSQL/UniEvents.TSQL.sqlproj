@@ -109,12 +109,15 @@
     <None Include="DBInit\AddInitialData.v2.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="StoredProcedures\dbo.sp_Account_LoginCheck.sql" />
+    <None Include="StoredProcedures\dbo.sp_Account_Login_Check.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Account_Logout.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="StoredProcedures\dbo.sp_Account_LoginsGet.sql" />
+    <None Include="StoredProcedures\dbo.sp_Account_Logins_Get.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Tags_Search.sql" />
   </ItemGroup>
 </Project>

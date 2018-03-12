@@ -4,7 +4,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 USE [$(dbUniHangouts)]
 GO
-CREATE OR ALTER PROCEDURE [dbo].[sp_Account_LoginsGet]
+CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Logins_Get]
 	@UserName VARCHAR(20)
 AS
 SET NOCOUNT ON;
