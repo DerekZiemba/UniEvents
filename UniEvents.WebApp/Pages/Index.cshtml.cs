@@ -14,7 +14,7 @@ namespace UniEvents.WebApp.Pages {
 
 		public void OnGet() {
 
-			LocationFields = typeof(WebAPI.Controllers.LocationsController).GetMethod("Search").GetParameters().Select(p => p.Name).ToArray();
+			LocationFields = new []{ "ParentLocationID", "Name", "AddressLine", "Locality", "AdminDistrict", "PostalCode", "Description?" };
 
 		}
 	}

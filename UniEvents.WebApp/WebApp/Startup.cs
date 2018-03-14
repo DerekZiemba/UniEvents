@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace UniEvents.WebApp {
 	public class Startup {
-		public Startup(IConfiguration configuration) {
+		public Startup(IConfiguration configuration) {        
 			Configuration = configuration;
 		}
 
@@ -27,12 +27,22 @@ namespace UniEvents.WebApp {
 				app.UseBrowserLink();
 				app.UseDeveloperExceptionPage();
 			} else {
-				app.UseExceptionHandler("/Error");
+				//app.UseExceptionHandler("/Error");
+            app.UseDeveloperExceptionPage();
 			}
+
+         if(env.IsDevelopment()){
+            Program.CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
+         } else if (env.IsStaging()) {
+            Program.CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
+         } else if (env.IsProduction()) {
+            Program.CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
+         }
 
 			app.UseStaticFiles();
 
 			app.UseMvc();
+
 		}
 	}
 }
