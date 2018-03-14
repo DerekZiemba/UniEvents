@@ -5,10 +5,11 @@ GO
 USE [$(dbUniHangouts)]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Get]
-	@AccountID BIGINT
+	@AccountID BIGINT,
+   @UserName VARCHAR(20) = NULL
 AS
 SET NOCOUNT ON;
 
-SELECT TOP 1 * FROM dbo.Accounts AS acct WHERE acct.AccountID = @AccountID;
+SELECT TOP 1 * FROM dbo.Accounts AS acct WHERE (@AccountID = 0 OR acct.AccountID = @AccountID) AND (@UserName IS NULL OR acct.UserName = @UserName);
 
 GO

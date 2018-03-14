@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Text;
-
+using System.Threading.Tasks;
 using ZMBA;
 
 namespace UniEvents.Core.DBModels {
 
 	public class DBLocation  {
-
-		public DBLocation() { }
 
 		[DBCol("LocationID", SqlDbType.BigInt, 1, false, isAutoValue: true)]
 		public Int64 LocationID { get; set; }
@@ -44,24 +45,157 @@ namespace UniEvents.Core.DBModels {
 		[DBCol("Description", SqlDbType.VarChar, 160, true)]
 		public string Description { get; set; }
 
-
 		public double Latitude { get => Latitude6x.UnBox()/10e6; set => Latitude6x = (int)(value*10e6); }
 		public double Longitude { get => Longitude6x.UnBox()/ 10e6; set => Longitude6x = (int)(value*10e6); }
 
-		public static DBLocation CreateModel(IDataReader reader) {
-			DBLocation model = new DBLocation();
-			model.LocationID = reader.GetInt64(nameof(LocationID));
-			model.ParentLocationID = reader.GetNInt64(nameof(ParentLocationID));
-			model.Name = reader.GetString(nameof(Name));
-			model.AddressLine = reader.GetString(nameof(AddressLine));
-			model.Locality = reader.GetString(nameof(Locality));
-			model.AdminDistrict = reader.GetString(nameof(AdminDistrict));
-			model.PostalCode = reader.GetString(nameof(PostalCode));
-			model.CountryRegion = reader.GetString(nameof(CountryRegion));
-			model.Latitude6x = reader.GetNInt32(nameof(Latitude6x));
-			model.Longitude6x = reader.GetNInt32(nameof(Longitude6x));
-			model.Description = reader.GetString(nameof(Description));
-			return model;
+		public DBLocation() { }
+
+		private DBLocation(IDataReader reader) {
+			LocationID = reader.GetInt64(nameof(LocationID));
+			ParentLocationID = reader.GetNInt64(nameof(ParentLocationID));
+			Name = reader.GetString(nameof(Name));
+			AddressLine = reader.GetString(nameof(AddressLine));
+			Locality = reader.GetString(nameof(Locality));
+			AdminDistrict = reader.GetString(nameof(AdminDistrict));
+			PostalCode = reader.GetString(nameof(PostalCode));
+			CountryRegion = reader.GetString(nameof(CountryRegion));
+			Latitude6x = reader.GetNInt32(nameof(Latitude6x));
+			Longitude6x = reader.GetNInt32(nameof(Longitude6x));
+			Description = reader.GetString(nameof(Description));
+		}
+
+		public static async Task<bool> SP_Location_CreateAsync(CoreContext ctx, DBLocation model) {
+			Contract.Requires<ArgumentNullException>(model != null, "DBLocation_Null");
+			Contract.Requires<ArgumentNullException>(!model.CountryRegion.IsNullOrWhitespace(), "CountryRegion cannot be null");
+			Contract.Requires<ArgumentException>(model.Latitude6x.HasValue ^ model.Longitude6x.HasValue, "Latitude and Longitude must both be null or both have a value.");
+			Contract.Requires<OverflowException>(!(Math.Abs(model.Latitude) > 90), "Latitude_Invalid");
+			Contract.Requires<OverflowException>(!(Math.Abs(model.Longitude) > 180), "Longitude_Invalid");
+
+			using (SqlConnection conn = new SqlConnection(ctx.ConnStrings.dbUniHangoutsWrite))
+			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
+				SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.Real, nameof(@LocationID), null);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);			
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), model.@Name);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), model.@AddressLine);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), model.@Locality);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), model.@AdminDistrict);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), model.@PostalCode);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@CountryRegion), model.CountryRegion);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), model.@Description);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Latitude), model.@Latitude);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Longitude), model.@Longitude);
+
+				if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+				int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+				model.LocationID = (long)@LocationID.Value;
+				return rowsAffected == 1;
+			}
+		}
+
+		public static async Task<DBLocation> SP_Location_GetAsync(CoreContext ctx, long LocationID) {
+			Contract.Requires<ArgumentNullException>(LocationID > 0, "LocationID_Invalid");
+
+			using (SqlConnection conn = new SqlConnection(ctx.ConnStrings.dbUniHangoutsRead))
+			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(DBLocation.@LocationID), LocationID);
+
+				if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+				using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
+					while (await reader.ReadAsync().ConfigureAwait(false)) {
+						return new DBLocation(reader);
+					}
+				}
+				return null;
+			} 
+		}
+
+
+		public static async Task<bool> SP_Location_UpdateAsync(CoreContext ctx, DBLocation model) {
+			Contract.Requires<ArgumentNullException>(model != null, "DBLocation_Null");
+			Contract.Requires<ArgumentNullException>(model.LocationID > 0, "LocationID_Invalid");
+			Contract.Requires<ArgumentNullException>(!model.CountryRegion.IsNullOrWhitespace(), "CountryRegion cannot be null");
+			Contract.Requires<ArgumentException>(model.Latitude6x.HasValue ^ model.Longitude6x.HasValue, "Latitude and Longitude must both be null or both have a value.");
+			Contract.Requires<OverflowException>(!(Math.Abs(model.Latitude) > 90), "Latitude_Invalid");
+			Contract.Requires<OverflowException>(!(Math.Abs(model.Longitude) > 180), "Longitude_Invalid");
+
+			using (SqlConnection conn = new SqlConnection(ctx.ConnStrings.dbUniHangoutsWrite))
+			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Update]", conn) { CommandType = CommandType.StoredProcedure }) {
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@LocationID), model.LocationID);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), model.@Name);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), model.@AddressLine);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), model.@Locality);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), model.@AdminDistrict);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), model.@PostalCode);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@CountryRegion), model.CountryRegion);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), model.@Description);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Latitude), model.@Latitude);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Longitude), model.@Longitude);
+
+				if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+				int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+				return rowsAffected == 1;
+			}
+		}
+
+
+		public static async Task<List<DBLocation>> SP_Locations_SearchAsync(CoreContext ctx, 
+																									long? @ParentLocationID = null,
+																									string @Name = null,
+																									string @AddressLine = null,
+																									string @Locality = null,
+																									string @AdminDistrict = null,
+																									string @PostalCode = null,
+																									string @Description = null) {
+
+			using (SqlConnection conn = new SqlConnection(ctx.ConnStrings.dbUniHangoutsRead))
+			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), @ParentLocationID);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), @Name);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), @AddressLine);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), @Locality);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), @AdminDistrict);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), @PostalCode);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), @Description);
+
+				if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+
+				var ls = new List<DBLocation>();
+				using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
+					while (await reader.ReadAsync().ConfigureAwait(false)) {
+						ls.Add(new DBLocation(reader));
+					}
+				}
+				return ls;
+			}
+		}
+
+		public static IEnumerable<DBLocation> SP_Locations_Search(CoreContext ctx,
+																						long? @ParentLocationID = null,
+																						string @Name = null,
+																						string @AddressLine = null,
+																						string @Locality = null,
+																						string @AdminDistrict = null,
+																						string @PostalCode = null,
+																						string @Description = null) {
+
+			using (SqlConnection conn = new SqlConnection(ctx.ConnStrings.dbUniHangoutsRead))
+			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), @ParentLocationID);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), @Name);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), @AddressLine);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), @Locality);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), @AdminDistrict);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), @PostalCode);
+				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), @Description);
+
+				if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+				using (SqlDataReader reader = cmd.ExecuteReader()) {
+					while (reader.Read()) {
+						yield return new DBLocation(reader);
+					}
+				}
+			}
 		}
 
 

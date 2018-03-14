@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using ZMBA;
 
 namespace UniEvents.Core {
 
@@ -11,21 +12,34 @@ namespace UniEvents.Core {
 		private static RNGCryptoServiceProvider _rngCryptoProvider = new RNGCryptoServiceProvider();
 		private static SHA256CryptoServiceProvider _sha256CryptoProvider = new SHA256CryptoServiceProvider();
 
+      public static string GenerateRandomString(int length) {
+         byte[] bytes = new byte[length];
+         _rngCryptoProvider.GetBytes(bytes, 0, length);
+         string salt = Convert.ToBase64String(bytes, 0, length);
+         if(salt.Length >= length) { salt = salt.Substring(0, length); }
+         return salt;
+      }
+
 		public static (byte[], string) HashPassword256(string password, string salt = null) {
-			if(salt == null) {
-				byte[] bytes = new byte[20];
-				_rngCryptoProvider.GetBytes(bytes, 0, 20);
-				salt = Convert.ToBase64String(bytes, 0, 20);
-				if (salt.Length >= 20) { salt = salt.Substring(0, 19); }
-			}		
+			if(salt.IsEmpty()) { salt = GenerateRandomString(20); }		
 			return (_sha256CryptoProvider.ComputeHash(Encoding.UTF8.GetBytes(password + salt)), salt);
 		}
 
-		public static bool PasswordMatch(string password, string salt, byte[] hash) {
+      public static (byte[], string) CreateAPIKey256(string username) {
+         string salt = GenerateRandomString(50);
+         return (_sha256CryptoProvider.ComputeHash(Encoding.UTF8.GetBytes(salt + username)), salt);
+      }
+
+      public static bool VerifyHashMatch(string password, string salt, byte[] hash) {
 			return _sha256CryptoProvider.ComputeHash(Encoding.UTF8.GetBytes(password + salt)).SequenceEqual(hash);
 		}
 
-	}
+
+
+
+
+
+   }
 
 
 }

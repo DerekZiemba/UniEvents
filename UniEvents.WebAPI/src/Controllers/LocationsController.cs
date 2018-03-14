@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using System.Web.Http;
 
 using UniEvents.Core;
 using UniEvents.Core.ApiModels;
@@ -11,11 +11,9 @@ using UniEvents.Core.ApiModels;
 
 namespace UniEvents.WebAPI.Controllers {
 
-	[Produces("application/json")]
-	[Route("Locations")]
-	public class LocationsController : Controller {
+	public class LocationsController : ApiController {
 
-		[HttpGet, Route("search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
+		[HttpGet, Route("locations/search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
 		public IEnumerable<StreetAddress> Search(long? ParentLocationID = null,
 																string Name = null,
 																string AddressLine = null,
@@ -23,26 +21,28 @@ namespace UniEvents.WebAPI.Controllers {
 																string AdminDistrict = null,
 																string PostalCode = null,
 																string Description = null) {
-			var ls = StoredProcedures.Location.Search(ParentLocationID:ParentLocationID, Name:Name, AddressLine:AddressLine, Locality:Locality, AdminDistrict:AdminDistrict, PostalCode:PostalCode, Description:Description);
+			var ls = Core.DBModels.DBLocation.SP_Locations_Search(WebApiApplication.CoreContext, ParentLocationID:ParentLocationID, Name:Name, AddressLine:AddressLine, Locality:Locality, AdminDistrict:AdminDistrict, PostalCode:PostalCode, Description:Description);
 			foreach (Core.DBModels.DBLocation loc in ls) {
 				yield return ZMBA.Common.CopyPropsShallow(new Core.ApiModels.StreetAddress(), loc);
 			}
 		}
 
 
-		// POST: api/Locations
-		[HttpPost]
-		public void Post([FromBody]string value) {
+		[HttpPost, Route("locations/create")]
+		public async Task<StreetAddress> Create(StreetAddress address) {
+         Core.DBModels.DBLocation model = ZMBA.Common.CopyPropsShallow(new Core.DBModels.DBLocation(), address);
+         StreetAddress result = new StreetAddress();
+         try {
+            result.Success = await Core.DBModels.DBLocation.SP_Location_CreateAsync(WebApiApplication.CoreContext, model).ConfigureAwait(false); ;
+            if (result.Success) {
+               ZMBA.Common.CopyPropsShallow(result, model);
+            }            
+         } catch(Exception ex) {
+            result.Message = ex.Message;
+         }
+         return result;
 		}
 
-		// PUT: api/Locations/5
-		[HttpPut("{id}")]
-		public void Put(int id, [FromBody]string value) {
-		}
 
-		// DELETE: api/ApiWithActions/5
-		[HttpDelete("{id}")]
-		public void Delete(int id) {
-		}
 	}
 }

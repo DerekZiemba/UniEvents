@@ -6,29 +6,23 @@ using static ZMBA.Common;
 
 namespace UniEvents.Core.ApiModels {
 
-	public class StreetAddress {
-		private string _name;
-		private string _addressLine;
-		private string _locality; //city
-		private string _adminDistrict; //state
-		private string _postalCode;
-		private string _countryRegion;
-		private string _description;
-		private float _latitude;
-		private float _longitude;
+	public class StreetAddress : APIModelBase {
+		public string Name { get; set; }
+		public string AddressLine { get; set; }
+      public string Locality { get; set; }
+      public string AdminDistrict { get; set; }
+      public string PostalCode { get; set; }
+      public string CountryRegion { get; set; }
+      public string Description { get; set; }
+      public float Latitude { get; set; }
+      public float Longitude { get; set; }
 
-		public string Name { get => _name; set => _name = value; }
-		public string AddressLine { get => _addressLine; set => _addressLine = value; }
-		public string Locality { get => _locality; set => _locality = value; }
-		public string AdminDistrict { get => _adminDistrict; set => _adminDistrict = value; }
-		public string PostalCode { get => _postalCode; set => _postalCode = value; }
-		public string CountryRegion { get => _countryRegion; set => _countryRegion = value; }
-		public string Description { get => _description; set => _description = value; }
-		public float Latitude { get => _latitude; set => _latitude = value; }
-		public float Longitude { get => _longitude; set => _longitude = value; }
-
-		public StreetAddress() {}
+      public StreetAddress() {}
  
+      public bool IsValid() {
+         if (CountryRegion.IsNullOrWhitespace()) return false;
+         return true;
+      }
 
 		public override string ToString() => FormatAddress(Name, AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion);
 

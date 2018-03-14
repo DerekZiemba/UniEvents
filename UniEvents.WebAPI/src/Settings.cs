@@ -10,29 +10,20 @@ using System.IO;
 
 namespace UniEvents.WebAPI {
 
+   internal class ConnectionStrings : Core.IConnectionStrings {
+      public string dbUniHangoutsConfiguration { get; private set; }
+      public string dbUniHangoutsRead { get; private set; }
+      public string dbUniHangoutsWrite { get; private set; }
+      public string dbUniHangoutsReadWrite { get; private set; }
 
-	public static class Settings {
+      internal ConnectionStrings() {
+         dbUniHangoutsConfiguration = ConfigurationManager.ConnectionStrings["SqlDbUniHangoutsConnStr"].ConnectionString;
+         dbUniHangoutsRead = ConfigurationManager.ConnectionStrings["SqlDbUniHangoutsConnStr"].ConnectionString;
+         dbUniHangoutsWrite = ConfigurationManager.ConnectionStrings["SqlDbUniHangoutsConnStr"].ConnectionString;
+         dbUniHangoutsReadWrite = ConfigurationManager.ConnectionStrings["SqlDbUniHangoutsConnStr"].ConnectionString;
+      }
+   }
 
-		internal static string SqlDbUniHangoutsConnStr { get; private set; }
 
-		static Settings() {
-			SqlDbUniHangoutsConnStr = ConfigurationManager.AppSettings.Get(nameof(SqlDbUniHangoutsConnStr));
-
-			//Temporary because ConfigurationManager.AppSettings isn't working in dotnet Core apps apparently. 
-			using (FileStream fs = new FileStream("web.config", FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-				using (StreamReader reader = new StreamReader(fs, System.Text.Encoding.UTF8)) {
-					XmlDocument doc = new XmlDocument();
-					doc.Load(reader);
-					XmlNode appSettings = doc.SelectSingleNode("//configuration/appSettings");
-
-					var dict = appSettings.SelectNodes("add").Cast<XmlNode>().ToDictionary(n=>n.Attributes["key"].Value, n=>n.Attributes["value"].Value, StringComparer.OrdinalIgnoreCase);
-
-					SqlDbUniHangoutsConnStr = dict[nameof(SqlDbUniHangoutsConnStr)];
-
-				}
-			}
-
-		}
-	}
 
 }

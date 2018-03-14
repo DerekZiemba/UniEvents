@@ -5,14 +5,15 @@ GO
 USE [$(dbUniHangouts)]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Login]
-	@AccountID BIGINT,
 	@UserName VARCHAR(20),
-	@APIKey BINARY(256),
-	@LoginDate DATETIME
+   @APIKey VARCHAR(50),
+	@APIKeyHash BINARY(256),
+   @LoginDate DATETIME OUTPUT
 AS
 SET NOCOUNT ON;
 
+SET @LoginDate = GETUTCDATE();
 
-INSERT INTO dbo.Logins (AccountID, UserName, APIKey, LoginDate)
-	VALUES (@AccountID, @UserName, @APIKey, @LoginDate);
+INSERT INTO dbo.Logins (UserName, APIKey, APIKeyHash, LoginDate)
+	VALUES ( @UserName, @APIKey, @APIKeyHash, @LoginDate);
 GO

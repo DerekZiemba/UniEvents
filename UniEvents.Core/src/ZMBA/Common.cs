@@ -217,32 +217,6 @@ namespace ZMBA {
 			return cmd.Parameters.Add(param);
 		}
 
-		public static async Task<List<T>> ReadDataModelsAsync<T>(this SqlCommand cmd, Func<IDataReader, T> constructor, Int32 predictedRows = 4) {
-			if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-			List<T> ls = new List<T>(predictedRows);
-			using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
-				while (await reader.ReadAsync().ConfigureAwait(false)) {
-					ls.Add(constructor(reader));
-				}
-			}
-			return ls;
-		}
-
-		public static IEnumerable<T> ReadDataModels<T>(this SqlCommand cmd, Func<IDataReader, T> constructor) {
-			if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-			using (SqlDataReader reader = cmd.ExecuteReader()) {
-				while (reader.Read()) {
-					yield return constructor(reader);
-				}
-			}
-		}
-
-		public static async Task<int> ExecuteStoredProcedureAsync(this SqlCommand cmd) {
-			if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-			int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-			return rowsAffected;
-		}
-
 		public static byte[] GetBytes(this IDataRecord record, string name, int size) {
 			int ord = record.GetOrdinal(name);
 			if (record.IsDBNull(ord)) { return null; }
@@ -331,23 +305,6 @@ namespace ZMBA {
 			return record.IsDBNull(ord) ? null : (DateTime?)record.GetDateTime(ord);
 		}
 
-
-
-
-
-		//public static bool PullValue<T>(this IDataRecord record, string name, out T result, T @default = default(T)) where T : struct, IConvertible, IFormattable, IComparable {
-		//	System.Diagnostics.Contracts.Contract.Requires(typeof(T).IsEnum, "Must be Enum");
-		//	int ord = record.GetOrdinal(name);
-		//	if (record.IsDBNull(ord)) { result = @default; return false; }
-		//	Type ftype = record.GetFieldType(ord);
-		//	if (ftype == typeof(string)) {
-		//		result = (T)Enum.Parse(typeof(T), record.GetString(ord), true);
-		//		return true;
-		//	} else {
-		//		result = (T)record.GetValue(ord);
-		//		return true;
-		//	}
-		//}
 
 
 		#endregion
