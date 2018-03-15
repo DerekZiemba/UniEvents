@@ -19,30 +19,42 @@ namespace ZMBA {
 
 	public static partial class Common {
 
-		#region ************************************** Math ******************************************************
+      #region ************************************** Math ******************************************************
 
-		//public static bool IsBetween(this char value, char min, char max) => value > min && value < max;
-		//public static bool IsBetween(this SByte value, SByte min, SByte max) => value > min && value < max;
-		//public static bool IsBetween(this Int16 value, Int16 min, Int16 max) => value > min && value < max;
-		//public static bool IsBetween(this Int32 value, Int32 min, Int32 max) => value > min && value < max;
-		//public static bool IsBetween(this Int64 value, Int64 min, Int64 max) => value > min && value < max;
-		//public static bool IsBetween(this Byte value, Byte min, Byte max) => value > min && value < max;
-		//public static bool IsBetween(this UInt16 value, UInt16 min, UInt16 max) => value > min && value < max;
-		//public static bool IsBetween(this UInt32 value, UInt32 min, UInt32 max) => value > min && value < max;
-		//public static bool IsBetween(this UInt64 value, UInt64 min, UInt64 max) => value > min && value < max;
-		//public static bool IsBetween(this Single value, Single min, Single max) => value > min && value < max;
-		//public static bool IsBetween(this Double value, Double min, Double max) => value > min && value < max;
-		//public static bool IsBetween(this Decimal value, Decimal min, Decimal max) => value > min && value < max;
-		//public static bool IsBetween(this DateTime value, DateTime min, DateTime max) => value > min && value < max;
-
-
-		#endregion
+      //public static bool IsBetween(this char value, char min, char max) => value > min && value < max;
+      //public static bool IsBetween(this SByte value, SByte min, SByte max) => value > min && value < max;
+      //public static bool IsBetween(this Int16 value, Int16 min, Int16 max) => value > min && value < max;
+      //public static bool IsBetween(this Int32 value, Int32 min, Int32 max) => value > min && value < max;
+      //public static bool IsBetween(this Int64 value, Int64 min, Int64 max) => value > min && value < max;
+      //public static bool IsBetween(this Byte value, Byte min, Byte max) => value > min && value < max;
+      //public static bool IsBetween(this UInt16 value, UInt16 min, UInt16 max) => value > min && value < max;
+      //public static bool IsBetween(this UInt32 value, UInt32 min, UInt32 max) => value > min && value < max;
+      //public static bool IsBetween(this UInt64 value, UInt64 min, UInt64 max) => value > min && value < max;
+      //public static bool IsBetween(this Single value, Single min, Single max) => value > min && value < max;
+      //public static bool IsBetween(this Double value, Double min, Double max) => value > min && value < max;
+      //public static bool IsBetween(this Decimal value, Decimal min, Decimal max) => value > min && value < max;
+      //public static bool IsBetween(this DateTime value, DateTime min, DateTime max) => value > min && value < max;
 
 
+      #endregion
 
-		#region ************************************** String ******************************************************
 
-		[MethodImpl(AggressiveInlining)] public static bool IsNullOrWhitespace(this string str) => String.IsNullOrWhiteSpace(str);
+
+      #region ************************************** String ******************************************************
+
+      [Flags]
+      public enum SubstrOptions {
+         Default = 0,
+         /// <summary> Whether the sequence is included in the returned substring </summary>
+         IncludeSeq = 1 << 0,
+         /// <summary> OrdinalIgnoreCase </summary>
+         IgnoreCase = 1 << 1,
+         /// <summary> If operation fails, return the original input string. </summary>
+         RetInput = 1 << 2
+      }
+
+
+      [MethodImpl(AggressiveInlining)] public static bool IsNullOrWhitespace(this string str) => String.IsNullOrWhiteSpace(str);
 
 		[MethodImpl(AggressiveInlining)] public static bool IsEmpty(this string str) => String.IsNullOrEmpty(str);
 
@@ -85,13 +97,127 @@ namespace ZMBA {
 
 		public static string ToStringJoin(this IEnumerable<string> ienum, string separator = ", ") => String.Join(separator, from string x in ienum where !string.IsNullOrWhiteSpace(x) select x.Trim());
 
-		#endregion
+
+
+      public static string SubstrBefore(this string input, string seq, SubstrOptions opts = SubstrOptions.Default) {
+         if (input?.Length > 0 && seq?.Length > 0) {
+            int index = input.IndexOf(seq, (opts & SubstrOptions.IgnoreCase) > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            if (index >= 0) {
+               if ((opts & SubstrOptions.IncludeSeq) > 0) { index += seq.Length; }
+               return input.Substring(0, index);
+            }
+         }
+         return (opts & SubstrOptions.RetInput) > 0 ? input : null;
+      }
+      public static string SubstrBeforeLast(this string input, string seq, SubstrOptions opts = SubstrOptions.Default) {
+         if (input?.Length > 0 && seq?.Length > 0) {
+            int index = input.LastIndexOf(seq, (opts & SubstrOptions.IgnoreCase) > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            if (index >= 0) {
+               if ((opts & SubstrOptions.IncludeSeq) > 0) { index += seq.Length; }
+               return input.Substring(0, index);
+            }
+         }
+         return (opts & SubstrOptions.RetInput) > 0 ? input : null;
+      }
+      public static string SubstrAfter(this string input, string seq, SubstrOptions opts = SubstrOptions.Default) {
+         if (input?.Length > 0 && seq?.Length > 0) {
+            int index = input.IndexOf(seq, (opts & SubstrOptions.IgnoreCase) > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            if (index >= 0) {
+               if ((opts & SubstrOptions.IncludeSeq) == 0) { index += seq.Length; }
+               return input.Substring(index);
+            }
+         }
+         return (opts & SubstrOptions.RetInput) > 0 ? input : null;
+      }
+      public static string SubstrAfterLast(this string input, string seq, SubstrOptions opts = SubstrOptions.Default) {
+         if (input?.Length > 0 && seq?.Length > 0) {
+            int index = input.LastIndexOf(seq, (opts & SubstrOptions.IgnoreCase) > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            if (index >= 0) {
+               if ((opts & SubstrOptions.IncludeSeq) == 0) { index += seq.Length; }
+               return input.Substring(index);
+            }
+         }
+         return (opts & SubstrOptions.RetInput) > 0 ? input : null;
+      }
+
+
+      public static string SubstrBefore(this string input, string[] sequences, SubstrOptions opts = SubstrOptions.Default) {
+         if (input?.Length > 0 && sequences?.Length > 0) {
+            int idx = input.Length;
+            for (int i = 0; i < sequences.Length; i++) {
+               string seq = sequences[i];
+               if (seq?.Length > 0) {
+                  int pos = input.IndexOf(seq, 0, idx, (opts & SubstrOptions.IgnoreCase) > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+                  if (pos >= 0 && pos <= idx) {
+                     if ((opts & SubstrOptions.IncludeSeq) > 0) { pos += seq.Length; }
+                     idx = pos;
+                  }
+               }
+            }
+            return input.Substring(0, idx);
+         }
+         return (opts & SubstrOptions.RetInput) > 0 ? input : null;
+      }
+      public static string SubstrBeforeLast(this string input, string[] sequences, SubstrOptions opts = SubstrOptions.Default) {
+         if (input?.Length > 0 && sequences?.Length > 0) {
+            int idx = input.Length;
+            for (int i = 0; i < sequences.Length; i++) {
+               string seq = sequences[i];
+               if (seq?.Length > 0) {
+                  int pos = input.LastIndexOf(seq, idx, idx, (opts & SubstrOptions.IgnoreCase) > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+                  if (pos >= 0 && pos <= idx) {
+                     if ((opts & SubstrOptions.IncludeSeq) > 0) { pos += seq.Length; }
+                     idx = pos;
+                  }
+               }
+            }
+            return input.Substring(0, idx);
+         }
+         return (opts & SubstrOptions.RetInput) > 0 ? input : null;
+      }
+      public static string SubstrAfter(this string input, string[] sequences, SubstrOptions opts = SubstrOptions.Default) {
+         if (input?.Length > 0 && sequences?.Length > 0) {
+            int idx = 0;
+            for (int i = 0; i < sequences.Length; i++) {
+               string seq = sequences[i];
+               if (seq?.Length > 0) {
+                  int pos = input.IndexOf(seq, idx, input.Length - idx, (opts & SubstrOptions.IgnoreCase) > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+                  if (pos >= idx && pos <= input.Length) {
+                     if ((opts & SubstrOptions.IncludeSeq) == 0) { pos += seq.Length; }
+                     idx = pos;
+                  }
+               }
+            }
+            return input.Substring(idx);
+         }
+         return (opts & SubstrOptions.RetInput) > 0 ? input : null;
+      }
+      public static string SubstrAfterLast(this string input, string[] sequences, SubstrOptions opts = SubstrOptions.Default) {
+         if (input?.Length > 0 && sequences?.Length > 0) {
+            int idx = 0;
+            for (int i = 0; i < sequences.Length; i++) {
+               string seq = sequences[i];
+               if (seq?.Length > 0) {
+                  int pos = input.LastIndexOf(seq, idx, idx, (opts & SubstrOptions.IgnoreCase) > 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+                  if (pos >= idx && pos <= input.Length) {
+                     if ((opts & SubstrOptions.IncludeSeq) == 0) { pos += seq.Length; }
+                     idx = pos;
+                  }
+               }
+            }
+            return input.Substring(idx);
+         }
+         return (opts & SubstrOptions.RetInput) > 0 ? input : null;
+      }
+
+
+      #endregion
 
 
 
-		#region ************************************** REGEX ******************************************************
+      #region ************************************** REGEX ******************************************************
 
-		public static IEnumerable<Match> GetMatches(this Regex rgx, string input) {
+      public static IEnumerable<Match> GetMatches(this Regex rgx, string input) {
 			foreach (Match match in rgx.Matches(input)) {
 				if (match.Index >= 0 && match.Length > 0) {
 					yield return match;

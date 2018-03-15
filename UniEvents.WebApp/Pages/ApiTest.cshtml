@@ -1,0 +1,71 @@
+﻿@page
+@model UniEvents.WebApp.Pages.ApiTestModel
+@{
+   ViewData["Title"] = "ApiTest";
+   Layout = "~/Pages/_Layout.cshtml";
+}
+@section Scripts {
+   <script src="~/bundles/page-apitest.es5.js" asp-append-version="true"></script>
+}
+
+
+<style>
+   .split-pane { min-height: 500px; }
+   .left-pane{ position:relative; left:0px; width:45%; float:left; }
+   .right-pane{position:relative; right:0px; width:45%; float:right; }
+   .right-pane label {display: block; }
+   textarea{width:99%; height: 100%; }
+   #APITest li { text-align: right; display:inline-flex; justify-content: flex-end; padding-left:0; overflow:hidden; width: 100%; margin-bottom: 8px; }
+   #APITest li label { text-align: right; margin-right:10px; width:160px; }
+   #APITest li input, #APITest li select { flex-grow: 1; }
+</style>
+
+<h2>ApiTest</h2>
+
+
+
+<div id="APITest">
+
+   <div id="divSelector" style="width:100%;">
+      <ul>
+         <li>
+            <label>Select a Method to test: </label>
+            <select id="webMethodSelect">
+               <option>Select Method</option>
+            </select>
+         </li>
+         <li>
+            <label>Template:</label>
+            <input id="routeTemplate" type="text" readonly="readonly" />
+         </li>
+         <li>
+            <label>Route:</label>
+            <input id="currentRoute" type="text" readonly="readonly" />
+         </li>
+         <li>
+            <input id="btnExecute" type="button" value="Execute" />
+         </li>
+      </ul>
+      <div>
+
+      </div>
+   </div>
+
+   <div class="split-pane">
+      <div class="left-pane">
+         <label>Inputs</label>
+         <ul id="InputParams">
+
+         </ul>
+      </div>
+      <div class="right-pane">
+         <label>Result JSON</label>
+         <textarea></textarea>
+      </div>
+   </div>
+</div>
+
+
+
+
+

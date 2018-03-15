@@ -16,6 +16,7 @@ using DBModels = UniEvents.Models.DBModels;
 namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
+   [ApiExplorerSettings(IgnoreApi = false, GroupName = nameof(AccountsController))]
    public class AccountsController : Controller {
 
       [HttpGet, Route("webapi/account/login/{UserName}/{Password}")]
@@ -36,7 +37,7 @@ namespace UniEvents.WebAPI.Controllers {
          return login;
       }
 
-      [HttpGet, Route("webapi/account/login/{username}/{apikey}")]
+      [HttpGet, Route("webapi/account/verifylogin/{username}/{apikey}")]
       public async Task<bool> VerifyLogin(string username, string apikey) {
          DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(Program.CoreContext, username, apikey).ConfigureAwait(false);
          return dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash);

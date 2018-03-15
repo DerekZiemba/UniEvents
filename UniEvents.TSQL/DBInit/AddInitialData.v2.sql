@@ -2,9 +2,8 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-USE [dbUniHangouts]
+USE [$(dbUniHangouts)]
 GO
-
 
 INSERT INTO [dbo].[Locations] (ParentLocationID, [Name], AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion, Latitude6x, Longitude6x, [Description])
 	 VALUES ( NULL, 'Solar System', NULL, NULL, NULL, NULL, 'Milky Way', NULL, NULL, 'Our Solar System');

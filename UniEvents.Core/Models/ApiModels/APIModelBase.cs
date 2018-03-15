@@ -6,8 +6,18 @@ using System.Threading.Tasks;
 
 namespace UniEvents.Models.ApiModels {
 
-   public class APIModelBase {
+   public interface IApiModel {
+      bool Success { get; set; }
+      string Message { get; set; }
+   }
+
+   public class APIModel : IApiModel {
       public bool Success { get; set; }
       public string Message { get; set; }
    }
+
+   public class APIModel<T> : APIModel {
+      public T Result { get; set; }
+   }
+
 }

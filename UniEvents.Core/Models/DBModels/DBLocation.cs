@@ -93,7 +93,35 @@ namespace UniEvents.Models.DBModels {
 			}
 		}
 
-		public static async Task<DBLocation> SP_Location_GetAsync(CoreContext ctx, long LocationID) {
+      public static bool SP_Location_Create(CoreContext ctx, DBLocation model) {
+         Contract.Requires<ArgumentNullException>(model != null, "DBLocation_Null");
+         Contract.Requires<ArgumentNullException>(!model.CountryRegion.IsNullOrWhitespace(), "CountryRegion cannot be null");
+         Contract.Requires<ArgumentException>(model.Latitude6x.HasValue ^ model.Longitude6x.HasValue, "Latitude and Longitude must both be null or both have a value.");
+         Contract.Requires<OverflowException>(!(Math.Abs(model.Latitude) > 90), "Latitude_Invalid");
+         Contract.Requires<OverflowException>(!(Math.Abs(model.Longitude) > 180), "Longitude_Invalid");
+
+         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
+            SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.Real, nameof(@LocationID), null);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), model.@Name);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), model.@AddressLine);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), model.@Locality);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), model.@AdminDistrict);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), model.@PostalCode);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@CountryRegion), model.CountryRegion);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), model.@Description);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Latitude), model.@Latitude);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Longitude), model.@Longitude);
+
+            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+            int rowsAffected = cmd.ExecuteNonQuery();
+            model.LocationID = (long)@LocationID.Value;
+            return rowsAffected == 1;
+         }
+      }
+
+      public static async Task<DBLocation> SP_Location_GetAsync(CoreContext ctx, long LocationID) {
 			Contract.Requires<ArgumentNullException>(LocationID > 0, "LocationID_Invalid");
 
 			using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
