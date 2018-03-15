@@ -1,34 +1,108 @@
 ﻿@page
 @model IndexModel
 @{
-	ViewData[ "Title" ] = "Home page";
+   ViewData["Title"] = "Home page";
 }
 
 @section Scripts {
-	<script src="~/bundles/page-index.es5.js" asp-append-version="true"></script>
+   <script src="~/bundles/page-index.es5.js" asp-append-version="true"></script>
 }
 
 
-<div id="IndexPage">
+<div class="HTMLTemplates">
+   <div id="Template_EventDetailsModal" class="modal modal_eventdetails">
+      <div class="modal_content">
+         <div class="title"></div>
+         <div class="caption"></div>
+         <div class="details">
+            <div class="ef_left">
+               <div class="host"></div>
+               <div class="location"></div>
+               <div class="address"></div>
+            </div>
+            <div class="ef_right">
+               <div class="times">
+                  <div class="time_start"><time></time></div>
+                  <div class="time_end"><time></time></div>
+               </div>
+               <div class="rsvp">
+                  <span class="rsvp_attending"></span>
+               </div>
+            </div>
+         </div>
+         <p class="description"></p>
+         <span class="btn close">Cancel</span>
+         <button class="btn join_event">Join Event</button>
+      </div>
+   </div>
 
-	<div id="LocationSearch">
-		Locaton Search Example
-		<li>
-			@*use at symbol to switch to codebehind mode so we can loop through and build our html.
-				In the code behind we got all the names of the params from thom the LocationsController.Search method.*@
-			@foreach(string name in Model.LocationFields) {
-				<ul><label> @name </label><input type="text" class="loc-param" data-name="@name" /></ul>
-			}
-			@*When the search button is clicked,
-				a javascript function in 'index-page.js' will use the param names to know which querystring params to use. *@
-			<ul><button type="button" data-route="@Model.SearchMethodPath">Perform Search</button></ul>
-			<ul><textarea></textarea></ul>
-		</li>
-
-	</div>
-
+   <div id="Template_FeedItem" class="ef_item">
+      <div class="title"></div>
+      <div class="caption"></div>
+      <div class="ef_details">
+         <div class="ef_left">
+            <div class="host"></div>
+            <div class="location"></div>
+            <div class="address"></div>
+         </div>
+         <div class="ef_right">
+            <div class="times">
+               <div class="time_start"><time></time></div>
+               <div class="time_end"><time></time></div>
+            </div>
+            <div class="rsvp">
+               <span class="rsvp_attending"></span>
+            </div>
+         </div>
+      </div>
+   </div>
 </div>
 
+<div id="HomePage">
+   <h2>HomePage</h2>
 
+   <!-- The hidden pop up event description page -->
+   <div id="EventModalContent" class="modal">
+   </div>
+
+   <input id="CreateEventButton" type="button" value="+" onclick="popUp()" />
+   <!--Diplays the feed for events, using info given by the Model,
+    dummy case is currently an int but i will spruce it up once i can access events and such-->
+
+   <div id="EventFeed">
+      <ul>
+         @foreach (int Event in Model.EventFeed) {
+            <li>
+               <div id="@Event" class="ef_item">
+                  <div class="title">Title of event</div>
+                  <div class="caption">Small caption of additional info</div>
+                  <div class="details">
+                     <div class="ef_left">
+                        <div class="host">UNL City Campus</div>
+                        <div class="location">UNL City Union</div>
+                        <div class="address">1400 R St. Lincoln, Ne</div>
+                     </div>
+                     <div class="ef_right">
+                        <div class="times">
+                           <div class="time_start"><time datetime="2018-03-11T14:00:00+00:00"></time></div>
+                           <div class="time_end"><time datetime="2018-03-11T16:00:00+00:00"></time></div>
+                        </div>
+                        <div class="rsvp">
+                           <span class="rsvp_attending">55</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </li>
+         }
+      </ul>
+
+
+   </div>
+
+   <!--currently only adds one more button , only should need to change html and add a for loop-->
+   <input id="TenMoreButton" type="button" value="TenMore" />
+
+</div>
 
 
