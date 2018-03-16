@@ -83,13 +83,6 @@
     <None Include="dbUniHangouts.dacpac" />
   </ItemGroup>
   <ItemGroup>
-    <ArtifactReference Include="DataTier\dbUniHangouts.dacpac">
-      <HintPath>DataTier\dbUniHangouts.dacpac</HintPath>
-      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
-      <DatabaseSqlCmdVariable>dbUniHangouts</DatabaseSqlCmdVariable>
-    </ArtifactReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Group_Create.sql" />
   </ItemGroup>
   <ItemGroup>
@@ -121,5 +114,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Event_Create.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include="dbUniHangouts.dacpac">
+      <HintPath>dbUniHangouts.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseSqlCmdVariable>dbUniHangouts</DatabaseSqlCmdVariable>
+    </ArtifactReference>
   </ItemGroup>
 </Project>
