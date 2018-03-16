@@ -316,17 +316,17 @@ namespace ZMBA {
 
 		#region ************************************** Reflection ******************************************************
 
-		public static TTo CopyFieldsShallow<TTo, TFrom>(TTo target, TFrom src) where TTo : class {
-			var shallowcopy = RuntimeCompiler.CompileShallowFieldCopier<TTo, TFrom>();
-			shallowcopy(target, src);
-			return target;
-		}
+		//public static TTo CopyFieldsShallow<TTo, TFrom>(TTo target, TFrom src) where TTo : class {
+		//	var shallowcopy = RuntimeCompiler.CompileShallowFieldCopier<TTo, TFrom>();
+		//	shallowcopy(target, src);
+		//	return target;
+		//}
 
-		public static TTo CopyPropsShallow<TTo, TFrom>(TTo target, TFrom src) where TTo : class {
-			var shallowcopy = RuntimeCompiler.CompileShallowPropertyCopier<TTo, TFrom>();
-			shallowcopy(target, src);
-			return target;
-		}
+		//public static TTo CopyPropsShallow<TTo, TFrom>(TTo target, TFrom src) where TTo : class {
+		//	var shallowcopy = RuntimeCompiler.CompileShallowPropertyCopier<TTo, TFrom>();
+		//	shallowcopy(target, src);
+		//	return target;
+		//}
 
 		#endregion
 

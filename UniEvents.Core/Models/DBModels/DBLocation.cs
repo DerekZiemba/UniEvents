@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,7 +50,19 @@ namespace UniEvents.Models.DBModels {
 
 		public DBLocation() { }
 
-		private DBLocation(IDataReader reader) {
+      public DBLocation(ApiModels.StreetAddress other) {
+         Name = other.Name;
+         AddressLine = other.AddressLine;
+         Locality = other.Locality;
+         AdminDistrict = other.AdminDistrict;
+         PostalCode = other.PostalCode;
+         CountryRegion = other.CountryRegion;
+         Description = other.Description;
+         Latitude = other.Latitude;
+         Longitude = other.Longitude;
+      }
+
+      private DBLocation(IDataReader reader) {
 			LocationID = reader.GetInt64(nameof(LocationID));
 			ParentLocationID = reader.GetNInt64(nameof(ParentLocationID));
 			Name = reader.GetString(nameof(Name));
@@ -66,15 +77,15 @@ namespace UniEvents.Models.DBModels {
 		}
 
 		public static async Task<bool> SP_Location_CreateAsync(CoreContext ctx, DBLocation model) {
-			Contract.Requires<ArgumentNullException>(model != null, "DBLocation_Null");
-			Contract.Requires<ArgumentNullException>(!model.CountryRegion.IsNullOrWhitespace(), "CountryRegion cannot be null");
-			Contract.Requires<ArgumentException>(model.Latitude6x.HasValue ^ model.Longitude6x.HasValue, "Latitude and Longitude must both be null or both have a value.");
-			Contract.Requires<OverflowException>(!(Math.Abs(model.Latitude) > 90), "Latitude_Invalid");
-			Contract.Requires<OverflowException>(!(Math.Abs(model.Longitude) > 180), "Longitude_Invalid");
+         if (model == null) { throw new ArgumentNullException("DBLocation_Null"); }
+         if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
+         if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }
+         if (Math.Abs(model.Latitude) > 90) { throw new OverflowException("Latitude_Invalid"); }
+         if (Math.Abs(model.Longitude) > 180) { throw new OverflowException("Longitude_Invalid"); }
 
-			using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
+         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
 			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
-				SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.Real, nameof(@LocationID), null);
+				SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(@LocationID), null);
 				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);			
 				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), model.@Name);
 				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), model.@AddressLine);
@@ -89,20 +100,20 @@ namespace UniEvents.Models.DBModels {
 				if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
 				int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 				model.LocationID = (long)@LocationID.Value;
-				return rowsAffected == 1;
-			}
+            return model.LocationID > 0;
+         }
 		}
 
       public static bool SP_Location_Create(CoreContext ctx, DBLocation model) {
-         Contract.Requires<ArgumentNullException>(model != null, "DBLocation_Null");
-         Contract.Requires<ArgumentNullException>(!model.CountryRegion.IsNullOrWhitespace(), "CountryRegion cannot be null");
-         Contract.Requires<ArgumentException>(model.Latitude6x.HasValue ^ model.Longitude6x.HasValue, "Latitude and Longitude must both be null or both have a value.");
-         Contract.Requires<OverflowException>(!(Math.Abs(model.Latitude) > 90), "Latitude_Invalid");
-         Contract.Requires<OverflowException>(!(Math.Abs(model.Longitude) > 180), "Longitude_Invalid");
+         if(model == null) { throw new ArgumentNullException("DBLocation_Null"); }
+         if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
+         if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }
+         if (Math.Abs(model.Latitude) > 90) { throw new OverflowException("Latitude_Invalid"); }
+         if (Math.Abs(model.Longitude) > 180) { throw new OverflowException("Longitude_Invalid"); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
-            SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.Real, nameof(@LocationID), null);
+            SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(@LocationID), null);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), model.@Name);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), model.@AddressLine);
@@ -117,12 +128,12 @@ namespace UniEvents.Models.DBModels {
             if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
             int rowsAffected = cmd.ExecuteNonQuery();
             model.LocationID = (long)@LocationID.Value;
-            return rowsAffected == 1;
+            return model.LocationID > 0;
          }
       }
 
       public static async Task<DBLocation> SP_Location_GetAsync(CoreContext ctx, long LocationID) {
-			Contract.Requires<ArgumentNullException>(LocationID > 0, "LocationID_Invalid");
+         if (LocationID <= 0) { throw new ArgumentNullException("LocationID_Invalid"); }
 
 			using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
 			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
@@ -140,14 +151,14 @@ namespace UniEvents.Models.DBModels {
 
 
 		public static async Task<bool> SP_Location_UpdateAsync(CoreContext ctx, DBLocation model) {
-			Contract.Requires<ArgumentNullException>(model != null, "DBLocation_Null");
-			Contract.Requires<ArgumentNullException>(model.LocationID > 0, "LocationID_Invalid");
-			Contract.Requires<ArgumentNullException>(!model.CountryRegion.IsNullOrWhitespace(), "CountryRegion cannot be null");
-			Contract.Requires<ArgumentException>(model.Latitude6x.HasValue ^ model.Longitude6x.HasValue, "Latitude and Longitude must both be null or both have a value.");
-			Contract.Requires<OverflowException>(!(Math.Abs(model.Latitude) > 90), "Latitude_Invalid");
-			Contract.Requires<OverflowException>(!(Math.Abs(model.Longitude) > 180), "Longitude_Invalid");
-
-			using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
+         if (model == null) { throw new ArgumentNullException("DBLocation_Null"); }
+         if (model.LocationID <= 0) { throw new ArgumentNullException("LocationID_Invalid"); }
+         if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
+         if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }
+         if (Math.Abs(model.Latitude) > 90) { throw new OverflowException("Latitude_Invalid"); }
+         if (Math.Abs(model.Longitude) > 180) { throw new OverflowException("Longitude_Invalid"); }
+         
+         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
 			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Update]", conn) { CommandType = CommandType.StoredProcedure }) {
 				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@LocationID), model.LocationID);
 				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);

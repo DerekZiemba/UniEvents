@@ -2,6 +2,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+SET XACT_ABORT ON  
 -- =============================================
 -- Author:		<Derek Ziemba>
 -- Create date: <2-12-2018>
@@ -24,10 +25,10 @@ CREATE OR ALTER PROCEDURE dbo.sp_Location_Update
 AS
 SET NOCOUNT ON;
 
-IF @LocationID <= 0 RAISERROR('LocationID_Invalid', 11, 1);
+IF @LocationID <= 0 THROW 50000, 'LocationID_Invalid', 1;
 
-IF @CountryRegion IS NULL RAISERROR('CountryRegion_NULL', 11, 1);
-IF (@Latitude IS NULL AND @Longitude IS NOT NULL) OR (@Latitude IS NOT NULL AND @Longitude IS NULL) RAISERROR('LATITUDELONGITUDE_INVALID', 11, 1);
+IF @CountryRegion IS NULL THROW 50000, 'CountryRegion_NULL', 1;
+IF (@Latitude IS NULL AND @Longitude IS NOT NULL) OR (@Latitude IS NOT NULL AND @Longitude IS NULL) THROW 50000, 'LATITUDELONGITUDE_INVALID', 1;
 
 DECLARE @Lat int = NULL, @Lon int = NULL;
 IF (@Latitude IS NOT NULL) SET @Lat = CAST((@Longitude*1000000) AS int);

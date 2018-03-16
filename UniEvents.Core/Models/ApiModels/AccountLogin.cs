@@ -6,12 +6,19 @@ using static ZMBA.Common;
 
 namespace UniEvents.Models.ApiModels {
 
-	public class AccountLogin : APIModel {
+	public class AccountLogin {
       public string UserName { get; set; }
       public string APIKey { get; set; }
       public DateTime LoginDate { get; set; }
 
       public AccountLogin() {}
 
-	}
+      public AccountLogin(DBModels.DBLogin login) {
+         UserName = login.UserName;
+         APIKey = login.APIKey;
+         LoginDate = login.LoginDate;
+      }
+
+
+   }
 }

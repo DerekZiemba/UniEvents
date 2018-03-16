@@ -8,13 +8,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace UniEvents.WebApp.Pages {
 	public class IndexModel : PageModel {
 
-		public string[] LocationFields { get; private set; }
+      public int[] EventFeed = { 1,2,3,4,5,6,7,8,9,10};  // we can use something else instead of array to store data
 
-		public string SearchMethodPath { get; private set; } = "/webapi/locations/search?";
-
-		public void OnGet() {
-
-			LocationFields = new []{ "ParentLocationID", "Name", "AddressLine", "Locality", "AdminDistrict", "PostalCode", "Description?" };
+      public void OnGet() {
 
 		}
 	}

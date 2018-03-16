@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading.Tasks;
 using UniEvents.Core;
@@ -17,7 +16,7 @@ namespace UniEvents.Models.DBModels {
       public Int64 AccountID { get; set; }
 
       [DBCol("LocationID", SqlDbType.BigInt, 1, true)]
-      public Int64 LocationID { get; set; }
+      public Int64? LocationID { get; set; }
 
       [DBCol("PasswordHash", SqlDbType.Binary, 256, true)]
       public byte[] PasswordHash { get; set; }
@@ -50,12 +49,13 @@ namespace UniEvents.Models.DBModels {
       public bool IsGroup { get; set; }
 
       [DBCol("VerifiedSchoolEmail", SqlDbType.Bit, 1, true)]
-      public bool VerifiedSchoolEmail { get; set; }
+      public bool? VerifiedSchoolEmail { get; set; }
 
       [DBCol("VerifiedContactEmail", SqlDbType.Bit, 1, true)]
-      public bool VerifiedContactEmail { get; set; }
+      public bool? VerifiedContactEmail { get; set; }
 
       public DBAccount() { }
+
 
       private DBAccount(IDataReader reader) {
          AccountID = reader.GetInt64(nameof(AccountID));
@@ -69,16 +69,16 @@ namespace UniEvents.Models.DBModels {
          SchoolEmail = reader.GetString(nameof(SchoolEmail));
          ContactEmail = reader.GetString(nameof(ContactEmail));
          IsGroup = reader.GetBoolean(nameof(IsGroup));
-         VerifiedSchoolEmail = reader.GetBoolean(nameof(VerifiedSchoolEmail));
-         VerifiedContactEmail = reader.GetBoolean(nameof(VerifiedContactEmail));
+         VerifiedSchoolEmail = reader.GetNBoolean(nameof(VerifiedSchoolEmail));
+         VerifiedContactEmail = reader.GetNBoolean(nameof(VerifiedContactEmail));
       }
 
 
       public static async Task<DBAccount> SP_Account_GetAsync(CoreContext ctx, long AccountID, string UserName = null) {
-         Contract.Requires<ArgumentException>((AccountID > 0) || !UserName.IsNullOrWhitespace(), "AccountID or UserName must be specified.");
+         if(AccountID <= 0 && UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("AccountID or UserName must be specified."); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@AccountID), AccountID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@UserName), @UserName);
 
@@ -93,11 +93,10 @@ namespace UniEvents.Models.DBModels {
       }
 
       public static async Task<bool> SP_Account_CreateAsync(CoreContext ctx, DBAccount model) {
-         Contract.Requires<ArgumentNullException>(model != null, "DBAccount_Null");
-         Contract.Requires<ArgumentException>(model.IsGroup, "Is a Group not a User.");
-         Contract.Requires<ArgumentNullException>(!model.UserName.IsNullOrWhitespace(), "UserName_Invalid");
-         Contract.Requires<ArgumentNullException>(!model.PasswordHash.IsEmpty(), "PasswordHash_Invalid");
-         Contract.Requires<ArgumentNullException>(!model.Salt.IsEmpty(), "Salt_Invalid");
+         if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
+         if (model.IsGroup) { throw new ArgumentException("Is a Group not a User."); }
+         if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
+         if (model.PasswordHash.IsEmpty() || model.Salt.IsEmpty()) { throw new ArgumentException("PasswordHash or Salt invalid."); }
 
          //TODO: Match params to properties
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
@@ -113,27 +112,26 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(SchoolEmail), model.SchoolEmail);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(ContactEmail), model.ContactEmail);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(PhoneNumber), model.PhoneNumber);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(IsGroup), model.IsGroup);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedSchoolEmail), model.VerifiedSchoolEmail);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedContactEmail), model.VerifiedContactEmail);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(IsGroup), model.IsGroup);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedSchoolEmail), model.VerifiedSchoolEmail);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedContactEmail), model.VerifiedContactEmail);
 
             if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
             int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
             model.AccountID = (long)AccountID.Value;
-            return rowsAffected == 1;
+            return model.AccountID > 0;
          }
       }
 
       public static async Task<bool> SP_Group_CreateAsync(CoreContext ctx, DBAccount model, long @GroupOwnerAccountID) {
-         Contract.Requires<ArgumentNullException>(model != null, "DBAccount_Null");
-         Contract.Requires<ArgumentException>(!model.IsGroup, "Is a User not a Group.");
-         Contract.Requires<ArgumentNullException>(@GroupOwnerAccountID > 0, "GroupOwnerAccountID_Invalid");
-         Contract.Requires<ArgumentNullException>(!model.UserName.IsNullOrWhitespace(), "UserName_Invalid");
-         Contract.Requires<ArgumentException>(model.PasswordHash.IsEmpty(), "Groups don't have Passwords");
-         Contract.Requires<ArgumentException>(model.Salt.IsEmpty(), "Groups don't have Passwords");
-         Contract.Requires<ArgumentException>(model.FirstName.IsNullOrWhitespace(), "Groups don't have FirstNames");
-         Contract.Requires<ArgumentException>(model.LastName.IsNullOrWhitespace(), "Groups don't have LastNames");
+         if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
+         if (!model.IsGroup) { throw new ArgumentException("Is a User not a Group."); }
+         if (@GroupOwnerAccountID <= 0) { throw new ArgumentNullException("GroupOwnerAccountID_Invalid"); }
+         if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
+         if (!model.PasswordHash.IsEmpty() || !model.Salt.IsEmpty()) { throw new ArgumentException("Groups don't have Passwords"); }
+         if (!model.FirstName.IsNullOrWhitespace()) { throw new ArgumentException("Groups don't have FirstNames"); }
+         if (!model.LastName.IsNullOrWhitespace()) { throw new ArgumentException("Groups don't have LastNames"); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Group_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
@@ -148,7 +146,7 @@ namespace UniEvents.Models.DBModels {
             int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
             model.AccountID = (long)@GroupID.Value;
-            return rowsAffected == 1;
+            return model.AccountID > 0;
          }
       }
 

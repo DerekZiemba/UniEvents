@@ -6,7 +6,7 @@ using static ZMBA.Common;
 
 namespace UniEvents.Models.ApiModels {
 
-	public class StreetAddress : APIModel {
+	public class StreetAddress {
 		public string Name { get; set; }
 		public string AddressLine { get; set; }
       public string Locality { get; set; }
@@ -14,11 +14,34 @@ namespace UniEvents.Models.ApiModels {
       public string PostalCode { get; set; }
       public string CountryRegion { get; set; }
       public string Description { get; set; }
-      public float Latitude { get; set; }
-      public float Longitude { get; set; }
+      public double Latitude { get; set; }
+      public double Longitude { get; set; }
 
       public StreetAddress() {}
- 
+
+      public StreetAddress(StreetAddress other) {
+         Name = other.Name;
+         AddressLine = other.AddressLine;
+         Locality = other.Locality;
+         AdminDistrict = other.AdminDistrict;
+         PostalCode = other.PostalCode;
+         CountryRegion = other.CountryRegion;
+         Description = other.Description;
+         Latitude = other.Latitude;
+         Longitude = other.Longitude;
+      }
+      public StreetAddress(DBModels.DBLocation other) {
+         Name = other.Name;
+         AddressLine = other.AddressLine;
+         Locality = other.Locality;
+         AdminDistrict = other.AdminDistrict;
+         PostalCode = other.PostalCode;
+         CountryRegion = other.CountryRegion;
+         Description = other.Description;
+         Latitude = other.Latitude;
+         Longitude = other.Longitude;
+      }
+
       public bool IsValid() {
          if (CountryRegion.IsNullOrWhitespace()) return false;
          return true;

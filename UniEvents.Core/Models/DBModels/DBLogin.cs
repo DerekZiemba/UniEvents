@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics.Contracts;
-using System.Text;
 using System.Threading.Tasks;
 using UniEvents.Core;
 using ZMBA;
@@ -27,17 +25,16 @@ namespace UniEvents.Models.DBModels {
       public DBLogin() { }
 
       public DBLogin(IDataReader reader) {
-         DBLogin model = new DBLogin();
-         model.UserName = reader.GetString(nameof(UserName));
-         model.APIKey = reader.GetString(nameof(APIKey));
-         model.APIKeyHash = reader.GetBytes(nameof(APIKey), 32);
-         model.LoginDate = reader.GetDateTime(nameof(LoginDate));
+         UserName = reader.GetString(nameof(UserName));
+         APIKey = reader.GetString(nameof(APIKey));
+         APIKeyHash = reader.GetBytes(nameof(APIKeyHash), 32);
+         LoginDate = reader.GetDateTime(nameof(LoginDate));
       }
 
       public static async Task<bool> SP_Account_LoginAsync(CoreContext ctx, DBLogin model) {
-         Contract.Requires<ArgumentNullException>(!model.UserName.IsNullOrWhitespace(), "UserName_Invalid");
-         Contract.Requires<ArgumentNullException>(!model.APIKey.IsEmpty(), "APIKey_Invalid");
-         Contract.Requires<ArgumentNullException>(!model.APIKeyHash.IsEmpty(), "APIKeyHash_Invalid");
+         if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
+         if (model.APIKey.IsNullOrWhitespace()) { throw new ArgumentNullException("APIKey_Invalid"); }
+         if (model.APIKeyHash.IsEmpty()) { throw new ArgumentNullException("APIKeyHash_Invalid"); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Login]", conn) { CommandType = CommandType.StoredProcedure }) {
@@ -51,14 +48,14 @@ namespace UniEvents.Models.DBModels {
 
             model.LoginDate = (DateTime)date.Value;
 
-            return rowsAffected == 1;
+            return model.LoginDate > DateTime.UtcNow.AddMinutes(-1) && model.LoginDate < DateTime.UtcNow.AddMinutes(1);
          }
       }
 
       public static async Task<DBLogin> SP_Account_Login_GetAsync(CoreContext ctx, string UserName, string APIKey) {
-         Contract.Requires<ArgumentNullException>(!UserName.IsNullOrWhitespace(), "UserName_Invalid");
-         Contract.Requires<ArgumentNullException>(!APIKey.IsEmpty(), "APIKey_Invalid");
-
+         if (UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
+         if (APIKey.IsNullOrWhitespace()) { throw new ArgumentNullException("APIKey_Invalid"); }
+         
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Login_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), UserName);

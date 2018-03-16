@@ -10,8 +10,7 @@ namespace UniEvents.Models.DBModels {
 
 	public class DBEventFeedItem {
 
-		public DBEventFeedItem() { }
-
+	
 		[DBCol("EventID", SqlDbType.BigInt, 1, false, isAutoValue:true)]
 		public Int64 EventID { get; set; }
 
@@ -36,18 +35,17 @@ namespace UniEvents.Models.DBModels {
 		[DBCol("Caption", SqlDbType.NVarChar, 160, false)]
 		public string Caption { get; set; }
 
+      public DBEventFeedItem() { }
 
-		public static DBEventFeedItem CreateModel(IDataReader reader) {
-			DBEventFeedItem model = new DBEventFeedItem();
-			model.EventID = reader.GetInt64(nameof(EventID));
-			model.EventTypeID = reader.GetInt32(nameof(EventTypeID));
-			model.DateStart = reader.GetDateTime(nameof(DateStart));
-			model.DateEnd = reader.GetDateTime(nameof(DateEnd));
-			model.AccountID = reader.GetInt64(nameof(AccountID));
-			model.LocationID = reader.GetInt64(nameof(LocationID));
-			model.Title = reader.GetString(nameof(Title));
-			model.Caption = reader.GetString(nameof(Caption));
-			return model;
+		public DBEventFeedItem(IDataReader reader) {
+			EventID = reader.GetInt64(nameof(EventID));
+			EventTypeID = reader.GetInt32(nameof(EventTypeID));
+			DateStart = reader.GetDateTime(nameof(DateStart));
+			DateEnd = reader.GetDateTime(nameof(DateEnd));
+			AccountID = reader.GetInt64(nameof(AccountID));
+			LocationID = reader.GetInt64(nameof(LocationID));
+			Title = reader.GetString(nameof(Title));
+			Caption = reader.GetString(nameof(Caption));
 		}
 
 	}
