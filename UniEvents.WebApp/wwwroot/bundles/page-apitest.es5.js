@@ -53,6 +53,7 @@
             metadata.params.forEach(function (param) {
                 inputParams.appendChild(param.elem);
             });
+            handleParamChanage();
         }
         else {
             btnExecute.disabled = true;

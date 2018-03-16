@@ -13,5 +13,12 @@ namespace UniEvents.Models.ApiModels {
 
       public AccountLogin() {}
 
-	}
+      public AccountLogin(DBModels.DBLogin login) {
+         UserName = login.UserName;
+         APIKey = login.APIKey;
+         LoginDate = login.LoginDate;
+      }
+
+
+   }
 }

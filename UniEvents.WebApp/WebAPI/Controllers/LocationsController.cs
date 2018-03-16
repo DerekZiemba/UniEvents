@@ -30,7 +30,7 @@ namespace UniEvents.WebAPI.Controllers {
          result.Result = new List<StreetAddress>();
          try {
             foreach (DBModels.DBLocation loc in DBModels.DBLocation.SP_Locations_Search(Program.CoreContext, ParentLocationID: ParentLocationID, Name: Name, AddressLine: AddressLine, Locality: Locality, AdminDistrict: AdminDistrict, PostalCode: PostalCode, Description: Description)) {
-               result.Result.Add(ZMBA.Common.CopyPropsShallow(new StreetAddress(), loc));
+               result.Result.Add(new StreetAddress(loc));
             }
             result.Success = true;
          } catch(Exception ex) {
@@ -43,13 +43,12 @@ namespace UniEvents.WebAPI.Controllers {
       [HttpPost, Route("webapi/locations/create")]
       public ApiResult<StreetAddress> Create(StreetAddress address) {
          var result = new ApiResult<StreetAddress>();
-         StreetAddress streetAddress = new StreetAddress();
-     
          try {
-            DBModels.DBLocation dbLocation = ZMBA.Common.CopyPropsShallow(new DBModels.DBLocation(), address);
+            DBModels.DBLocation dbLocation = new DBModels.DBLocation(address);
             result.Success = DBModels.DBLocation.SP_Location_Create(Program.CoreContext, dbLocation);
-            if (result.Success) {
-              result.Result = ZMBA.Common.CopyPropsShallow(streetAddress, dbLocation);
+            result.Result = new StreetAddress(dbLocation);
+            if (!result.Success) {
+               result.Message = "Failed for Unknown Reason";
             }
          } catch (Exception ex) {
             result.Message = ex.Message;

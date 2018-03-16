@@ -65,10 +65,11 @@
          metadata.params.forEach(param => {
             inputParams.appendChild(param.elem);
          });
+
+         handleParamChanage();
       } else {
          btnExecute.disabled = true;
       }
-
    }
 
    function handleParamChanage() {
@@ -82,7 +83,10 @@
       for (var i = 0, len = params.length; i < len; i++) {
          var param = params[i];
          if (param.elemInput.value) {
-             if (param.source === "QueryString" || param.source === "Url") {
+            //if (param.source === "Url") {
+            //   path += "/" + encodeURI(param.elemInput.value);
+            //} else
+               if (param.source === "QueryString" || param.source === "Url") {
                 querystring += param.name + "=" + encodeURI(param.elemInput.value) + "&";
             } else {
                if (param.name.indexOf('.') >= 0) {

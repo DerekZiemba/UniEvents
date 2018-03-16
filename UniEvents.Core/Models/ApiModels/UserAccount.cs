@@ -7,8 +7,6 @@ using static ZMBA.Common;
 namespace UniEvents.Models.ApiModels {
 
 	public class UserAccount {
-      public Int64 AccountID { get; set; }
-      public string Password { get; set; }
       public string UserName { get; set; }
       public string DisplayName { get; set; }
       public string FirstName { get; set; }
@@ -22,6 +20,19 @@ namespace UniEvents.Models.ApiModels {
 
 
       public UserAccount() {}
+
+      public UserAccount(DBModels.DBAccount acct, StreetAddress loc) {
+         UserName = acct.UserName;
+         DisplayName = acct.DisplayName;
+         FirstName = acct.FirstName;
+         LastName = acct.LastName;
+         SchoolEmail = acct.SchoolEmail;
+         ContactEmail = acct.ContactEmail;
+         PhoneNumber = acct.PhoneNumber;
+         VerifiedContactEmail = acct.VerifiedContactEmail;
+         VerifiedSchoolEmail = acct.VerifiedSchoolEmail;
+         Location = loc;
+      }
 
 
 	}
