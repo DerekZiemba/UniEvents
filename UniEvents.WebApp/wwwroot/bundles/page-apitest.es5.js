@@ -67,11 +67,8 @@
         for (var i = 0, len = params.length; i < len; i++) {
             var param = params[i];
             if (param.elemInput.value) {
-                if (param.source === 'Url') {
-                    path = path.trim('/') + '/' + param.elemInput.value;
-                }
-                else if (param.source === "QueryString") {
-                    querystring += param.name + "=" + param.elemInput.value + "&";
+                if (param.source === "QueryString" || param.source === "Url") {
+                    querystring += param.name + "=" + encodeURI(param.elemInput.value) + "&";
                 }
                 else {
                     if (param.name.indexOf('.') >= 0) {
@@ -96,7 +93,7 @@
                 }
             }
         }
-        route.value = (path + querystring.trim("&")).trim("?");
+        route.value = (path + querystring).replace(/(\?|\/|&)+$/, '');
         postBody.value = JSON.stringify(oBody, null, '\t');
     }
     btnClear.addEventListener('click', function () {
