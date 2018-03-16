@@ -92,7 +92,7 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      public static async Task<bool> SP_Account_CreateAsync(CoreContext ctx, DBAccount model) {
+      public static bool SP_Account_Create(CoreContext ctx, DBAccount model) {
          if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
          if (model.IsGroup) { throw new ArgumentException("Is a Group not a User."); }
          if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
@@ -116,8 +116,8 @@ namespace UniEvents.Models.DBModels {
             //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedSchoolEmail), model.VerifiedSchoolEmail);
             //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedContactEmail), model.VerifiedContactEmail);
 
-            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-            int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+            int rowsAffected = cmd.ExecuteNonQuery();
 
             model.AccountID = (long)AccountID.Value;
             return model.AccountID > 0;

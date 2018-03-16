@@ -76,34 +76,6 @@ namespace UniEvents.Models.DBModels {
 			Description = reader.GetString(nameof(Description));
 		}
 
-		public static async Task<bool> SP_Location_CreateAsync(CoreContext ctx, DBLocation model) {
-         if (model == null) { throw new ArgumentNullException("DBLocation_Null"); }
-         if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
-         if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }
-         if (Math.Abs(model.Latitude) > 90) { throw new OverflowException("Latitude_Invalid"); }
-         if (Math.Abs(model.Longitude) > 180) { throw new OverflowException("Longitude_Invalid"); }
-
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
-			using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
-				SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(@LocationID), null);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);			
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), model.@Name);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), model.@AddressLine);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), model.@Locality);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), model.@AdminDistrict);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), model.@PostalCode);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@CountryRegion), model.CountryRegion);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), model.@Description);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Latitude), model.@Latitude);
-				cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Longitude), model.@Longitude);
-
-				if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-				int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-				model.LocationID = (long)@LocationID.Value;
-            return model.LocationID > 0;
-         }
-		}
-
       public static bool SP_Location_Create(CoreContext ctx, DBLocation model) {
          if(model == null) { throw new ArgumentNullException("DBLocation_Null"); }
          if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
@@ -114,7 +86,7 @@ namespace UniEvents.Models.DBModels {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Location_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
             SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(@LocationID), null);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);
+            SqlParameter @ParentLocationID = cmd.AddParam(ParameterDirection.InputOutput, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), model.@Name);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), model.@AddressLine);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), model.@Locality);
@@ -122,12 +94,13 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), model.@PostalCode);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@CountryRegion), model.CountryRegion);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), model.@Description);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Latitude), model.@Latitude);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Longitude), model.@Longitude);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Latitude6x), model.@Latitude6x);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Longitude6x), model.@Longitude6x);
 
             if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
             int rowsAffected = cmd.ExecuteNonQuery();
             model.LocationID = (long)@LocationID.Value;
+            model.ParentLocationID = (long?)ParentLocationID.Value;
             return model.LocationID > 0;
          }
       }

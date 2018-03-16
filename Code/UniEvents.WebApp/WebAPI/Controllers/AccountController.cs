@@ -49,23 +49,28 @@ namespace UniEvents.WebAPI.Controllers {
          return result;
       }
 
+
       [HttpGet, Route("webapi/account/verifylogin/{username?}/{apikey?}")]
-      public async Task<ApiResult<bool>> VerifyLogin(string username, string apikey) {
-         var result = new ApiResult<bool>();
+      public async Task<ApiResult<VerifiedLogin>> VerifyLogin(string username, string apikey) {
+         var result = new ApiResult<VerifiedLogin>();
          try {
             DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(Program.CoreContext, username, apikey).ConfigureAwait(false);
-            result.Result = dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash);
+            VerifiedLogin verified = new VerifiedLogin(){
+               IsLoggedIn= dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash),
+               LoginDate = dbLogin?.LoginDate
+            };
+            result.Result = verified;
+            result.Success = true;
+            
          } catch(Exception ex) {
             result.Message = ex.Message + " \n " + ex.InnerException?.Message;
          }
          return result;
       }
 
-      [HttpPost, Route("webapi/account/create/{password?}")]
-      public async Task<ApiResult<UserAccount>> Create(UserAccount user, string password) {
-         Task<bool> addLocationTask = null;
-         Task<bool> createAccountTask = null;
 
+      [HttpPost, Route("webapi/account/create/{password?}")]
+      public ApiResult<UserAccount> Create(UserAccount user, string password) {
          if (user == null) {
             return new ApiResult<UserAccount>(false, "Account Null.");
          }
@@ -88,30 +93,22 @@ namespace UniEvents.WebAPI.Controllers {
          };
 
          (dbAccount.PasswordHash, dbAccount.Salt) = Crypto.HashPassword256(password);
-
-         ApiResult<UserAccount> result = new ApiResult<UserAccount>();
-
          try {
-            addLocationTask = DBModels.DBLocation.SP_Location_CreateAsync(Program.CoreContext, dbLocation);//runs method on background thread and continues.
-            createAccountTask = DBModels.DBAccount.SP_Account_CreateAsync(Program.CoreContext, dbAccount);
+            if(!DBModels.DBLocation.SP_Location_Create(Program.CoreContext, dbLocation)) {
+               return new ApiResult<UserAccount>(false, "Failed to create location.");
+            } 
 
-            await Task.WhenAll(addLocationTask, createAccountTask).ConfigureAwait(false); //wait for background tasks to complete        
-            result.Success = createAccountTask.Result && addLocationTask.Result;
-            if (createAccountTask.Result || addLocationTask.Result) {
-               result.Result = new UserAccount(dbAccount, new StreetAddress(dbLocation));
+            dbAccount.LocationID = dbLocation.LocationID;
+            if (!DBModels.DBAccount.SP_Account_Create(Program.CoreContext, dbAccount)) {
+               return new ApiResult<UserAccount>(false, "Failed to create account.");
             }
-            if (!createAccountTask.Result) {
-               result.Message += " Failed to create account. ";
-            }
-            if (!addLocationTask.Result) {
-               result.Message += " Failed to create location. ";
-            }
+
+            return new ApiResult<UserAccount>(false, "", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
 
          } catch (Exception ex) {
             //TODO: If this happens, we need to roll back changes to database. Such as if the location was successfully added but the account was not or vice versa.
-            result.Message = ex.Message + " \n " + ex.InnerException?.Message;
+            return new ApiResult<UserAccount>(false, ex.Message + " \n " + ex.InnerException?.Message);
          }
-         return result;
       }
 
 
