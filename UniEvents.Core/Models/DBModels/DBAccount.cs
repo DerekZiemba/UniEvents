@@ -16,7 +16,7 @@ namespace UniEvents.Models.DBModels {
       public Int64 AccountID { get; set; }
 
       [DBCol("LocationID", SqlDbType.BigInt, 1, true)]
-      public Int64 LocationID { get; set; }
+      public Int64? LocationID { get; set; }
 
       [DBCol("PasswordHash", SqlDbType.Binary, 256, true)]
       public byte[] PasswordHash { get; set; }
@@ -49,10 +49,10 @@ namespace UniEvents.Models.DBModels {
       public bool IsGroup { get; set; }
 
       [DBCol("VerifiedSchoolEmail", SqlDbType.Bit, 1, true)]
-      public bool VerifiedSchoolEmail { get; set; }
+      public bool? VerifiedSchoolEmail { get; set; }
 
       [DBCol("VerifiedContactEmail", SqlDbType.Bit, 1, true)]
-      public bool VerifiedContactEmail { get; set; }
+      public bool? VerifiedContactEmail { get; set; }
 
       public DBAccount() { }
 
@@ -69,8 +69,8 @@ namespace UniEvents.Models.DBModels {
          SchoolEmail = reader.GetString(nameof(SchoolEmail));
          ContactEmail = reader.GetString(nameof(ContactEmail));
          IsGroup = reader.GetBoolean(nameof(IsGroup));
-         VerifiedSchoolEmail = reader.GetBoolean(nameof(VerifiedSchoolEmail));
-         VerifiedContactEmail = reader.GetBoolean(nameof(VerifiedContactEmail));
+         VerifiedSchoolEmail = reader.GetNBoolean(nameof(VerifiedSchoolEmail));
+         VerifiedContactEmail = reader.GetNBoolean(nameof(VerifiedContactEmail));
       }
 
 
@@ -78,7 +78,7 @@ namespace UniEvents.Models.DBModels {
          if(AccountID <= 0 && UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("AccountID or UserName must be specified."); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@AccountID), AccountID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@UserName), @UserName);
 
@@ -112,15 +112,15 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(SchoolEmail), model.SchoolEmail);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(ContactEmail), model.ContactEmail);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(PhoneNumber), model.PhoneNumber);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(IsGroup), model.IsGroup);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedSchoolEmail), model.VerifiedSchoolEmail);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedContactEmail), model.VerifiedContactEmail);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(IsGroup), model.IsGroup);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedSchoolEmail), model.VerifiedSchoolEmail);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedContactEmail), model.VerifiedContactEmail);
 
             if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
             int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
             model.AccountID = (long)AccountID.Value;
-            return rowsAffected == 1;
+            return model.AccountID > 0;
          }
       }
 
@@ -146,7 +146,7 @@ namespace UniEvents.Models.DBModels {
             int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
             model.AccountID = (long)@GroupID.Value;
-            return rowsAffected == 1;
+            return model.AccountID > 0;
          }
       }
 

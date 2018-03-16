@@ -13,7 +13,7 @@ namespace UniEvents.Models.ApiModels {
 
    public class ApiResult : IApiResult {
       public bool Success { get; set; }
-      public string Message { get; set; }
+      public string Message { get; set; } = "";
    }
 
    public class ApiResult<T> : ApiResult {

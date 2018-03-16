@@ -25,11 +25,10 @@ namespace UniEvents.Models.DBModels {
       public DBLogin() { }
 
       public DBLogin(IDataReader reader) {
-         DBLogin model = new DBLogin();
-         model.UserName = reader.GetString(nameof(UserName));
-         model.APIKey = reader.GetString(nameof(APIKey));
-         model.APIKeyHash = reader.GetBytes(nameof(APIKey), 32);
-         model.LoginDate = reader.GetDateTime(nameof(LoginDate));
+         UserName = reader.GetString(nameof(UserName));
+         APIKey = reader.GetString(nameof(APIKey));
+         APIKeyHash = reader.GetBytes(nameof(APIKeyHash), 32);
+         LoginDate = reader.GetDateTime(nameof(LoginDate));
       }
 
       public static async Task<bool> SP_Account_LoginAsync(CoreContext ctx, DBLogin model) {
@@ -49,7 +48,7 @@ namespace UniEvents.Models.DBModels {
 
             model.LoginDate = (DateTime)date.Value;
 
-            return rowsAffected == 1;
+            return model.LoginDate > DateTime.UtcNow.AddMinutes(-1) && model.LoginDate < DateTime.UtcNow.AddMinutes(1);
          }
       }
 

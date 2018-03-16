@@ -29,8 +29,8 @@ namespace UniEvents.Models.ApiModels {
          SchoolEmail = acct.SchoolEmail;
          ContactEmail = acct.ContactEmail;
          PhoneNumber = acct.PhoneNumber;
-         VerifiedContactEmail = acct.VerifiedContactEmail;
-         VerifiedSchoolEmail = acct.VerifiedSchoolEmail;
+         VerifiedContactEmail = acct.VerifiedContactEmail.UnBox();
+         VerifiedSchoolEmail = acct.VerifiedSchoolEmail.UnBox();
          Location = loc;
       }
 

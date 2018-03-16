@@ -2,6 +2,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+SET XACT_ABORT ON  
 -- =============================================
 -- Author:		<Derek Ziemba>
 -- Create date: <3-7-2018>
@@ -21,9 +22,9 @@ AS
 SET NOCOUNT ON;
 
 IF @DisplayName IS NULL SET @DisplayName = @GroupName;
-IF @LocationID IS NOT NULL AND NOT EXISTS (SELECT TOP 1 * FROM [dbo].Locations WHERE LocationID = @LocationID) RAISERROR('Location_Invalid', 11, 1);
-IF EXISTS (SELECT TOP 1 * FROM [dbo].Accounts WHERE UserName = @GroupName) RAISERROR('UserName_Taken', 12, 1);
-IF NOT EXISTS (SELECT TOP 1 * FROM [dbo].Accounts WHERE AccountID = @GroupOwnerAccountID) RAISERROR('GroupOwner_Invalid', 12, 1);
+IF @LocationID IS NOT NULL AND NOT EXISTS (SELECT TOP 1 * FROM [dbo].Locations WHERE LocationID = @LocationID) Throw 50000, 'Location_Invalid', 1;
+IF EXISTS (SELECT TOP 1 * FROM [dbo].Accounts WHERE UserName = @GroupName) THROW 50000, 'UserName_Taken',1;
+IF NOT EXISTS (SELECT TOP 1 * FROM [dbo].Accounts WHERE AccountID = @GroupOwnerAccountID) Throw 50000, 'GroupOwner_Invalid', 1;
 
 
 INSERT INTO dbo.Accounts (UserName, DisplayName, PasswordHash, LocationID, FirstName, LastName, SchoolEmail, ContactEmail, PhoneNumber, IsGroup) 

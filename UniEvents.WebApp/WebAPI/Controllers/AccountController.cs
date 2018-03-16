@@ -26,16 +26,21 @@ namespace UniEvents.WebAPI.Controllers {
 
          try {
             DBModels.DBAccount dbAccount = await DBModels.DBAccount.SP_Account_GetAsync(Program.CoreContext, 0, username).ConfigureAwait(false);
-
-            if (Crypto.VerifyHashMatch(password, dbAccount.Salt, dbAccount.PasswordHash)) {
-               DBModels.DBLogin dbLogin = new DBModels.DBLogin(){ UserName=username };
-               (dbLogin.APIKeyHash, dbLogin.APIKey) = Crypto.CreateAPIKey256(username);
-               if (await DBModels.DBLogin.SP_Account_LoginAsync(Program.CoreContext, dbLogin).ConfigureAwait(false)) {
-                  result.Result = new AccountLogin(dbLogin); ;
-                  result.Success = true;
-               }
+            if(dbAccount == null) {
+               result.Message = "Account does not exist.";
             } else {
-               result.Message = "Invalid_Password";
+               if (Crypto.VerifyHashMatch(password, dbAccount.Salt, dbAccount.PasswordHash)) {
+                  DBModels.DBLogin dbLogin = new DBModels.DBLogin(){ UserName=username };
+                  (dbLogin.APIKeyHash, dbLogin.APIKey) = Crypto.CreateAPIKey256(username);
+                  if (await DBModels.DBLogin.SP_Account_LoginAsync(Program.CoreContext, dbLogin).ConfigureAwait(false)) {
+                     result.Result = new AccountLogin(dbLogin); ;
+                     result.Success = true;
+                  } else {
+                     result.Message = "Login Failed";
+                  }
+               } else {
+                  result.Message = "Invalid_Password";
+               }
             }
          } catch(Exception ex) {
             result.Message = ex.Message + " \n " + ex.InnerException?.Message;
@@ -84,17 +89,24 @@ namespace UniEvents.WebAPI.Controllers {
 
          (dbAccount.PasswordHash, dbAccount.Salt) = Crypto.HashPassword256(password);
 
-         addLocationTask = DBModels.DBLocation.SP_Location_CreateAsync(Program.CoreContext, dbLocation);//runs method on background thread and continues.
-         createAccountTask = DBModels.DBAccount.SP_Account_CreateAsync(Program.CoreContext, dbAccount);
-
          ApiResult<UserAccount> result = new ApiResult<UserAccount>();
 
          try {
+            addLocationTask = DBModels.DBLocation.SP_Location_CreateAsync(Program.CoreContext, dbLocation);//runs method on background thread and continues.
+            createAccountTask = DBModels.DBAccount.SP_Account_CreateAsync(Program.CoreContext, dbAccount);
+
             await Task.WhenAll(addLocationTask, createAccountTask).ConfigureAwait(false); //wait for background tasks to complete        
             result.Success = createAccountTask.Result && addLocationTask.Result;
-            if (result.Success) {
+            if (createAccountTask.Result || addLocationTask.Result) {
                result.Result = new UserAccount(dbAccount, new StreetAddress(dbLocation));
             }
+            if (!createAccountTask.Result) {
+               result.Message += " Failed to create account. ";
+            }
+            if (!addLocationTask.Result) {
+               result.Message += " Failed to create location. ";
+            }
+
          } catch (Exception ex) {
             //TODO: If this happens, we need to roll back changes to database. Such as if the location was successfully added but the account was not or vice versa.
             result.Message = ex.Message + " \n " + ex.InnerException?.Message;
