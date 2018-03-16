@@ -21,7 +21,6 @@
     var oBody = {};
     var btnClear = document.getElementById('btnClear');
     var btnExecute = document.getElementById('btnExecute');
-    var routeTemplate = document.getElementById('routeTemplate');
     var currentHttpType = document.getElementById('httpType');
     var route = document.getElementById('route');
     var postBody = document.getElementById('postBody');
@@ -37,7 +36,6 @@
         metadata = U.dictMetaData[option.value];
         if (metadata) {
             btnExecute.disabled = false;
-            routeTemplate.value = metadata.route;
             currentHttpType.value = metadata.httpMethod.toUpperCase();
             route.value = metadata.path;
             if (!metadata.params) {
