@@ -18,7 +18,12 @@ namespace UniEvents.Models.ApiModels {
          APIKey = login.APIKey;
          LoginDate = login.LoginDate;
       }
+   }
 
+   public class VerifiedLogin {
+      public bool IsLoggedIn { get; set; }
+      public DateTime? LoginDate { get; set; }
 
    }
+
 }

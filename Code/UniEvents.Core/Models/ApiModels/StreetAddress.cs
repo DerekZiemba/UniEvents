@@ -7,7 +7,9 @@ using static ZMBA.Common;
 namespace UniEvents.Models.ApiModels {
 
 	public class StreetAddress {
-		public string Name { get; set; }
+      public long? ParentLocationID { get; set; }
+      public long? LocationID { get; set; }
+      public string Name { get; set; }
 		public string AddressLine { get; set; }
       public string Locality { get; set; }
       public string AdminDistrict { get; set; }
@@ -20,6 +22,8 @@ namespace UniEvents.Models.ApiModels {
       public StreetAddress() {}
 
       public StreetAddress(StreetAddress other) {
+         ParentLocationID = other.ParentLocationID;
+         LocationID = other.LocationID;
          Name = other.Name;
          AddressLine = other.AddressLine;
          Locality = other.Locality;
@@ -31,6 +35,8 @@ namespace UniEvents.Models.ApiModels {
          Longitude = other.Longitude;
       }
       public StreetAddress(DBModels.DBLocation other) {
+         ParentLocationID = other.ParentLocationID;
+         LocationID = other.LocationID;
          Name = other.Name;
          AddressLine = other.AddressLine;
          Locality = other.Locality;

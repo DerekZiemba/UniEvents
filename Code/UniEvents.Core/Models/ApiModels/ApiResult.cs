@@ -21,11 +21,11 @@ namespace UniEvents.Models.ApiModels {
       public ApiResult() { }
       public ApiResult(bool success, string message) {
          this.Success = success;
-         this.Message = message;
+         this.Message = message ?? "";
       }
       public ApiResult(bool success, string message, T result) {
          this.Success = success;
-         this.Message = message;
+         this.Message = message ?? "";
          this.Result = result;
       }
       public ApiResult(T result) {
