@@ -5,11 +5,11 @@ VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniEvents.WebApp", "UniEvents.WebApp\UniEvents.WebApp.csproj", "{336C1BD2-0136-45C2-BC20-CA9186150B20}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniEvents.Core", "UniEvents.Core\UniEvents.Core.csproj", "{68906E98-CCA3-45CF-8732-784566AE4763}"
+EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "UniEvents.TSQL", "UniEvents.TSQL\UniEvents.TSQL.sqlproj", "{3EB91968-F41B-455E-BA90-5DB1AD74AA75}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupFiles", "SetupFiles", "{FB161FF3-212F-4787-B42F-A1F79011FC5D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniEvents.Core", "UniEvents.Core\UniEvents.Core.csproj", "{68906E98-CCA3-45CF-8732-784566AE4763}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
