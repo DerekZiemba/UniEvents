@@ -16,8 +16,10 @@ using static ZMBA.Common;
 namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
+   [ApiExplorerSettings(IgnoreApi = false)]
    public class MetadataController : Controller {
-      private static Dictionary<string, MethodMetadata> _methodCache;
+      private static SortedDictionary<string, MethodMetadata> _methodCacheByRoute;
+      private static SortedDictionary<string, MethodMetadata> _methodCacheByPath;
 
       private readonly IApiDescriptionGroupCollectionProvider _apiExplorer;
       public MetadataController(IApiDescriptionGroupCollectionProvider apiExplorer) {
@@ -26,30 +28,32 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpGet, Route("webapi/metadata")]
-      public ApiResult<Dictionary<string, MethodMetadata>> Get() {
-         var result = new ApiResult<Dictionary<string, MethodMetadata>>();
-         if(_methodCache == null) {
+      public ApiResult<SortedDictionary<string, MethodMetadata>> Get() {
+         var result = new ApiResult<SortedDictionary<string, MethodMetadata>>();
+         if(_methodCacheByRoute == null) {
             BuildMethodCache();
          }
-         result.Result = _methodCache;
+         result.Result = _methodCacheByRoute;
          return result;
       }
 
       [HttpGet, Route("webapi/metadata/{route}")]
       public ApiResult<MethodMetadata> Get(string route) {
          var result = new ApiResult<MethodMetadata>();
-         if (_methodCache == null) {
+         if (_methodCacheByRoute == null) {
             BuildMethodCache();
          }
 
-         result.Result = _methodCache.GetItemOrDefault(route);
+         result.Result = _methodCacheByRoute.GetItemOrDefault(route) ?? _methodCacheByPath.GetItemOrDefault(route);
+ 
          if(result.Result != null) { result.Success = true; }
          return result;
       }
 
 
       private void BuildMethodCache() {
-         _methodCache = new Dictionary<string, MethodMetadata>(StringComparer.OrdinalIgnoreCase);
+         _methodCacheByRoute = new SortedDictionary<string, MethodMetadata>(StringComparer.OrdinalIgnoreCase);
+         _methodCacheByPath = new SortedDictionary<string, MethodMetadata>(StringComparer.OrdinalIgnoreCase);
 
          foreach (var group in _apiExplorer.ApiDescriptionGroups.Items) {
             foreach (var desc in group.Items) {
@@ -66,7 +70,6 @@ namespace UniEvents.WebAPI.Controllers {
                   meta.Output.SetType(responseTYpe.Type);
                }
 
-               var bRemoved = false;
                foreach (var paramdesc in desc.ParameterDescriptions) {
                   var param = new MethodMetadata.MethodParam();
                   param.SetType(paramdesc.Type);
@@ -83,7 +86,8 @@ namespace UniEvents.WebAPI.Controllers {
                   }
                   meta.Input.Add(param);
                }
-               _methodCache.Add(meta.Path, meta);
+               _methodCacheByRoute.Add(meta.Route, meta);
+               _methodCacheByPath[meta.Path] = meta;
             }
          }
       }

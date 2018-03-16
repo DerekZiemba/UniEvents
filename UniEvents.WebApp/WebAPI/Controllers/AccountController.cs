@@ -17,7 +17,7 @@ using DBModels = UniEvents.Models.DBModels;
 namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
-   [ApiExplorerSettings(IgnoreApi = false, GroupName = nameof(AccountsController))]
+   [ApiExplorerSettings(IgnoreApi = false)]
    public class AccountsController : Controller {
 
       [HttpGet, Route("webapi/account/login/{UserName}/{Password}")]
