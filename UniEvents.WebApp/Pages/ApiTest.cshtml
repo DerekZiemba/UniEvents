@@ -11,19 +11,21 @@
 
 <style>
    .split-pane { min-height: 500px; }
-   .left-pane{ position:relative; left:0px; width:45%; float:left; }
-   .right-pane{position:relative; right:0px; width:45%; float:right; }
+   .left-pane{ position:relative; left:0px; width:50%; float:left; }
+   .right-pane{position:relative; right:0px; width:49%; float:right; }
    .right-pane label {display: block; }
-   textarea{width:99%; height: 100%; }
-   #APITest li { text-align: right; display:inline-flex; justify-content: flex-end; padding-left:0; overflow:hidden; width: 100%; margin-bottom: 8px; }
+   textarea{width:99%; height: 100%; min-height:400px; }
+   #APITest { display:inline-block; }
+   #APITest li { display:inline-flex; justify-content: flex-end; overflow:hidden; width: 100%; margin-bottom: 5px; }
    #APITest li label { text-align: right; margin-right:10px; width:160px; }
    #APITest li input, #APITest li select { flex-grow: 1; }
+   #InputParams label { font-weight: normal; }
+   #InputParams span {width:50px;}
+   input[type=button][disabled]{ opacity:.5;  }
+   input[type=button]{ margin: 0 5px; }
 </style>
 
-<h2>ApiTest</h2>
-
-
-
+<br/>
 <div id="APITest">
 
    <div id="divSelector" style="width:100%;">
@@ -40,10 +42,15 @@
          </li>
          <li>
             <label>Route:</label>
-            <input id="currentRoute" type="text" readonly="readonly" />
+            <input id="route" type="text" readonly="readonly" />
          </li>
          <li>
-            <input id="btnExecute" type="button" value="Execute" />
+            <label>HttpType:</label>
+            <input id="httpType" type="text" readonly="readonly" />
+         </li>
+         <li>
+            <input id="btnClear" type="button" value="Clear Inputs" disabled />
+            <input id="btnExecute" type="button" value="Execute" disabled />
          </li>
       </ul>
       <div>
@@ -60,7 +67,10 @@
       </div>
       <div class="right-pane">
          <label>Result JSON</label>
-         <textarea></textarea>
+         <textarea id="resultJson"></textarea>
+         <label>Post Body</label>
+         <textarea id="postBody"></textarea>
+
       </div>
    </div>
 </div>

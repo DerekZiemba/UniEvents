@@ -8,26 +8,34 @@
 
 }
 
+@media (max-width: 1200px) {
+   .container {
+      width: 100%;
+   }
+}
+
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content {
-	padding-left: 10px;
-	padding-right: 10px;
-	padding-top: 50px;
-	padding-bottom: 20px;
+   padding: 50px 5px 20px 5px;
 
-	label {
-		margin-bottom: auto;
-	}
+   label {
+      margin-bottom: auto;
+      margin-top:auto;
+   }
 
-	ul {
-		padding-left: 0;
-		overflow: hidden;
-		width: 100%;
-	}
+   .test {
+      margin-bottom: 10px;
+   }
 
-	li {
-		list-style-type: none;
-	}
+   ul {
+      padding-left: 0;
+      overflow: hidden;
+      width: 100%;
+   }
+
+   li {
+      list-style-type: none;
+   }
 }
 
 
@@ -53,12 +61,6 @@
 	}
 }
 
-/*Place rules that target the HomePage specifically*/
-#HomePage {
-	
-
-
-}
 
 .HTMLTemplates {
 	display:none;

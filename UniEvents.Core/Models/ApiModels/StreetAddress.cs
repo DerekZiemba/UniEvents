@@ -6,7 +6,7 @@ using static ZMBA.Common;
 
 namespace UniEvents.Models.ApiModels {
 
-	public class StreetAddress : APIModel {
+	public class StreetAddress {
 		public string Name { get; set; }
 		public string AddressLine { get; set; }
       public string Locality { get; set; }

@@ -6,7 +6,7 @@ using static ZMBA.Common;
 
 namespace UniEvents.Models.ApiModels {
 
-	public class UserAccount : APIModel {
+	public class UserAccount {
       public Int64 AccountID { get; set; }
       public string Password { get; set; }
       public string UserName { get; set; }

@@ -9,10 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace UniEvents.WebApp.Pages {
    public class ApiTestModel : PageModel {
 
-      public IApiDescriptionGroupCollectionProvider ApiExplorer { get; set; }
-
       public ApiTestModel(IApiDescriptionGroupCollectionProvider apiExplorer) {
-         ApiExplorer = apiExplorer;
       }
 
 
