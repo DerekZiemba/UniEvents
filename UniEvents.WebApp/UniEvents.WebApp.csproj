@@ -4,6 +4,7 @@
 	<TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
 	<IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
 	 <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+	 <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="app_offline.html" />
