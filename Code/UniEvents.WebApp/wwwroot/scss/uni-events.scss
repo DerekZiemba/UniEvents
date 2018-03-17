@@ -18,9 +18,13 @@
 .body-content {
    padding: 50px 5px 20px 5px;
 
+   input[disabled] {
+      opacity: .5;
+   }
+
    label {
       margin-bottom: auto;
-      margin-top:auto;
+      margin-top: auto;
    }
 
    .test {
@@ -35,6 +39,112 @@
 
    li {
       list-style-type: none;
+      display: inline-flex;
+      justify-content: flex-end;
+      overflow: hidden;  
+      margin-bottom: 5px;
+
+      label {
+         text-align: right;
+         margin-right: 10px;
+         width: 160px;
+      }
+
+      input {
+         flex-grow: 1;
+      }
+
+      select {
+         flex-grow: 1;
+      }
+   }
+}
+
+#SignUp {
+   padding-left: 15px;
+
+   label {
+      width: 150px;
+   }
+
+   input {
+      width: 350px;
+   }
+
+   #InputParams {
+      min-width: 600px;
+      width: 50vw;
+
+      &.Success {
+         input {
+            box-shadow: inset 1px 1px 10px 1px lightgreen, 1px 1px 10px 1px lightgreen;
+            border: 1px solid lightgreen;
+         }
+      }
+
+      &.Error {
+         input {
+            box-shadow: inset 1px 1px 10px 1px , 1px 1px 10px 1px red;
+            border: 1px solid red;
+         }
+      }
+
+      ul {
+         li {
+            span {
+               color: red;
+            }
+         }
+      }
+   }
+}
+
+
+#APITest {
+   display: inline-block;
+
+   .split-pane {
+      min-height: 500px;
+   }
+
+   .left-pane {
+      position: relative;
+      left: 0px;
+      width: 50%;
+      float: left;
+   }
+
+   .right-pane {
+      position: relative;
+      right: 0px;
+      width: 49%;
+      float: right;
+   }
+
+   .right-pane label {
+      display: block;
+   }
+
+   li {
+      width: 100%;
+   }
+
+   textarea {
+      width: 99%;
+      height: 100%;
+      min-height: 400px;
+   }
+
+   #InputParams label {
+      font-weight: normal;
+   }
+
+   #InputParams span {
+      width: 50px;
+   }
+
+   input[type=button] {
+      margin: 0 5px;
    }
 }
 

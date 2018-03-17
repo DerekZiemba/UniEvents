@@ -19,41 +19,24 @@ namespace UniEvents.WebAPI.Controllers {
 
       [HttpGet, Route("webapi/locations/search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
       public ApiResult<List<StreetAddress>> Search(long? ParentLocationID = null,
-                                                                  string Name = null,
-                                                                  string AddressLine = null,
-                                                                  string Locality = null,
-                                                                  string AdminDistrict = null,
-                                                                  string PostalCode = null,
-                                                                  string Description = null) {
+                                                   string Name = null,
+                                                   string AddressLine = null,
+                                                   string Locality = null,
+                                                   string AdminDistrict = null,
+                                                   string PostalCode = null,
+                                                   string Description = null) {
 
-         var result = new ApiResult<List<StreetAddress>>();
-         result.Result = new List<StreetAddress>();
-         try {
-            foreach (DBModels.DBLocation loc in DBModels.DBLocation.SP_Locations_Search(Program.CoreContext, ParentLocationID: ParentLocationID, Name: Name, AddressLine: AddressLine, Locality: Locality, AdminDistrict: AdminDistrict, PostalCode: PostalCode, Description: Description)) {
-               result.Result.Add(new StreetAddress(loc));
-            }
-            result.Success = true;
-         } catch(Exception ex) {
-            result.Message = ex.Message;
-         }
-         return result;
+         return Program.CoreContext.LocationManager.SearchLocations(ParentLocationID: ParentLocationID, Name: Name, AddressLine: AddressLine, Locality: Locality, AdminDistrict: AdminDistrict, PostalCode: PostalCode, Description: Description);
       }
 
 
-      [HttpPost, Route("webapi/locations/create")]
-      public ApiResult<StreetAddress> Create(StreetAddress address) {
-         var result = new ApiResult<StreetAddress>();
-         try {
-            DBModels.DBLocation dbLocation = new DBModels.DBLocation(address);
-            result.Success = DBModels.DBLocation.SP_Location_Create(Program.CoreContext, dbLocation);
-            result.Result = new StreetAddress(dbLocation);
-            if (!result.Success) {
-               result.Message = "Failed for Unknown Reason";
-            }
-         } catch (Exception ex) {
-            result.Message = ex.Message;
+      [HttpPost, Route("webapi/locations/create/{username?}/{apikey?}")]
+      public async  Task<ApiResult<StreetAddress>> Create(string username, string apikey, StreetAddress address) {
+         var login = await Program.CoreContext.AccountManager.VerifyLogin(username, apikey).ConfigureAwait(false);
+         if (!login.Success || !login.Result.IsLoggedIn) {
+            return new ApiResult<StreetAddress>(false, "Must be Logged in.");
          }
-         return result;
+         return await Program.CoreContext.LocationManager.CreateLocation(address);
       }
 
 

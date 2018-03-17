@@ -23,7 +23,6 @@ namespace UniEvents.Models.ApiModels {
    public class VerifiedLogin {
       public bool IsLoggedIn { get; set; }
       public DateTime? LoginDate { get; set; }
-
    }
 
 }

@@ -7,11 +7,12 @@ USE [$(dbUniHangouts)]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Logout]
 	@UserName VARCHAR(20),
-	@APIKey BINARY(256) = NULL --If Null, removes all logins
+	@APIKey VARCHAR(50) = NULL --If Null, removes all logins
 AS
-SET NOCOUNT ON;
+SET NOCOUNT OFF;
 
-DELETE FROM dbo.Logins 
-WHERE [UserName] = @UserName AND (@APIKey IS NULL OR [APIKey] = @APIKey);
+DELETE FROM dbo.Logins WHERE [UserName] = @UserName AND (@APIKey IS NULL OR [APIKey] = @APIKey);
+
+SELECT @@ROWCOUNT AS DELETED;
 
 GO
