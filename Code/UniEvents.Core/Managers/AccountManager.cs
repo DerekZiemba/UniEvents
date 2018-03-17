@@ -147,7 +147,7 @@ namespace UniEvents.Managers {
                return new ApiResult<UserAccount>(false, "Failed to create account.");
             }
 
-            return new ApiResult<UserAccount>(false, "", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+            return new ApiResult<UserAccount>(true, "Account Created!", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
 
          } catch (Exception ex) {
             //TODO: If this happens, we need to roll back changes to database. Such as if the location was successfully added but the account was not or vice versa.
