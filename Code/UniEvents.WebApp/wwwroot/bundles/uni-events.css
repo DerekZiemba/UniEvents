@@ -6,13 +6,55 @@
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content { padding: 50px 5px 20px 5px; }
 
+.body-content input[disabled] { opacity: .5; }
+
 .body-content label { margin-bottom: auto; margin-top: auto; }
 
 .body-content .test { margin-bottom: 10px; }
 
 .body-content ul { padding-left: 0; overflow: hidden; width: 100%; }
 
-.body-content li { list-style-type: none; }
+.body-content li { list-style-type: none; display: inline-flex; justify-content: flex-end; overflow: hidden; margin-bottom: 5px; }
+
+.body-content li label { text-align: right; margin-right: 10px; width: 160px; }
+
+.body-content li input { flex-grow: 1; }
+
+.body-content li select { flex-grow: 1; }
+
+#SignUp { padding-left: 15px; }
+
+#SignUp label { width: 150px; }
+
+#SignUp input { width: 350px; }
+
+#SignUp #InputParams { min-width: 600px; width: 50vw; }
+
+#SignUp #InputParams.Success input { box-shadow: inset 1px 1px 10px 1px lightgreen, 1px 1px 10px 1px lightgreen; border: 1px solid lightgreen; }
+
+#SignUp #InputParams.Error input { box-shadow: inset 1px 1px 10px 1px , 1px 1px 10px 1px red; border: 1px solid red; }
+
+#SignUp #InputParams ul li span { color: red; }
+
+#APITest { display: inline-block; }
+
+#APITest .split-pane { min-height: 500px; }
+
+#APITest .left-pane { position: relative; left: 0px; width: 50%; float: left; }
+
+#APITest .right-pane { position: relative; right: 0px; width: 49%; float: right; }
+
+#APITest .right-pane label { display: block; }
+
+#APITest li { width: 100%; }
+
+#APITest textarea { width: 99%; height: 100%; min-height: 400px; }
+
+#APITest #InputParams label { font-weight: normal; }
+
+#APITest #InputParams span { width: 50px; }
+
+#APITest input[type=button] { margin: 0 5px; }
 
 /*Place rules that target the IndexPage specifically*/
 #IndexPage #LocationSearch ul { text-align: right; display: inline-flex; justify-content: flex-end; }

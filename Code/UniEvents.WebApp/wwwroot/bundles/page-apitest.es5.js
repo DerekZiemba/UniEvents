@@ -41,14 +41,14 @@
             if (!metadata.params) {
                 metadata.params = [];
                 metadata.input.forEach(function (param) {
-                    param.elem = Element.From("<li class=\"inputparam\" name=\"" + param.name + "\"> \n                                          <span>(" + param.typeName + ")</span>\n                                          <label>" + param.name + ":</label>\n                                          <input type=\"text\"/>\n                                       </li>");
+                    param.elem = Element.From("<li class=\"inputparam\" name=\"" + param.name + "\"> \n                                             <span>(" + param.typeName + ")</span>\n                                             <label>" + param.name + ":</label>\n                                             <input type=\"text\" param=\"" + param.name + "\" source=\"" + param.source + "\"/>\n                                          </li>");
                     param.elemInput = param.elem.getElementsByTagName('input')[0];
                     param.elemInput.addEventListener('change', handleParamChanage);
                     param.elemInput.addEventListener('keyup', handleParamChanage);
-                    metadata.params.push(param);
+                    metadata.params.push(param.elemInput);
                 });
             }
-            metadata.params.forEach(function (param) {
+            metadata.input.forEach(function (param) {
                 inputParams.appendChild(param.elem);
             });
             handleParamChanage();
@@ -59,41 +59,9 @@
     }
     function handleParamChanage() {
         btnClear.disabled = false;
-        oBody = {};
-        var params = metadata.params;
-        var path = metadata.path;
-        var querystring = "?";
-        for (var i = 0, len = params.length; i < len; i++) {
-            var param = params[i];
-            if (param.elemInput.value) {
-                if (param.source === "QueryString" || param.source === "Url") {
-                    querystring += param.name + "=" + encodeURI(param.elemInput.value) + "&";
-                }
-                else {
-                    if (param.name.indexOf('.') >= 0) {
-                        var target = oBody;
-                        var parts = param.name.split('.');
-                        while (parts.length > 0) {
-                            var part = parts.shift();
-                            if (parts.length === 0) {
-                                target[part] = param.elemInput.value;
-                            }
-                            else {
-                                if (!target[part]) {
-                                    target[part] = {};
-                                }
-                                target = target[part];
-                            }
-                        }
-                    }
-                    else {
-                        oBody[param.name] = param.elemInput.value;
-                    }
-                }
-            }
-        }
-        route.value = (path + querystring).replace(/(\?|\/|&)+$/, '');
-        postBody.value = JSON.stringify(oBody, null, '\t');
+        var oData = U.buildAjaxRequestFromInputs(metadata.params, { url: metadata.path });
+        route.value = oData.url;
+        postBody.value = JSON.stringify(oData.data, null, '\t');
     }
     btnClear.addEventListener('click', function () {
         for (var i = 0, len = metadata.params.length; i < len; i++) {

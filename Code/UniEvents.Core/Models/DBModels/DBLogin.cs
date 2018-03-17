@@ -31,7 +31,7 @@ namespace UniEvents.Models.DBModels {
          LoginDate = reader.GetDateTime(nameof(LoginDate));
       }
 
-      public static async Task<bool> SP_Account_LoginAsync(CoreContext ctx, DBLogin model) {
+      internal static async Task<bool> SP_Account_LoginAsync(CoreContext ctx, DBLogin model) {
          if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
          if (model.APIKey.IsNullOrWhitespace()) { throw new ArgumentNullException("APIKey_Invalid"); }
          if (model.APIKeyHash.IsEmpty()) { throw new ArgumentNullException("APIKeyHash_Invalid"); }
@@ -52,7 +52,7 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      public static async Task<DBLogin> SP_Account_Login_GetAsync(CoreContext ctx, string UserName, string APIKey) {
+      internal static async Task<DBLogin> SP_Account_Login_GetAsync(CoreContext ctx, string UserName, string APIKey) {
          if (UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
          if (APIKey.IsNullOrWhitespace()) { throw new ArgumentNullException("APIKey_Invalid"); }
          
@@ -71,6 +71,20 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
+      internal static async Task<bool> SP_Account_LogoutAsync(CoreContext ctx, string UserName, string APIKey) {
+         if (UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
+
+         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Logout]", conn) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), UserName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(APIKey), APIKey);
+
+            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+
+            int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+            return rowsAffected > 0;
+         }
+      }
 
    }
 

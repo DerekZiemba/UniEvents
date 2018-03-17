@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using UniEvents.Managers;
+
 
 namespace UniEvents.Core {
 
@@ -12,7 +14,11 @@ namespace UniEvents.Core {
 
       public Newtonsoft.Json.JsonSerializer JsonSerializer { get; set; }
 
-		public CoreContext(string configFilePath) {
+      public AccountManager AccountManager { get; private set; }
+      public LocationManager LocationManager { get; private set; }
+
+
+      public CoreContext(string configFilePath) {
          JsonSerializer = new Newtonsoft.Json.JsonSerializer();
          JsonSerializer.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
 
@@ -23,9 +29,13 @@ namespace UniEvents.Core {
                Config = JsonSerializer.Deserialize<Configuration>(jsreader);
             }           
          }
+
+         this.AccountManager = new AccountManager(this);
+         this.LocationManager = new LocationManager(this);
+
 		}
 
+
+
 	}
-
-
 }
