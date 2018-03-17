@@ -76,7 +76,7 @@ namespace UniEvents.Models.DBModels {
 			Description = reader.GetString(nameof(Description));
 		}
 
-      public static bool SP_Location_Create(CoreContext ctx, DBLocation model) {
+      internal static async Task<bool> SP_Location_CreateAsync(CoreContext ctx, DBLocation model) {
          if(model == null) { throw new ArgumentNullException("DBLocation_Null"); }
          if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
          if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }
@@ -97,15 +97,16 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Latitude6x), model.@Latitude6x);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Longitude6x), model.@Longitude6x);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            int rowsAffected = cmd.ExecuteNonQuery();
+            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+
+            int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
             model.LocationID = (long)@LocationID.Value;
             model.ParentLocationID = (long?)ParentLocationID.Value;
             return model.LocationID > 0;
          }
       }
 
-      public static async Task<DBLocation> SP_Location_GetAsync(CoreContext ctx, long LocationID) {
+      internal static async Task<DBLocation> SP_Location_GetAsync(CoreContext ctx, long LocationID) {
          if (LocationID <= 0) { throw new ArgumentNullException("LocationID_Invalid"); }
 
 			using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
@@ -123,7 +124,7 @@ namespace UniEvents.Models.DBModels {
 		}
 
 
-		public static async Task<bool> SP_Location_UpdateAsync(CoreContext ctx, DBLocation model) {
+      internal static async Task<bool> SP_Location_UpdateAsync(CoreContext ctx, DBLocation model) {
          if (model == null) { throw new ArgumentNullException("DBLocation_Null"); }
          if (model.LocationID <= 0) { throw new ArgumentNullException("LocationID_Invalid"); }
          if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
@@ -152,7 +153,7 @@ namespace UniEvents.Models.DBModels {
 		}
 
 
-		public static async Task<List<DBLocation>> SP_Locations_SearchAsync(CoreContext ctx, 
+      internal static async Task<List<DBLocation>> SP_Locations_SearchAsync(CoreContext ctx, 
 																									long? @ParentLocationID = null,
 																									string @Name = null,
 																									string @AddressLine = null,
@@ -183,7 +184,7 @@ namespace UniEvents.Models.DBModels {
 			}
 		}
 
-		public static IEnumerable<DBLocation> SP_Locations_Search(CoreContext ctx,
+		internal static IEnumerable<DBLocation> SP_Locations_Search(CoreContext ctx,
 																						long? @ParentLocationID = null,
 																						string @Name = null,
 																						string @AddressLine = null,
