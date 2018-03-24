@@ -1,32 +1,32 @@
 ﻿@page
 @model LoginModel
-@{
-}
 
+@{
+   ViewData["Title"] = "SignUp";
+   Layout = "~/Pages/_Layout.cshtml";
+}
 
 <h2>SignUp</h2>
 
-<div id="SignUp">
-   
-   <div id="errorMessage" style="font-weight: bold; color:red"></div>
+<div id="SignUpPage">
 
    <div id="InputParams">
 
       <h4>Account Info</h4>
       <ul>
-         <li>
+         <li class="required">
             <label>UserName:</label>
-            <input type="text" param="UserName" />
+            <input type="text" param="UserName" required />
             <span></span>
          </li>
-         <li>
+         <li class="required">
             <label>Password:</label>
-            <input type="text" param="password" source="QueryString" />
+            <input type="text" param="password" source="QueryString" required />
             <span></span>
          </li>
          <li>
             <label>Display Name:</label>
-            <input type="text" param="DisplayName" placeholder="Name Displayed" />
+            <input type="text" param="DisplayName" placeholder="Name Other Users See" />
             <span></span>
          </li>
       </ul>
@@ -73,24 +73,24 @@
             <input type="text" param="Location.AddressLine" />
             <span></span>
          </li>
-         <li>
+         <li class="required">
             <label>City:</label>
-            <input type="text" param="Location.Locality" />
+            <input type="text" param="Location.Locality" required />
             <span></span>
          </li>
-         <li>
+         <li class="required">
             <label>State:</label>
-            <input type="text" param="Location.AdminDistrict" />
+            <input type="text" param="Location.AdminDistrict" required />
+            <span></span>
+         </li>
+         <li class="required">
+            <label>Country:</label>
+            <input type="text" param="Location.CountryRegion" required />
             <span></span>
          </li>
          <li>
             <label>Postal Code:</label>
             <input type="text" param="Location.PostalCode" />
-            <span></span>
-         </li>
-         <li>
-            <label>Country:</label>
-            <input type="text" param="Location.CountryRegion" />
             <span></span>
          </li>
       </ul>
@@ -113,35 +113,32 @@
    var InputParams = document.getElementById("InputParams");
    var signUpLabel = document.getElementById("signUpLabel");
    var signUpButton = document.getElementById("signUpButton");
-   var errorMessage = document.getElementById("errorMessage");
 
    signUpButton.addEventListener("click", function () {
-      var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), {
-         cache: false,
-         type: "POST",
-         url: "webapi/account/createuser",
-         data: {},
-         success: handleSuccess,
-         error: handleFailure
-      });
-      function handleSuccess(ev) {
-         if (ev.success) {
-            signUpButton.disabled = true;
-            console.log(oRequest, ev);
-            signUpLabel.value = "Success!";
-            InputParams.class = "Success";
-         } else {
-            handleFailure(ev);
-         }
-      }
+      var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/account/createuser" });
+
       function handleFailure(ev) {
          console.log(oRequest, ev);
          signUpLabel.value = "Failed!";
          InputParams.class = "Failed";
-         errorMessage.innerText = ev.message;
+         U.setPageMessage('error', ev.message);
+         U.highlightRequiredInputs(true);
       }
 
-      $.ajax(oRequest);
+      $.ajax(oRequest)
+         .fail(handleFailure)
+         .done(function (ev) {
+            if (ev.success) {
+               signUpButton.disabled = true;
+               console.log(oRequest, ev);
+               signUpLabel.value = "Success!";
+               InputParams.class = "Success";
+               U.setPageMessage('success', 'Success!  Go to the <a href="/Login">Login Page to Login!</a>');
+            } else {
+               handleFailure(ev);
+            }
+         });
+
    });
 </script>
 

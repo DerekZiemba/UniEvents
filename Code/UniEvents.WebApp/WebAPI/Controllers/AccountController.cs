@@ -45,6 +45,14 @@ namespace UniEvents.WebAPI.Controllers {
          return await Program.CoreContext.AccountManager.CreateUser(user, password);
       }
 
+      [HttpPost, Route("webapi/account/getuserinfo/{username?}/{apikey?}/{includeLocation?}")]
+      public async Task<ApiResult<UserAccount>> GetUserInfo(string username, string apikey, bool includeLocation) {
+         var verified = await Program.CoreContext.AccountManager.VerifyLogin(username, apikey);
+         if (!verified.Success || !verified.Result.IsLoggedIn) {
+            return new ApiResult<UserAccount>(false, verified.Message);
+         }
+         return await Program.CoreContext.AccountManager.GetUser(username, includeLocation);
+      }
 
    }
 }

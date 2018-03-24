@@ -13,11 +13,10 @@ using ApiModels = UniEvents.Models.ApiModels;
 using DBModels = UniEvents.Models.DBModels;
 
 
-
 namespace UniEvents.Managers {
 
 	public class AccountManager {
-      private CoreContext Ctx;
+      private readonly CoreContext Ctx;
 
 		internal AccountManager(CoreContext ctx) {
          this.Ctx = ctx;
@@ -31,9 +30,9 @@ namespace UniEvents.Managers {
             }
             if (bIncludeLocation && dbAccount.LocationID.HasValue) {
                DBModels.DBLocation dbLocation = await DBModels.DBLocation.SP_Location_GetAsync(Ctx, dbAccount.LocationID.Value);
-               return new ApiResult<UserAccount>(false, "", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+               return new ApiResult<UserAccount>(true, "", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
             }
-            return new ApiResult<UserAccount>(false, "", new UserAccount(dbAccount, null));
+            return new ApiResult<UserAccount>(true, "", new UserAccount(dbAccount, null));
          } catch (Exception ex) {
             return new ApiResult<UserAccount>(false, ex.Message + " \n " + ex.InnerException?.Message);
          }
@@ -50,14 +49,14 @@ namespace UniEvents.Managers {
             }
 
             if (!Crypto.VerifyHashMatch(password, dbAccount.Salt, dbAccount.PasswordHash)) {
-               return new ApiResult<AccountLogin>(false, "Invalid_Password");
+               return new ApiResult<AccountLogin>(false, "Invalid Password");
             }
 
             DBModels.DBLogin dbLogin = new DBModels.DBLogin(){ UserName=username };
             (dbLogin.APIKeyHash, dbLogin.APIKey) = Crypto.CreateAPIKey256(username);
 
             if (!await DBModels.DBLogin.SP_Account_LoginAsync(Ctx, dbLogin).ConfigureAwait(false)) {
-               return new ApiResult<AccountLogin>(false, "Login_Failed");
+               return new ApiResult<AccountLogin>(false, "Login Failed");
             } 
 
             return new ApiResult<AccountLogin>(true, "", new AccountLogin(dbLogin));
@@ -69,6 +68,12 @@ namespace UniEvents.Managers {
 
 
       public async Task<ApiResult<VerifiedLogin>> VerifyLogin(string username, string apikey) {
+         if (username.IsNullOrWhitespace()) {
+            return new ApiResult<VerifiedLogin>(false, "Invalid Username.");
+         }
+         if (apikey.IsNullOrWhitespace()) {
+            return new ApiResult<VerifiedLogin>(false, "Invalid ApiKey.");
+         }
          var result = new ApiResult<VerifiedLogin>();
          try {
             DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(Ctx, username, apikey).ConfigureAwait(false);
@@ -76,6 +81,9 @@ namespace UniEvents.Managers {
                IsLoggedIn = dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash),
                LoginDate = dbLogin?.LoginDate
             };
+            if(!result.Result.IsLoggedIn) {
+               result.Message = "Invalid Login";
+            }
             result.Success = true;
          } catch (Exception ex) {
             result.Message = ex.Message + " \n " + ex.InnerException?.Message;
@@ -118,8 +126,23 @@ namespace UniEvents.Managers {
          if (user == null) {
             return new ApiResult<UserAccount>(false, "Account Null.");
          }
-         if (user.Location == null || !user.Location.IsValid()) {
-            return new ApiResult<UserAccount>(false, "Location not set or invalid.");
+         if (password.IsNullOrWhitespace()) {
+            return new ApiResult<UserAccount>(false, "Invalid Password.");
+         }
+         if (user.UserName.IsNullOrWhitespace()) {
+            return new ApiResult<UserAccount>(false, "Invalid UserName.");
+         }
+         if (user.Location == null) {
+            return new ApiResult<UserAccount>(false, "Location Invalid.");
+         }
+         if (user.Location.CountryRegion.IsNullOrWhitespace()) {
+            return new ApiResult<UserAccount>(false, "Invalid CountryRegion.");
+         }
+         if (user.Location.AdminDistrict.IsNullOrWhitespace()) {
+            return new ApiResult<UserAccount>(false, "Invalid State.");
+         }
+         if (user.Location.Locality.IsNullOrWhitespace()) {
+            return new ApiResult<UserAccount>(false, "Invalid City");
          }
          if (user.VerifiedContactEmail || user.VerifiedSchoolEmail) {
             return new ApiResult<UserAccount>(false, "Attempt to submit unverified Emails logged and detected."); //not really, but sounds scary.
@@ -154,9 +177,6 @@ namespace UniEvents.Managers {
             return new ApiResult<UserAccount>(false, ex.Message + " \n " + ex.InnerException?.Message);
          }
       }
-
-
-
 
 
    }

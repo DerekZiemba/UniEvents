@@ -5,26 +5,20 @@
 
 }(function Factory(window, document, $, U, ZMBA) {
 
-   $.ajax({
-      cache: false,
-      url: 'webapi/metadata',
-      success: function (data) {
-         U.dictMetaData = data.result;
-         var webMethodSelect = document.getElementById('webMethodSelect');
-         webMethodSelect.addEventListener('change', handleWebMethodSelected);
-         for (var route in U.dictMetaData) {
-            var option = document.createElement('option');
-            option.value = route;
-            option.innerText = route;
-            webMethodSelect.appendChild(option);
-         }
+   $.ajax('webapi/metadata').done(data => {
+      U.dictMetaData = data.result;
+      var webMethodSelect = document.getElementById('webMethodSelect');
+      webMethodSelect.addEventListener('change', handleWebMethodSelected);
+      for (var route in U.dictMetaData) {
+         var option = document.createElement('option');
+         option.value = route;
+         option.innerText = route;
+         webMethodSelect.appendChild(option);
       }
    });
 
 
    var metadata;
-   var oBody = {};
-
    var btnClear = document.getElementById('btnClear');
    var btnExecute = document.getElementById('btnExecute');
    var currentHttpType = document.getElementById('httpType');
@@ -48,11 +42,7 @@
          if (!metadata.params) {      
             metadata.params = [];
             metadata.input.forEach(param => {
-               param.elem = Element.From(`<li class="inputparam" name="${param.name}"> 
-                                             <span>(${param.typeName})</span>
-                                             <label>${param.name}:</label>
-                                             <input type="text" param="${param.name}" source="${param.source}"/>
-                                          </li>`);
+               param.elem = Element.From(`<li class="inputparam"><span>(${param.typeName})</span><label>${param.name}:</label><input type="text" param="${param.name}" source="${param.source}"/></li>`);
                param.elemInput = param.elem.getElementsByTagName('input')[0];
                param.elemInput.addEventListener('change', handleParamChanage);
                param.elemInput.addEventListener('keyup', handleParamChanage);
@@ -70,7 +60,8 @@
       }
    }
 
-   function handleParamChanage() {
+   function handleParamChanage(ev) {
+      if (ev) { ev.stopPropagation(); }
       btnClear.disabled = false;
       var oData = U.buildAjaxRequestFromInputs(metadata.params, { url: metadata.path });
       route.value = oData.url;
@@ -84,21 +75,11 @@
    });
 
    btnExecute.addEventListener('click', () => {
-      function callback(data) {
-         resultJson.value = JSON.stringify(data, null, '\t');
-      }
-      var request = {
-         cache: false,
+      $.ajax({
          type: currentHttpType.value,
          url: route.value,
-         success: callback,
-         error: callback
-      }
-      if (postBody.value) {
-         request.data = JSON.parse(postBody.value);
-      }
-
-      $.ajax(request);
+         data: postBody.value && JSON.parse(postBody.value)
+      }).done(data => resultJson.value = JSON.stringify(data, null, '\t'));
    });
 
 

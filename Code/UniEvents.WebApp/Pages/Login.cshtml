@@ -1,19 +1,47 @@
 ﻿@page
 @model UniEvents.WebApp.Pages.SignUpModel
 @{
-    ViewData["Title"] = "SignUp";
-    Layout = "~/Pages/_Layout.cshtml";
-  
+   ViewData["Title"] = "Login";
+   Layout = "~/Pages/_Layout.cshtml";
 }
 
-<h2>SignUp</h2>
-<input id="UserName" type="text" />
-<input id="UserPassword" type="password" />
-<input id="LoginButton" type="button" value="Login"/>
+<h2>Login</h2>
 
-<a asp-page="/SignUp" >
-    <input id="SignUpButton" type="button" value="Sign-Up" />
-</a>
-<a asp-page="/Index">
-    <input id="GuestSignUp" type="button" value="Sign in as Guest"  />
-</a>
+<div id="LoginPage">
+   <input type="text" param="UserName" source="QueryString" placeholder="UserName" />
+   <input type="password" param="Password" source="QueryString" placeholder="Password" />
+
+   <input id="btnLogin" type="button" value="Login" />
+
+   <a asp-page="/SignUp">
+      <input id="btnCreateAccount" type="button" value="Create Account" />
+   </a>
+   
+</div>
+
+
+<script>
+
+   var btnLogin = document.getElementById("btnLogin");
+
+   btnLogin.addEventListener("click", handleLogin);
+   document.addEventListener('keyup', function (ev) {
+      if (ev.keyCode === 13) { //Enter key
+         handleLogin();
+      }
+   });
+
+   function handleLogin() {
+      U.user_TryLogin(document.querySelector("input[param=UserName]").value, document.querySelector("input[param=Password]").value,
+         function onSuccess(ev) {
+            console.log(ev);
+            U.setPageMessage('success', "Welcome " + ev.result.displayName);
+         },
+         function onError(ev) {
+            console.log(ev);
+            U.setPageMessage('error', ev.message);
+            U.highlightRequiredInputs(true);
+         });
+   }
+
+</script>
