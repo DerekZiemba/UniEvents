@@ -46,3 +46,36 @@
         </li>
     </ul>
 </div>
+<script>
+
+   var InputParams = document.getElementById("InputParams");
+   var EventCreationLabel = document.getElementById("EventCreationLabel");
+   var EventCreationButton = document.getElementById("EventCreationButton");
+
+   signUpButton.addEventListener("click", function () {
+      var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/TODO "});
+
+      function handleFailure(ev) {
+         console.log(oRequest, ev);
+         signUpLabel.value = "Failed!";
+         InputParams.class = "Failed";
+         U.setPageMessage('error', ev.message);
+         U.highlightRequiredInputs(true);
+      }
+
+      $.ajax(oRequest)
+         .fail(handleFailure)
+         .done(function (ev) {
+            if (ev.success) {
+               signUpButton.disabled = true;
+               console.log(oRequest, ev);
+               signUpLabel.value = "Success!";
+               InputParams.class = "Success";
+               U.setPageMessage('success', 'Success!  Go to the <a href="/CreateEvent">Event feed to see events </a>');
+            } else {
+               handleFailure(ev);
+            }
+         });
+
+   });
+</script>

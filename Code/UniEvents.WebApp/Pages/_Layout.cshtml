@@ -48,11 +48,12 @@
          </div>
          <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-               <li><a asp-page="/Groups">Groups</a></li>
+               
                <li><a asp-page="/ApiTest">ApiTest</a></li>
                @if (userContext.IsLoggedIn) {
                   <li><a asp-page="/Account">@userContext.GetUserDisplayName()</a></li>
                   <li><a asp-page="/Login">Logout</a></li>
+                  <li><a asp-page="/Groups">Groups</a></li> <!-- Groups page only available when logged in-->
                } else {
                   <li><a asp-page="/Login">Login</a></li>
                }              
