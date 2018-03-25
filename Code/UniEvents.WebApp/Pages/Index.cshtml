@@ -65,7 +65,9 @@
    <div id="EventModalContent" class="modal">
    </div>
 
-   <input id="CreateEventButton" type="button" value="+" onclick="popUp()" />
+   <a asp-page="/CreateEvent"> <!-- i know we were planning on a popup, but time is short-->
+       <input id="CreateEventButton" type="button" value="+" onclick="popUp()" />
+   </a>
    <!--Diplays the feed for events, using info given by the Model,
     dummy case is currently an int but i will spruce it up once i can access events and such-->
 
