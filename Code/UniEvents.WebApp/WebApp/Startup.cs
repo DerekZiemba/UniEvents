@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace UniEvents.WebApp {
 	public class Startup {
 		public Startup(IConfiguration configuration) {        
-		   Program.Configuration = configuration;
+		   WebApp.WebAppContext._init(configuration);
 		}
-
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services) {
@@ -21,8 +21,12 @@ namespace UniEvents.WebApp {
             options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
             options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
          });
+         services.AddDistributedMemoryCache();
+         services.AddSession();
 
-         Program.MetaData = new MetaDataManager(services.BuildServiceProvider().GetService<IApiDescriptionGroupCollectionProvider>());
+         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+         WebApp.WebAppContext._init(services);
       }
 
 
@@ -35,16 +39,13 @@ namespace UniEvents.WebApp {
 				//app.UseExceptionHandler("/Error");
             app.UseDeveloperExceptionPage();
 			}
-
-         if(env.IsDevelopment()){
-            Program.CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
-         } else if (env.IsStaging()) {
-            Program.CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
-         } else if (env.IsProduction()) {
-            Program.CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
-         }
+         WebApp.WebAppContext._init(env);
 
 			app.UseStaticFiles();
+
+         app.UseSession();
+
+         app.UseCookiePolicy();
 
 			app.UseMvc();
 

@@ -8,9 +8,11 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Globalization;
+using System.IO;
+using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Reflection;
-
+using Newtonsoft.Json;
 using CmpOp = System.Globalization.CompareOptions;
 using static System.Runtime.CompilerServices.MethodImplOptions;
 
@@ -19,24 +21,77 @@ namespace ZMBA {
 
 	public static partial class Common {
 
-      #region ************************************** Math ******************************************************
 
-      //public static bool IsBetween(this char value, char min, char max) => value > min && value < max;
-      //public static bool IsBetween(this SByte value, SByte min, SByte max) => value > min && value < max;
-      //public static bool IsBetween(this Int16 value, Int16 min, Int16 max) => value > min && value < max;
-      //public static bool IsBetween(this Int32 value, Int32 min, Int32 max) => value > min && value < max;
-      //public static bool IsBetween(this Int64 value, Int64 min, Int64 max) => value > min && value < max;
-      //public static bool IsBetween(this Byte value, Byte min, Byte max) => value > min && value < max;
-      //public static bool IsBetween(this UInt16 value, UInt16 min, UInt16 max) => value > min && value < max;
-      //public static bool IsBetween(this UInt32 value, UInt32 min, UInt32 max) => value > min && value < max;
-      //public static bool IsBetween(this UInt64 value, UInt64 min, UInt64 max) => value > min && value < max;
-      //public static bool IsBetween(this Single value, Single min, Single max) => value > min && value < max;
-      //public static bool IsBetween(this Double value, Double min, Double max) => value > min && value < max;
-      //public static bool IsBetween(this Decimal value, Decimal min, Decimal max) => value > min && value < max;
-      //public static bool IsBetween(this DateTime value, DateTime min, DateTime max) => value > min && value < max;
+      #region ************************************** JSON ******************************************************
+
+      public static Newtonsoft.Json.JsonSerializer JsonSerializer { get; private set; } = ((Func<Newtonsoft.Json.JsonSerializer>)(
+         () => {
+            var ser = new Newtonsoft.Json.JsonSerializer();
+            ser.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+            ser.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            return ser;
+         }))();
+
+      public static JsonSerializer CompactSerializer { get; private set; } = ((Func<JsonSerializer>)(
+         () => {
+            var ser = new Newtonsoft.Json.JsonSerializer();
+            ser.NullValueHandling = NullValueHandling.Ignore;
+            ser.TypeNameHandling = TypeNameHandling.None;
+            ser.MissingMemberHandling = MissingMemberHandling.Ignore;
+            return ser;
+         }))();
+
+
+      public static string Serialize<T>(this Newtonsoft.Json.JsonSerializer ser, T value) {
+         using (StringWriter sw = new StringWriter(new StringBuilder(256), (IFormatProvider)CultureInfo.InvariantCulture)) {
+            using (JsonTextWriter writer = new JsonTextWriter(sw)) {
+               ser.Serialize(writer, value, typeof(T));
+            }
+            return sw.ToString();
+         }
+      }
+
+      public static byte[] SerializeToGZippedBytes<T>(this JsonSerializer ser, T value) {
+         using (var mem = new MemoryStream())
+         using (var zip = new GZipStream(mem, CompressionMode.Compress))
+         using (var buffer = new BufferedStream(zip, 8192))
+         using (var stream = new StreamWriter(buffer, Encoding.UTF8))
+         using (var writer = new JsonTextWriter(stream)) {
+            ser.Serialize(writer, value, typeof(T));
+            writer.Flush();
+            return mem.ToArray();
+         }
+      }
+
+      public static T DeserializeGZippedBytes<T>(this JsonSerializer ser, byte[] bytes) {
+         using (var mem = new MemoryStream(bytes))
+         using (var zip = new GZipStream(mem, CompressionMode.Decompress))
+         using (var stream = new StreamReader(zip, Encoding.UTF8))
+         using (var reader = new JsonTextReader(stream)) {
+            return ser.Deserialize<T>(reader);
+         }
+      }
+
+
+      public static T Deserialize<T>(this Newtonsoft.Json.JsonSerializer ser, string value) {
+         using (JsonTextReader reader = new JsonTextReader(new StringReader(value))) {
+            return ser.Deserialize<T>(reader);
+         }
+      }
+
+      public static T DeserializeOrDefault<T>(this Newtonsoft.Json.JsonSerializer ser, string value, T @default = default(T)) {
+         if (!value.IsNullOrWhitespace()) {
+            try {
+               return ser.Deserialize<T>(value);
+            } catch (Exception ex) { }
+         }
+         return @default;
+      }
 
 
       #endregion
+
+
 
 
 
@@ -438,10 +493,9 @@ namespace ZMBA {
 
 
 
-		#endregion
+      #endregion
 
 
-
-	}
+   }
 
 }

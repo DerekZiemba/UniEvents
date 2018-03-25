@@ -32,10 +32,10 @@
    });
 
    function handleLogin() {
-      U.user_TryLogin(document.querySelector("input[param=UserName]").value, document.querySelector("input[param=Password]").value,
+      U.UserAccount.TryLogin(document.querySelector("input[param=UserName]").value, document.querySelector("input[param=Password]").value,
          function onSuccess(ev) {
             console.log(ev);
-            U.setPageMessage('success', "Welcome " + ev.result.displayName);
+            U.setPageMessage('success', "Welcome " + ev.result.userName);
          },
          function onError(ev) {
             console.log(ev);

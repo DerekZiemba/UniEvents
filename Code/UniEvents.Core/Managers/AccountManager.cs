@@ -66,29 +66,22 @@ namespace UniEvents.Managers {
          }
       }
 
+      public async Task<bool> CheckPrivilege(string username, string apikey) {
+         if (!username.IsNullOrWhitespace() && !apikey.IsNullOrWhitespace()) {
+            try {
+               DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(Ctx, username, apikey).ConfigureAwait(false);
+               return dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash);
+            } catch (Exception ex) { }
+         }
+         return false;
+      }
 
-      public async Task<ApiResult<VerifiedLogin>> VerifyLogin(string username, string apikey) {
-         if (username.IsNullOrWhitespace()) {
-            return new ApiResult<VerifiedLogin>(false, "Invalid Username.");
-         }
-         if (apikey.IsNullOrWhitespace()) {
-            return new ApiResult<VerifiedLogin>(false, "Invalid ApiKey.");
-         }
-         var result = new ApiResult<VerifiedLogin>();
-         try {
-            DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(Ctx, username, apikey).ConfigureAwait(false);
-            result.Result = new VerifiedLogin() {
-               IsLoggedIn = dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash),
-               LoginDate = dbLogin?.LoginDate
-            };
-            if(!result.Result.IsLoggedIn) {
-               result.Message = "Invalid Login";
-            }
-            result.Success = true;
-         } catch (Exception ex) {
-            result.Message = ex.Message + " \n " + ex.InnerException?.Message;
-         }
-         return result;
+      public async Task<VerifiedLogin> GetVerifiedLogin(string username, string apikey) {
+         DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(Ctx, username, apikey).ConfigureAwait(false);
+         return new VerifiedLogin() {
+            IsLoggedIn = dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash),
+            LoginDate = dbLogin?.LoginDate
+         };
       }
 
       /// <param name="username"></param>

@@ -122,4 +122,7 @@
       <DatabaseSqlCmdVariable>dbUniHangouts</DatabaseSqlCmdVariable>
     </ArtifactReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_RSVPTypes_Get.sql" />
+  </ItemGroup>
 </Project>

@@ -15,7 +15,7 @@ namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
    [ApiExplorerSettings(IgnoreApi = false, GroupName = nameof(LocationsController))]
-   public class LocationsController : Controller {
+   public class LocationsController : WebAppController {
 
       [HttpGet, Route("webapi/locations/search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
       public ApiResult<List<StreetAddress>> Search(long? ParentLocationID = null,
@@ -25,20 +25,19 @@ namespace UniEvents.WebAPI.Controllers {
                                                    string AdminDistrict = null,
                                                    string PostalCode = null,
                                                    string Description = null) {
-
-         return Program.CoreContext.LocationManager.SearchLocations(ParentLocationID: ParentLocationID, Name: Name, AddressLine: AddressLine, Locality: Locality, AdminDistrict: AdminDistrict, PostalCode: PostalCode, Description: Description);
+         return this.LocationManager().SearchLocations(ParentLocationID: ParentLocationID, Name: Name, AddressLine: AddressLine, Locality: Locality, AdminDistrict: AdminDistrict, PostalCode: PostalCode, Description: Description);
       }
 
 
       [HttpPost, Route("webapi/locations/create/{username?}/{apikey?}")]
       public async  Task<ApiResult<StreetAddress>> Create(string username, string apikey, StreetAddress address) {
-         var login = await Program.CoreContext.AccountManager.VerifyLogin(username, apikey).ConfigureAwait(false);
-         if (!login.Success || !login.Result.IsLoggedIn) {
-            return new ApiResult<StreetAddress>(false, "Must be Logged in.");
+         if (!await this.AccountManager().CheckPrivilege(username, apikey)) {
+            return new ApiResult<StreetAddress>(false, "Check your privilege. This is a privileged operation.");
          }
-         return await Program.CoreContext.LocationManager.CreateLocation(address);
+         return await this.LocationManager().CreateLocation(address);         
       }
 
 
+      public LocationsController(IHttpContextAccessor accessor): base(accessor) { }
    }
 }

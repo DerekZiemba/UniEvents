@@ -5,6 +5,7 @@
 	<IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
 	 <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
 	 <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
+	 <RootNamespace>UniEvents</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>7.2</LangVersion>

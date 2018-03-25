@@ -127,7 +127,7 @@
 
 
 
-}(window, window.document, window.jQuery, window.ZMBA, window.U));
+}(window, window.document, window.jQuery, window.ZMBA, window.U = window.U || {}));
 
 
 
