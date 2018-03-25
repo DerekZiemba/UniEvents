@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace UniEvents.WebApp.Pages {
-   public class GroupModel : WebAppPageModel {
+   public class GroupsModel : WebAppPageModel {
 
-      public GroupModel(IHttpContextAccessor accessor) : base(accessor) { }
+      public GroupsModel(IHttpContextAccessor accessor) : base(accessor) { }
 
       public void OnGet() {
 

@@ -582,7 +582,6 @@
                         }
                     })
                         .always(function (ev) {
-                        document.cookies.removeCookie("userlogin");
                         this.LoginCookie = null;
                     });
                 }

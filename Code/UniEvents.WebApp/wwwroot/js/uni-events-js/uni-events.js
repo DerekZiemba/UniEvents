@@ -16,7 +16,6 @@
             
             TryLogin: function (username, password, onSuccess, onFailure) {
                function handleFailure(ev) { if (onFailure) { onFailure(ev); } }
-
                $.ajax({ type: "GET", url: `webapi/account/login?UserName=${encodeURI(username)}&Password=${encodeURI(password)}` })
                   .fail(handleFailure)
                   .done(function (ev) {
@@ -41,7 +40,6 @@
                      }
                   })
                   .always(function (ev) {
-                     document.cookies.removeCookie("userlogin");
                      this.LoginCookie = null;
                   });
             }
