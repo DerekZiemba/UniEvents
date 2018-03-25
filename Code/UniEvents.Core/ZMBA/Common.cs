@@ -64,6 +64,7 @@ namespace ZMBA {
       }
 
       public static T DeserializeGZippedBytes<T>(this JsonSerializer ser, byte[] bytes) {
+         if(bytes is null) { return default; }
          using (var mem = new MemoryStream(bytes))
          using (var zip = new GZipStream(mem, CompressionMode.Decompress))
          using (var stream = new StreamReader(zip, Encoding.UTF8))
@@ -90,8 +91,6 @@ namespace ZMBA {
 
 
       #endregion
-
-
 
 
 

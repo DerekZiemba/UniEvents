@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -39,18 +40,51 @@ namespace UniEvents.WebApp {
    }
 
    public class WebAppPageModel : PageModel, IWebAppContext {
-      public UserContext UserContext { get; private set; }
+      private readonly IHttpContextAccessor _httpContextAccessor;
+      private object _userctxLock = new object();
+      private UserContext _UserContext = null;
+
+      public new HttpContext HttpContext { get => base.HttpContext ?? _httpContextAccessor.HttpContext; }
+      public UserContext UserContext {
+         get {
+            if(_UserContext == null && _userctxLock != null) {
+               lock (_userctxLock) {
+                  if (_UserContext != null) { return _UserContext; }
+                  _UserContext = UserContext.InitContext(HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
+                  Interlocked.Exchange(ref _userctxLock, null);
+               }
+            }
+            return _UserContext;
+         }
+      }
 
       public WebAppPageModel(IHttpContextAccessor accessor) {
-         UserContext = UserContext.InitContext(accessor.HttpContext);
+         _httpContextAccessor = accessor;
       }
    }
 
    public class WebAppController : Controller, IWebAppContext {
-      public UserContext UserContext { get; private set; }
+      private readonly IHttpContextAccessor _httpContextAccessor;
+      private object _userctxLock = new object();
+      private UserContext _UserContext = null;
+
+      public new HttpContext HttpContext { get => base.HttpContext ?? _httpContextAccessor.HttpContext; }
+      public UserContext UserContext {
+         get {
+            if (_UserContext == null && _userctxLock != null) {
+               lock (_userctxLock) {
+                  if (_UserContext != null) { return _UserContext; }
+                  _UserContext = UserContext.InitContext(HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
+                  Interlocked.Exchange(ref _userctxLock, null);
+               }
+            }
+            return _UserContext;
+         }
+      }
+
 
       public WebAppController(IHttpContextAccessor accessor) {
-         UserContext = UserContext.InitContext(accessor.HttpContext);
+         _httpContextAccessor = accessor;
       }
    }
 

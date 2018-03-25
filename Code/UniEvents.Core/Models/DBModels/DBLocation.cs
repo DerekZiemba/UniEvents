@@ -106,7 +106,7 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      internal static async Task<DBLocation> SP_Location_GetAsync(CoreContext ctx, long LocationID) {
+      public static async Task<DBLocation> SP_Location_GetAsync(CoreContext ctx, long LocationID) {
          if (LocationID <= 0) { throw new ArgumentNullException("LocationID_Invalid"); }
 
 			using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))

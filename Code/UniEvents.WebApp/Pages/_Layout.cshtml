@@ -1,6 +1,6 @@
 ﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @{
-   UserContext userContext = UserContext.InitContext(HttpContextAccessor.HttpContext);
+   UserContext userContext = UserContext.InitContext(HttpContextAccessor.HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
 }
 
 <!DOCTYPE html>
@@ -48,15 +48,13 @@
          </div>
          <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-               
                <li><a asp-page="/ApiTest">ApiTest</a></li>
-               @if (userContext.IsLoggedIn) {
-                  <li><a asp-page="/Account">@userContext.GetUserDisplayName()</a></li>
-                  <li><a asp-page="/Login">Logout</a></li>
+               @if (userContext != null && userContext.IsVerifiedLogin) {
                   <li><a asp-page="/Groups">Groups</a></li> <!-- Groups page only available when logged in-->
+                  <li><a asp-page="/Account">@userContext.UserDisplayName</a></li>                 
                } else {
                   <li><a asp-page="/Login">Login</a></li>
-               }              
+               }         
             </ul>
          </div>
       </div>

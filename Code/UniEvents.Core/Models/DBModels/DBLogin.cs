@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -31,11 +32,17 @@ namespace UniEvents.Models.DBModels {
          LoginDate = reader.GetDateTime(nameof(LoginDate));
       }
 
-      internal static async Task<bool> SP_Account_LoginAsync(CoreContext ctx, DBLogin model) {
-         if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
-         if (model.APIKey.IsNullOrWhitespace()) { throw new ArgumentNullException("APIKey_Invalid"); }
-         if (model.APIKeyHash.IsEmpty()) { throw new ArgumentNullException("APIKeyHash_Invalid"); }
+      public static async Task<DBLogin> LoginUserNameAsync(CoreContext ctx, string username) {
+         var dbLogin = new DBLogin();
+         dbLogin.UserName = username;
+         (dbLogin.APIKeyHash, dbLogin.APIKey) = Crypto.CreateAPIKey256(dbLogin.UserName);
+         if(await SP_Account_LoginAsync(ctx, dbLogin).ConfigureAwait(false)) {
+            return dbLogin;
+         }
+         return null;
+      }
 
+      private static async Task<bool> SP_Account_LoginAsync(CoreContext ctx, DBLogin model) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Login]", conn) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), model.UserName);
@@ -52,7 +59,7 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      internal static async Task<DBLogin> SP_Account_Login_GetAsync(CoreContext ctx, string UserName, string APIKey) {
+      public static async Task<DBLogin> SP_Account_Login_GetAsync(CoreContext ctx, string UserName, string APIKey) {
          if (UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
          if (APIKey.IsNullOrWhitespace()) { throw new ArgumentNullException("APIKey_Invalid"); }
          
@@ -71,7 +78,22 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      internal static async Task<bool> SP_Account_LogoutAsync(CoreContext ctx, string UserName, string APIKey) {
+      public static IEnumerable<DBLogin> SP_Account_Login_GetAll(CoreContext ctx, string UserName) {
+         if (UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
+
+         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Logins_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), UserName);
+            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+            using (SqlDataReader reader = cmd.ExecuteReader()) {
+               while (reader.Read()) {
+                  yield return new DBLogin(reader);
+               }
+            }
+         }
+      }
+
+      public static async Task<bool> SP_Account_LogoutAsync(CoreContext ctx, string UserName, string APIKey) {
          if (UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))

@@ -36,6 +36,9 @@
          function onSuccess(ev) {
             console.log(ev);
             U.setPageMessage('success', "Welcome " + ev.result.userName);
+            window.setTimeout(function () { 
+               location.pathname = "";//Go to Homepage
+            }, 1000);
          },
          function onError(ev) {
             console.log(ev);

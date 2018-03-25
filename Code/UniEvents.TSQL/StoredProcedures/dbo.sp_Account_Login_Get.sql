@@ -11,6 +11,6 @@ AS
 SET NOCOUNT ON;
 
 SELECT TOP 1 * FROM dbo.Logins AS logins 
-WHERE (logins.UserName = @UserName AND logins.APIKey = APIKey)
+WHERE (logins.UserName = @UserName AND logins.APIKey = @APIKey)
 
 GO

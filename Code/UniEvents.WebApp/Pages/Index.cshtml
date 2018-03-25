@@ -1,9 +1,7 @@
 ﻿@page
 @model IndexModel
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @{
     ViewData["Title"] = "Home page";
-    UserContext userContext = UserContext.InitContext(HttpContextAccessor.HttpContext);
 }
 
 @section Scripts {
@@ -67,7 +65,7 @@
     <div id="EventModalContent" class="modal">
     </div>
 
-    @if (userContext.IsLoggedIn)
+    @if (Model.UserContext != null && Model.UserContext.IsVerifiedLogin)
     {
         <a asp-page="/CreateEvent">
             <!-- i know we were planning on a popup, but time is short-->

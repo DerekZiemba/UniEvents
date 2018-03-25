@@ -556,7 +556,6 @@
                         .done(function (ev) {
                         if (ev.success) {
                             this.LoginCookie = ev.result;
-                            document.cookies.setCookie("userlogin", ev.result, Date.Current.AddDays(14));
                             if (onSuccess) {
                                 onSuccess(ev);
                             }

@@ -20,43 +20,139 @@ namespace UniEvents.WebAPI.Controllers {
    public class AccountsController : WebAppController {
 
       [HttpGet, Route("webapi/account/login/{UserName?}/{Password?}")]
-      public async Task<ApiResult<AccountLogin>> Login(string username, string password) {
-         if (this.UserContext.IsLoggedIn) {
-            return new ApiResult<AccountLogin>(false, "You are all ready logged in. Logout before you can login.");
-         }
-         ApiResult<AccountLogin> login = await this.AccountManager().Login(username, password);
-         //HttpContext.Request.Cookies.
-         return login;
-      }
+      public async Task<ApiResult<UserLoginCookie>> Login(string username, string password) {
+         ApiResult<UserLoginCookie> apiresult = new ApiResult<UserLoginCookie>();
 
+         if (this.UserContext != null) { return apiresult.Failure("You are all ready logged in. Logout before you can login."); }
+         if (username.IsNullOrWhitespace() || password.IsNullOrWhitespace()) { return apiresult.Failure("Invalid Username/Password");  }
 
-      [HttpGet, Route("webapi/account/verifylogin/{username?}/{apikey?}")]
-      public async Task<ApiResult<VerifiedLogin>> VerifyLogin(string username, string apikey) {
-         if (username.IsNullOrWhitespace()) {
-            return new ApiResult<VerifiedLogin>(false, "Invalid Username.");
-         }
-         if (apikey.IsNullOrWhitespace()) {
-            return new ApiResult<VerifiedLogin>(false, "Invalid ApiKey.");
-         }
-         var result = new ApiResult<VerifiedLogin>();
+         DBModels.DBAccount dbAccount = null;
          try {
-            result.Result = await this.AccountManager().GetVerifiedLogin(username, apikey);
-            if (!result.Result.IsLoggedIn) {
-               result.Message = "Invalid Login";
-            }
-            result.Success = true;
-         } catch (Exception ex) {
-            result.Message = ex.Message + " \n " + ex.InnerException?.Message;
+            dbAccount = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+
+         if (dbAccount == null) {  return apiresult.Failure("Account does not exist.");  }
+         if (!Crypto.VerifyHashMatch(password, dbAccount.Salt, dbAccount.PasswordHash)) {  return apiresult.Failure("Invalid Password");  }
+
+         DBModels.DBLogin dbLogin = null;
+         try {
+            dbLogin = await DBModels.DBLogin.LoginUserNameAsync(WebAppContext.CoreContext, dbAccount.UserName).ConfigureAwait(false);
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+         
+         if (dbLogin == null) {  apiresult.Failure("Login Failed");  }
+
+         apiresult.Win(new UserLoginCookie() { UserName = username, APIKey = dbLogin.APIKey, VerifyDate = dbLogin.LoginDate });
+
+         var ctx = await UserContext.InitContextFromCookie(this.HttpContext, apiresult.Result).ConfigureAwait(false);
+         if (ctx == null) {
+            return apiresult.Failure("Failed to set login cookie for unknown reason.");
          }
-         return result;
+         return apiresult;
       }
 
 
-      /// <param name="username"></param>
-      /// <param name="keypass">If APIKey, logs out device.  If password, logout everywhere.</param>
-      [HttpGet, Route("webapi/account/logout/{username?}/{keypass?}")]
-      public async Task<ApiResult> Logout(string username, string keypass) {
-         return await this.AccountManager().Logout(username, keypass);
+      [HttpGet, Route("webapi/account/verifyapikey/{username?}/{apikey?}")]
+      public async Task<ApiResult> VerifyApiKey(string username, string apikey) {
+         ApiResult apiresult = new ApiResult();
+         if (username.IsNullOrWhitespace()) { return apiresult.Failure("Invalid Username."); }
+         if (apikey?.Length != Crypto.APIKeyLength) { return apiresult.Failure("Invalid APIKey."); }
+         if (this.UserContext == null) { return apiresult.Failure("You do not have permission to perform this action."); }
+         if (!this.UserContext.IsVerifiedLogin) { return apiresult.Failure("Login Credentials Expired. Try Relogging In."); }
+
+         DBModels.DBLogin dbLogin;
+         try {
+            dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, username, apikey).ConfigureAwait(false);
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+
+         if (dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash)) {
+            apiresult.Win("Is Valid ApiKey");
+         } else {
+            apiresult.Failure("ApiKey is Invalid");
+         }
+
+         return apiresult;
+      }
+
+      /// <summary>
+      /// If username and apikeyorpassword are empty, logs out current user.
+      /// If username and apikeyorpassword have value, logs out just that apikeyorpassword
+      /// If username has value, logs out that user everywhere, if this user has permission to do that.
+      /// </summary>
+      [HttpGet, Route("webapi/account/logout/{username?}/{apikeyorpassword?}")]
+      public async Task<ApiResult> Logout(string username, string apikeyorpassword) {
+         if (username.IsNullOrWhitespace() && apikeyorpassword.IsNullOrWhitespace()) {
+            return await LogOutCurrentUser().ConfigureAwait(false);
+         }
+         if (username.IsNullOrWhitespace() || apikeyorpassword.IsNullOrWhitespace()) {
+            return new ApiResult().Failure("Invalid Username, Password, or APIKey");
+         }
+         if (apikeyorpassword.Length == Crypto.APIKeyLength) {
+            return await LogOutApiKey(username, apikeyorpassword).ConfigureAwait(false);
+         } else {
+            return await LogUserOutEverywhere(username, apikeyorpassword).ConfigureAwait(false);
+         }
+
+         async Task<ApiResult> LogOutCurrentUser() {
+            ApiResult apiresult = new ApiResult();
+            if (this.UserContext == null) { return apiresult.Failure("You must be logged in order to logout."); }
+
+            bool bLoggedOut;
+            try {
+               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, UserContext.APIKey).ConfigureAwait(false);
+            } catch (Exception ex) { return apiresult.Failure(ex); }
+
+
+            if (bLoggedOut) {
+               apiresult.Win($"Logged out current user: {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+               UserContext.RemoveCurrentUserContext(this.HttpContext);
+            } else {
+               apiresult.Failure($"Failed to log out current user: {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+            }
+            return apiresult;
+         }
+         async Task<ApiResult> LogOutApiKey(string _username, string _apikey) {
+            ApiResult apiresult = new ApiResult();
+            bool bLoggedOut;
+            try {
+               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, _username, _apikey).ConfigureAwait(false);
+            } catch (Exception ex) { return apiresult.Failure(ex); }
+
+            if (bLoggedOut) {
+               apiresult.Win($"Logged out: {_username}'s APIKey {_apikey}");
+            } else {
+               apiresult.Failure($"Failed to log out: {_username}'s APIKey {_apikey}");
+            }
+            return apiresult;
+         }
+         async Task<ApiResult> LogUserOutEverywhere(string _username, string _password) {
+            ApiResult apiresult = new ApiResult();          
+            DBModels.DBAccount dbAccount;
+            try {
+               dbAccount = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, _username).ConfigureAwait(false);
+            } catch (Exception ex) { return apiresult.Failure(ex); }
+
+            if (dbAccount == null) {
+               return apiresult.Failure("Account does not exist.");
+            }
+            if (!Crypto.VerifyHashMatch(_password, dbAccount.Salt, dbAccount.PasswordHash)) {
+               return apiresult.Failure("Invalid Password");
+            }
+
+            bool bLoggedOut;
+            try {
+               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, _username, null).ConfigureAwait(false);
+            } catch (Exception ex) { return apiresult.Failure(ex); }
+
+            if (bLoggedOut) {
+               apiresult.Win($"Logged out {_username} everywhere.");
+               if(UserContext != null && UserContext.UserName == _username) {
+                  UserContext.RemoveCurrentUserContext(this.HttpContext);
+               }
+            } else {
+               apiresult.Failure($"Failed to log out {_username} anywhere.");
+            }
+            return apiresult;
+         }
       }
 
 
@@ -73,7 +169,19 @@ namespace UniEvents.WebAPI.Controllers {
          if (!await this.AccountManager().CheckPrivilege(username, apikey)) {
             return new ApiResult<UserAccount>(false, "Check your privilege. This is a privileged operation.");
          }
-         return await this.AccountManager().GetUser(username, includeLocation);
+         try {
+            DBModels.DBAccount dbAccount = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
+            if (dbAccount == null) {
+               return new ApiResult<UserAccount>(false, "User doesn't Exist");
+            }
+            if (includeLocation && dbAccount.LocationID.HasValue) {
+               DBModels.DBLocation dbLocation = await DBModels.DBLocation.SP_Location_GetAsync(WebAppContext.CoreContext, dbAccount.LocationID.Value);
+               return new ApiResult<UserAccount>(true, "", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+            }
+            return new ApiResult<UserAccount>(true, "", new UserAccount(dbAccount, null));
+         } catch (Exception ex) {
+            return new ApiResult<UserAccount>(false, ex.Message + " \n " + ex.InnerException?.Message);
+         }
       }
 
       public AccountsController(IHttpContextAccessor accessor): base(accessor) { }
