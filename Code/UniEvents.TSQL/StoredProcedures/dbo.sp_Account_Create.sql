@@ -21,7 +21,6 @@ CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Create]
 AS
 SET NOCOUNT ON;
 
-IF @DisplayName IS NULL SET @DisplayName = @UserName;
 IF @LocationID IS NOT NULL AND NOT EXISTS (SELECT TOP 1 * FROM [dbo].Locations WHERE LocationID = @LocationID) Throw 50000, 'Location_Invalid', 1;
 IF EXISTS (SELECT TOP 1 * FROM [dbo].Accounts WHERE UserName = @UserName) THROW 50000, 'UserName_Taken',1;
 

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Text;
-
+using System.Threading.Tasks;
+using UniEvents.Core;
 using ZMBA;
+
 
 namespace UniEvents.Models.DBModels {
    public class DBTag {
@@ -24,6 +27,27 @@ namespace UniEvents.Models.DBModels {
          Name = reader.GetString(nameof(Name));
          Description = reader.GetString(nameof(Description));
       }
+
+
+      public static async Task<List<DBTag>> SP_Tags_Search(CoreContext ctx, int? TagID = null, string Name = null, string Description = null) {
+         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.Int, nameof(TagID), TagID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Name), Name);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
+
+            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+
+            var ls = new List<DBTag>();
+            using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
+               while (await reader.ReadAsync().ConfigureAwait(false)) {
+                  ls.Add(new DBTag(reader));
+               }
+            }
+            return ls;
+         }
+      }
+
 
    }
 }
