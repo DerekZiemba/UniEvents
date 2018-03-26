@@ -47,15 +47,19 @@
             <a asp-page="/Index" class="navbar-brand">UniEvents</a>
          </div>
          <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-               <li><a asp-page="/ApiTest">ApiTest</a></li>
-               @if (userContext != null && userContext.IsVerifiedLogin) {
-                  <li><a asp-page="/Account">@userContext.UserDisplayName</a></li>                 
-               } else {
-                  <li><a asp-page="/Login">Login</a></li>
-                  <li><a asp-page="/SignUp">SignUp</a></li>
-               }         
-            </ul>
+             <ul class="nav navbar-nav">
+                 <li><a asp-page="/ApiTest">ApiTest</a></li>
+                 @if (userContext != null && userContext.IsVerifiedLogin)
+    {
+
+    }
+    else
+    {
+             <li><a asp-page="/Account">@userContext.UserDisplayName</a></li>
+             <li><a asp-page="/Login">Login</a></li>
+             <li><a asp-page="/SignUp">SignUp</a></li>
+}
+             </ul>
          </div>
       </div>
    </nav>

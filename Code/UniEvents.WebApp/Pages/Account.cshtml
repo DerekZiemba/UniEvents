@@ -1,32 +1,97 @@
-﻿@page
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@page
 @using System.Web
 @model UniEvents.WebApp.Pages.AccountModel
 @{
-   ViewData["Title"] = "Account";
-   Layout = "~/Pages/_Layout.cshtml";
+    UserContext userContext = UserContext.InitContext(HttpContextAccessor.HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
+    ViewData["Title"] = "Account";
+    Layout = "~/Pages/_Layout.cshtml";
 }
 
 <div id="AccountPage">
-   <h2>Account</h2>
+    <h4>Account Info</h4>
+    <ul>
+        <li>
+            <label>UserName: @userContext.UserName</label>
+            <span></span>
+        </li>
+        <li>
+            <label>Display Name: @userContext.UserDisplayName</label>
+            <span></span>
+        </li>
+    </ul>
+    <h4>Personal Info</h4>
+    <ul>
+        <li>
+            <label>First Name: @userContext.FirstName</label>
+            <span></span>
+        </li>
+        <li>
+            <label>Last Name:  @userContext.LastName</label>
+            <span></span>
+        </li>
+        <li>
+            <label>School Email: @userContext.SchoolEmail</label>
+            <span></span>
+        </li>
+        <li>
+            <label>Contact Email: @userContext.ContactEmail</label>
+            <span></span>
+        </li>
+        <li>
+            <label>Phone Number: @userContext.PhoneNumber</label>
+            <span></span>
+        </li>
+    </ul>
 
-   <h4>Active Logins on Record:</h4>
-   <div id="allLoginsTableContainer">
-      <table>
-         <tr><th></th><th>Logon Date</th><th>ApiKey</th></tr>
-         @foreach (var record in Model.AllLogins) {
-            bool bIsCurrent = record.APIKey == Model.CurrentLogin?.APIKey;
 
-            <tr class="@(bIsCurrent? "current" : "")">
-               <td><span>@(bIsCurrent ? "(current)" : "")</span></td>
-               <td><time datetime="@record.LoginDate.ToString("u")"></time></td>
-               <td><span class="apikey">@record.APIKey</span></td>
-               <td><span><a class="btnLogoutRecord">Logout</a></span></td>
-            </tr>
-         }
-      </table>
+    <h4>Location Info</h4>
+    <ul>
+        <li>
+            <label>Name: @userContext.LocationName</label>
+            <span></span>
+        </li>
+        <li>
+            <label>Address: @userContext.AddressLine</label>
+            <span></span>
+        </li>
+        <li>
+            <label>City: @userContext.Locality</label>
+            <span></span>
+        </li>
+        <li>
+            <label>State:@userContext.AdminDistrict</label>
+            <span></span>
+        </li>
+        <li>
+            <label>Country: @userContext.CountryRegion</label>
+            <span></span>
+        </li>
+        <li>
+            <label>Postal Code: @userContext.PostalCode</label>
+            <span></span>
+        </li>
+    </ul>
+    <p>@userContext.</p>
+    <h4>Active Logins on Record:</h4>
+    <div id="allLoginsTableContainer">
+        <table>
+            <tr><th></th><th>Logon Date</th><th>ApiKey</th></tr>
+            @foreach (var record in Model.AllLogins)
+            {
+                bool bIsCurrent = record.APIKey == Model.CurrentLogin?.APIKey;
 
-      <input id="btnLogoutAll" type="button" value="Logout Everywhere" />
-   </div>
+                <tr class="@(bIsCurrent? "current" : "")">
+                    <td><span>@(bIsCurrent ? "(current)" : "")</span></td>
+                    <td><time datetime="@record.LoginDate.ToString("u")"></time></td>
+                    <td><span class="apikey">@record.APIKey</span></td>
+                    <td><span><a class="btnLogoutRecord">Logout</a></span></td>
+                </tr>
+            }
+        </table>
+
+        <input id="btnLogoutAll" type="button" value="Logout Everywhere" />
+    </div>
 
 
 </div>
@@ -47,7 +112,7 @@
             url: `webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)&apikeyorpassword=${encodeURIComponent(key)}`,
             error: handleFailure,
             success: function (ev) {
-               if (!ev.success) { return handleFailure(ev); } 
+               if (!ev.success) { return handleFailure(ev); }
                U.setPageMessage('success', ev.message);
                tr.remove();
                if (tr.className === "current") {
@@ -67,7 +132,7 @@
          url: `webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)`,
          error: handleFailure,
          success: function (ev) {
-            if (!ev.success) { return handleFailure(ev); } 
+            if (!ev.success) { return handleFailure(ev); }
             U.setPageMessage('success', ev.message);
             window.setTimeout(function () {
                location.pathname = "";//Go to Homepage
