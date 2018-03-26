@@ -125,4 +125,19 @@
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_RSVPTypes_Get.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="DBInit\CreateDatabase.v3.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Tags_Create.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_EventTypes_Search.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_EventTypes_Create.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Event_Search.sql" />
+  </ItemGroup>
 </Project>

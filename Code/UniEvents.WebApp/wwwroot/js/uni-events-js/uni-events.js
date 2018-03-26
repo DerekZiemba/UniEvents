@@ -58,21 +58,29 @@
          });
       },
       buildAjaxRequestFromInputs: (function () {
+         const rgxCSVSplit = /\s*,\s*/;
          var request, querystring, path;
 
-         function setParam(name, value, source) {
+         function setTargetValue(target, name, value, jsType, isCollection) {
+            if (isCollection) {
+               target[name] = String(value).split(rgxCSVSplit);
+            } else {
+               target[name] = value;
+            }          
+         }
+         function setParam(name, value, source, jsType, isCollection) {
             if (ZMBA.IsNullOrWhitespace(value)) { return; }
             if (source === "QueryString" || source === "Url") {
                querystring += name + "=" + encodeURIComponent(value) + "&";
             } else if (name.indexOf('.') === -1) {
-               request.data[name] = value;
+               setTargetValue(request.data, name, value, jsType, isCollection);
             } else {
                var target = request.data;
                var parts = name.split('.');
                while (parts.length > 0) {
                   var part = parts.shift();
                   if (parts.length === 0) {
-                     target[part] = value;
+                     setTargetValue(target, part, value, jsType, isCollection);
                   } else {
                      if (!target[part]) { target[part] = {}; }
                      target = target[part];
@@ -89,14 +97,18 @@
             if (inputs.length) {
                for (let i = 0, len = inputs.length; i < len; i++) {
                   let input = inputs[i];
-                  let bHasGetAttrib = 'getAttribute' in input;
-                  setParam(bHasGetAttrib ? input.getAttribute("param") : input.param, input.value, bHasGetAttrib ? input.getAttribute("source") : input.source);
+                  if ('getAttribute' in input) {
+                     setParam(input.getAttribute("param"), input.value, input.getAttribute("source"), input.getAttribute("jsType"), input.getAttribute("isCollection") );
+                  } else {
+                     setParam(input.param, input.value, input.source, input.jsType, input.isCollection);
+                  }                  
                }
             } else {
                var names = Object.getOwnPropertyNames(inputs);
                for (let i = 0, len = names.length; i < len; i++) {
                   let name = names[i];
-                  setParam(name, inputs[name].value, inputs[name].source);
+                  let input = inputs[name];
+                  setParam(name, input.value, input.source, input.jsType, input.isCollection);
                }
             }
 
@@ -122,7 +134,13 @@
       }
    }, { override: false, merge: true });
 
-
+   $(document).ready(() => {
+      document.querySelectorAll("time").forEach(function (el) {
+         if (!el.innerText) {
+            el.innerText = (new Date(el.dateTime)).toLocaleString();
+         }      
+      });
+   });
 
 }(window, window.document, window.jQuery, window.ZMBA, window.U = window.U || {}));
 

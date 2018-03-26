@@ -8,7 +8,7 @@
 <head>
    <meta charset="utf-8" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>@ViewData["Title"] - UniEvents.WebApp</title>
+   <title>@ViewData["Title"] - UniEvents</title>
 
 
    <environment include="Development">
@@ -44,13 +44,12 @@
                <span class="icon-bar"></span>
             </button>
 
-            <a asp-page="/Index" class="navbar-brand">UniEvents.WebApp</a>
+            <a asp-page="/Index" class="navbar-brand">UniEvents</a>
          </div>
          <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                <li><a asp-page="/ApiTest">ApiTest</a></li>
                @if (userContext != null && userContext.IsVerifiedLogin) {
-                  <li><a asp-page="/Groups">Groups</a></li> <!-- Groups page only available when logged in-->
                   <li><a asp-page="/Account">@userContext.UserDisplayName</a></li>                 
                } else {
                   <li><a asp-page="/Login">Login</a></li>
