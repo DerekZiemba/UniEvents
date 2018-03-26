@@ -14,7 +14,7 @@
       <table>
          <tr><th></th><th>Logon Date</th><th>ApiKey</th></tr>
          @foreach (var record in Model.AllLogins) {
-            bool bIsCurrent = record.APIKey == Model.CurrentLogin.APIKey;
+            bool bIsCurrent = record.APIKey == Model.CurrentLogin?.APIKey;
 
             <tr class="@(bIsCurrent? "current" : "")">
                <td><span>@(bIsCurrent ? "(current)" : "")</span></td>
@@ -28,13 +28,6 @@
       <input id="btnLogoutAll" type="button" value="Logout Everywhere" />
    </div>
 
-
-
-   @if (Model.CurrentLogin != null) {
-
-
-
-   }
 
 </div>
 

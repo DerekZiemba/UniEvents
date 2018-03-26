@@ -53,7 +53,13 @@ namespace UniEvents.WebApp {
       public static void RemoveCurrentUserContext(HttpContext httpContext) {
          httpContext.Response.Cookies.Delete("userlogin");
          if (httpContext.Items.ContainsKey(nameof(UserContext))) { httpContext.Items.Remove(nameof(UserContext)); }
-         httpContext.Session.Remove(nameof(UserContext));
+
+         if (httpContext.Session.TryGetValue(nameof(UserContext), out byte[] bytes)) {
+            var ctx = CompactSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
+            ctx.Cookie.VerifyDate = default;
+            ctx.IsVerifiedLogin = false;
+            httpContext.Session.Set(nameof(UserContext), CompactSerializer.SerializeToGZippedBytes(ctx));
+         }
       }
 
       public static async Task<UserContext> InitContext(HttpContext httpContext) {
@@ -108,18 +114,19 @@ namespace UniEvents.WebApp {
                }
             }
          } else {
-            ctx.Cookie.VerifyDate = cookie.VerifyDate; 
-
             if (ctx.Cookie.VerifyDate < DateTime.UtcNow.AddMinutes(-10)) {
                DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.Cookie.UserName, ctx.Cookie.APIKey).ConfigureAwait(false);
                if(dbLogin != null) {
                   ctx.Cookie.UserName = dbLogin.UserName;
                   ctx.LoginDate = dbLogin.LoginDate;
                   ctx.IsVerifiedLogin = Crypto.VerifyHashMatch(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
+                  ctx.Cookie.VerifyDate = DateTime.UtcNow; 
                } else {
                   ctx.IsVerifiedLogin = false;
                }
-            } 
+            } else {
+               ctx.Cookie.VerifyDate = cookie.VerifyDate;
+            }
          }
 
          if (ctx.UserDisplayName.IsEmpty()) {
