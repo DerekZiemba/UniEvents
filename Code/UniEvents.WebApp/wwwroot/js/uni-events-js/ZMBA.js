@@ -204,6 +204,13 @@ function ExtensionsAndPolyfills(window, document, ZMBA){
          var matches = (this.document || this.ownerDocument).querySelectorAll(selector), i = matches.length;
          while (--i >= 0 && matches.item(i) !== this) { };
          return i > -1;
+      },
+      closest: function closest(s) { //For IE
+         var el = this;
+         do {
+            if (el.matches(s)) { return el; }
+            el = el.parentElement || el.parentNode;
+         } while (el !== null && el.nodeType === 1);
       }
    }, { enumerable: true, override: false });
 

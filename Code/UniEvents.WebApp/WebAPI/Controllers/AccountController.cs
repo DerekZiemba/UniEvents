@@ -80,10 +80,15 @@ namespace UniEvents.WebAPI.Controllers {
       /// </summary>
       [HttpGet, Route("webapi/account/logout/{username?}/{apikeyorpassword?}")]
       public async Task<ApiResult> Logout(string username, string apikeyorpassword) {
-         if (username.IsNullOrWhitespace() && apikeyorpassword.IsNullOrWhitespace()) {
+         var bHasUserName = !username.IsNullOrWhitespace();
+         var bHasPass = !apikeyorpassword.IsNullOrWhitespace();
+         if (!bHasUserName && !bHasPass) {
             return await LogOutCurrentUser().ConfigureAwait(false);
          }
-         if (username.IsNullOrWhitespace() || apikeyorpassword.IsNullOrWhitespace()) {
+         if(bHasUserName && !bHasPass) {
+            return await LogOutCurrentUserEverywhere().ConfigureAwait(false);
+         }
+         if (!bHasUserName || !bHasPass) {
             return new ApiResult().Failure("Invalid Username, Password, or APIKey");
          }
          if (apikeyorpassword.Length == Crypto.APIKeyLength) {
@@ -103,10 +108,27 @@ namespace UniEvents.WebAPI.Controllers {
 
 
             if (bLoggedOut) {
-               apiresult.Win($"Logged out current user: {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+               apiresult.Win($"Logged out {UserContext.UserName}'s APIKey {UserContext.APIKey}");
                UserContext.RemoveCurrentUserContext(this.HttpContext);
             } else {
-               apiresult.Failure($"Failed to log out current user: {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+               apiresult.Failure($"Failed to log out {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+            }
+            return apiresult;
+         }
+         async Task<ApiResult> LogOutCurrentUserEverywhere() {
+            ApiResult apiresult = new ApiResult();
+            if (this.UserContext == null) { return apiresult.Failure("You must be logged in order to logout."); }
+
+            bool bLoggedOut;
+            try {
+               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, null).ConfigureAwait(false);
+            } catch (Exception ex) { return apiresult.Failure(ex); }
+
+            if (bLoggedOut) {
+               apiresult.Win($"Logged out {UserContext.UserName}'s everywhere.");
+               UserContext.RemoveCurrentUserContext(this.HttpContext);
+            } else {
+               apiresult.Failure($"Failed to log out {UserContext.UserName}'s anywhere.");
             }
             return apiresult;
          }

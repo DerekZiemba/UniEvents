@@ -16,7 +16,7 @@
             
             TryLogin: function (username, password, onSuccess, onFailure) {
                function handleFailure(ev) { if (onFailure) { onFailure(ev); } }
-               $.ajax({ type: "GET", url: `webapi/account/login?UserName=${encodeURI(username)}&Password=${encodeURI(password)}` })
+               $.ajax({ type: "GET", url: `webapi/account/login?UserName=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}` })
                   .fail(handleFailure)
                   .done(function (ev) {
                      if (ev.success) {
@@ -30,7 +30,7 @@
             TryLogout: function (onSuccess, onFailure) {
                function handleFailure(ev) { if (onFailure) { onFailure(ev); } }
 
-               $.ajax({ type: "GET", url: `webapi/account/logout?UserName=${encodeURI(this.userName)}&keypass=${encodeURI(this.apiKey)}` })
+               $.ajax({ type: "GET", url: `webapi/account/logout?username=${encodeURIComponent(this.userName)}&apikeyorpassword=${encodeURIComponent(this.apiKey)}` })
                   .fail(handleFailure)
                   .done(function (ev) {
                      if (ev.success) {
@@ -49,7 +49,7 @@
          $.ajax({
             cache: false,
             type: "GET",
-            url: 'webapi/metadata?route=' + encodeURI(route),
+            url: 'webapi/metadata?route=' + encodeURIComponent(route),
             success: function (data) {
                if (data.result) {
                   cb(data.result);
@@ -63,7 +63,7 @@
          function setParam(name, value, source) {
             if (ZMBA.IsNullOrWhitespace(value)) { return; }
             if (source === "QueryString" || source === "Url") {
-               querystring += name + "=" + encodeURI(value) + "&";
+               querystring += name + "=" + encodeURIComponent(value) + "&";
             } else if (name.indexOf('.') === -1) {
                request.data[name] = value;
             } else {
