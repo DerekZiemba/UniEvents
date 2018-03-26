@@ -6,12 +6,15 @@
         feed.loadMoreEvents(10);
     });
 }(window, window.document, window.jQuery, window.U, window.ZMBA, function Factory(window, document, $, U, ZMBA) {
+    function GetLastChildOrSelf(el) {
+        return el && el.lastElementChild ? el.lastElementChild : el;
+    }
     var EventModal = (function () {
         var divTemplate = document.getElementById('Template_EventDetailsModal');
         var divEventModalContent = document.getElementById('EventModalContent');
         EventModal.elemClassNames = ["title", "caption", "host", "location", "address", "rsvp_attending", "description", "close", "join_event"];
         EventModal.elemClassNames.forEach(function (key) {
-            Object.defineProperty(EventModal.prototype, "el_" + key, { get: function () { return this.el.getElementsByClassName(key)[0]; } });
+            Object.defineProperty(EventModal.prototype, "el_" + key, { get: function () { return GetLastChildOrSelf(this.el.getElementsByClassName(key)[0]); } });
         });
         function _handleCloseClick(ev) {
             ev.stopPropagation();
@@ -53,9 +56,9 @@
     }());
     var FeedItem = (function () {
         var divTemplate = document.getElementById('Template_FeedItem');
-        FeedItem.dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending"];
+        FeedItem.dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "time_start", "time_end"];
         FeedItem.dataFields.forEach(function (key) {
-            Object.defineProperty(FeedItem.prototype, "el_" + key, { get: function () { return this.el.getElementsByClassName(key)[0]; } });
+            Object.defineProperty(FeedItem.prototype, "el_" + key, { get: function () { return GetLastChildOrSelf(this.el.getElementsByClassName(key)[0]); } });
         });
         function _handleClick(ev) {
             ev.stopPropagation();
@@ -69,8 +72,8 @@
                 this.el = elOrData;
                 this.data = {};
                 this.data.id = this.el.id;
-                this.data.startTime = this.time_start.dateTime;
-                this.data.endTime = this.time_end.dateTime;
+                this.data.startTime = this.el_time_start.dateTime;
+                this.data.endTime = this.el_time_end.dateTime;
                 for (var i = 0, len = FeedItem.dataFields.length; i < len; i++) {
                     var key = FeedItem.dataFields[i];
                     this.data[key] = this["el_" + key].innerText;
@@ -80,8 +83,8 @@
                 this.el = divTemplate.cloneNode(true);
                 this.data = elOrData;
                 this.el.id = this.data.id;
-                this.time_start.dateTime = this.data.startTime;
-                this.time_end.dateTime = this.data.endTime;
+                this.el_time_start.dateTime = this.data.startTime;
+                this.el_time_end.dateTime = this.data.endTime;
                 for (var i = 0, len = FeedItem.dataFields.length; i < len; i++) {
                     var key = FeedItem.dataFields[i];
                     this["el_" + key].innerText = this.data[key];
@@ -92,8 +95,6 @@
             this.enableListeners();
         }
         ZMBA.extendType(FeedItem.prototype, {
-            get time_start() { return this.el.querySelector(".time_start time"); },
-            get time_end() { return this.el.querySelector(".time_end time"); },
             enableListeners: function () {
                 this.el.addEventListener('click', this.handleClick);
             }

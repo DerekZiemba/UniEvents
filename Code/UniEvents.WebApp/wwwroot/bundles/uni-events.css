@@ -81,13 +81,23 @@ a { cursor: pointer; }
 #APITest input[type=button] { margin: 0 5px; }
 
 /*Place rules that target the IndexPage specifically*/
-#IndexPage #LocationSearch ul { text-align: right; display: inline-flex; justify-content: flex-end; }
+#IndexPage #EventFeed { padding: 1em; }
 
-#IndexPage #LocationSearch label { margin-right: 10px; min-width: 120px; }
+#IndexPage #EventFeed ul { overflow: auto; }
 
-#IndexPage #LocationSearch input { flex-grow: 1; }
+#IndexPage #EventFeed li { flex-direction: column; background-color: lightgray; width: 100%; padding: 5px 2vw 5px 2vw; border-radius: 5px; opacity: 0.9; }
 
-#IndexPage #LocationSearch textarea { width: 100%; height: 240px; }
+#IndexPage #EventFeed li:hover { opacity: 1; }
+
+#IndexPage .ef_item_container { width: 100%; }
+
+#IndexPage .ef_item { width: 100%; }
+
+#IndexPage .ef_item .title { font-size: 24px; }
+
+#IndexPage .ef_left { float: left; }
+
+#IndexPage .ef_right { float: right; }
 
 #AccountPage #allLoginsTableContainer { overflow-x: auto; }
 
@@ -102,6 +112,12 @@ a { cursor: pointer; }
 #AccountPage td:nth-child(2) { min-width: 12em; padding-right: 1em; }
 
 #AccountPage td:nth-child(3) { min-width: 25em; font-family: "Courier New", Courier, monospace; }
+
+#AccountPage #accountInfo label { width: 150px; }
+
+#AccountPage #accountInfo ul { max-width: 100rem; }
+
+#AccountPage #accountInfo span { width: 350px; }
 
 .HTMLTemplates { display: none; }
 

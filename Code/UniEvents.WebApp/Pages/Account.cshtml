@@ -1,106 +1,100 @@
-﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
-@page
+﻿@page
 @using System.Web
 @model UniEvents.WebApp.Pages.AccountModel
 @{
-    UserContext userContext = UserContext.InitContext(HttpContextAccessor.HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
-    ViewData["Title"] = "Account";
-    Layout = "~/Pages/_Layout.cshtml";
+   ViewData["Title"] = "Account";
+   Layout = "~/Pages/_Layout.cshtml";
 }
 
 <div id="AccountPage">
-    <h4>Account Info</h4>
-    <ul>
-        <li>
-            <label>UserName: @userContext.UserName</label>
-            <span></span>
-        </li>
-        <li>
-            <label>Display Name: @userContext.UserDisplayName</label>
-            <span></span>
-        </li>
-    </ul>
-    <h4>Personal Info</h4>
-    <ul>
-        <li>
-            <label>First Name: @userContext.FirstName</label>
-            <span></span>
-        </li>
-        <li>
-            <label>Last Name:  @userContext.LastName</label>
-            <span></span>
-        </li>
-        <li>
-            <label>School Email: @userContext.SchoolEmail</label>
-            <span></span>
-        </li>
-        <li>
-            <label>Contact Email: @userContext.ContactEmail</label>
-            <span></span>
-        </li>
-        <li>
-            <label>Phone Number: @userContext.PhoneNumber</label>
-            <span></span>
-        </li>
-    </ul>
+   <div id="accountInfo">
+      <h4>Account Info</h4>
+      <ul>
+         <li>
+            <label>UserName: </label>
+            <span>@Model.UserContext.UserName</span>
+         </li>
+         <li>
+            <label>Display Name: </label>
+            <span>@Model.UserContext.UserDisplayName</span>
+         </li>
+      </ul>
+      <h4>Personal Info</h4>
+      <ul>
+         <li>
+            <label>First Name: </label>
+            <span>@Model.UserContext.FirstName</span>
+         </li>
+         <li>
+            <label>Last Name:  </label>
+            <span>@Model.UserContext.LastName</span>
+         </li>
+         <li>
+            <label>School Email: </label>
+            <span>@Model.UserContext.SchoolEmail</span>
+         </li>
+         <li>
+            <label>Contact Email: </label>
+            <span>@Model.UserContext.ContactEmail</span>
+         </li>
+         <li>
+            <label>Phone Number: </label>
+            <span>@Model.UserContext.PhoneNumber</span>
+         </li>
+      </ul>
 
 
-    <h4>Location Info</h4>
-    <ul>
-        <li>
-            <label>Name: @userContext.LocationName</label>
-            <span></span>
-        </li>
-        <li>
-            <label>Address: @userContext.AddressLine</label>
-            <span></span>
-        </li>
-        <li>
-            <label>City: @userContext.Locality</label>
-            <span></span>
-        </li>
-        <li>
-            <label>State:@userContext.AdminDistrict</label>
-            <span></span>
-        </li>
-        <li>
-            <label>Country: @userContext.CountryRegion</label>
-            <span></span>
-        </li>
-        <li>
-            <label>Postal Code: @userContext.PostalCode</label>
-            <span></span>
-        </li>
-    </ul>
-    <p>@userContext.</p>
-    <h4>Active Logins on Record:</h4>
-    <div id="allLoginsTableContainer">
-        <table>
-            <tr><th></th><th>Logon Date</th><th>ApiKey</th></tr>
-            @foreach (var record in Model.AllLogins)
-            {
-                bool bIsCurrent = record.APIKey == Model.CurrentLogin?.APIKey;
+      <h4>Location Info</h4>
+      <ul>
+         <li>
+            <label>Name: </label>
+            <span>@Model.UserContext.LocationName</span>
+         </li>
+         <li>
+            <label>Address: </label>
+            <span>@Model.UserContext.AddressLine</span>
+         </li>
+         <li>
+            <label>City: </label>
+            <span>@Model.UserContext.Locality</span>
+         </li>
+         <li>
+            <label>State:</label>
+            <span>@Model.UserContext.AdminDistrict</span>
+         </li>
+         <li>
+            <label>Country: </label>
+            <span>@Model.UserContext.CountryRegion</span>
+         </li>
+         <li>
+            <label>Postal Code: </label>
+            <span>@Model.UserContext.PostalCode</span>
+         </li>
+      </ul>
+   </div>
+   <h4>Active Logins on Record:</h4>
+   <div id="allLoginsTableContainer">
+      <table>
+         <tr><th></th><th>Logon Date</th><th>ApiKey</th></tr>
+         @foreach (var record in Model.AllLogins) {
+            bool bIsCurrent = record.APIKey == Model.CurrentLogin?.APIKey;
 
-                <tr class="@(bIsCurrent? "current" : "")">
-                    <td><span>@(bIsCurrent ? "(current)" : "")</span></td>
-                    <td><time datetime="@record.LoginDate.ToString("u")"></time></td>
-                    <td><span class="apikey">@record.APIKey</span></td>
-                    <td><span><a class="btnLogoutRecord">Logout</a></span></td>
-                </tr>
-            }
-        </table>
+            <tr class="@(bIsCurrent? "current" : "")">
+               <td><span>@(bIsCurrent ? "(current)" : "")</span></td>
+               <td><time datetime="@record.LoginDate.ToString("u")"></time></td>
+               <td><span class="apikey">@record.APIKey</span></td>
+               <td><span><a class="btnLogoutRecord">Logout</a></span></td>
+            </tr>
+         }
+      </table>
 
-        <input id="btnLogoutAll" type="button" value="Logout Everywhere" />
-    </div>
+      <input id="btnLogoutAll" type="button" value="Logout Everywhere" />
+   </div>
 
 
 </div>
 
 <script>
-   document.querySelectorAll("td time").forEach(function (el) {
-      el.innerText = (new Date(el.dateTime)).toLocaleString();
-   });
-
    function handleFailure(ev) { U.setPageMessage('error', ev.message); }
 
    document.querySelectorAll(".btnLogoutRecord").forEach(function (el) {

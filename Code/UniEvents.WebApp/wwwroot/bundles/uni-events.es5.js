@@ -692,4 +692,11 @@
             document.body.classList.toggle('highlightRequiredInputs', bool);
         }
     }, { override: false, merge: true });
+    $(document).ready(function () {
+        document.querySelectorAll("time").forEach(function (el) {
+            if (!el.innerText) {
+                el.innerText = (new Date(el.dateTime)).toLocaleString();
+            }
+        });
+    });
 }(window, window.document, window.jQuery, window.ZMBA, window.U = window.U || {}));
