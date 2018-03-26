@@ -153,7 +153,7 @@ namespace UniEvents.Models.DBModels {
 		}
 
 
-      internal static async Task<List<DBLocation>> SP_Locations_SearchAsync(CoreContext ctx, 
+      public static async Task<List<DBLocation>> SP_Locations_SearchAsync(CoreContext ctx, 
 																									long? @ParentLocationID = null,
 																									string @Name = null,
 																									string @AddressLine = null,
@@ -184,7 +184,7 @@ namespace UniEvents.Models.DBModels {
 			}
 		}
 
-		internal static IEnumerable<DBLocation> SP_Locations_Search(CoreContext ctx,
+		public static IEnumerable<DBLocation> SP_Locations_Search(CoreContext ctx,
 																						long? @ParentLocationID = null,
 																						string @Name = null,
 																						string @AddressLine = null,

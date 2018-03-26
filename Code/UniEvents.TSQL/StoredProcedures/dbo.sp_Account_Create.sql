@@ -4,7 +4,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET XACT_ABORT ON   
 
-USE [dbUniHangouts]
+USE [$(dbUniHangouts)]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Create]
 	@AccountID BIGINT OUTPUT,

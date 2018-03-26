@@ -32,17 +32,18 @@ namespace UniEvents.Managers {
                                                             string PostalCode = null,
                                                             string Description = null) {
 
-         var result = new ApiResult<List<StreetAddress>>();
-         result.Result = new List<StreetAddress>();
+         var apiresult = new ApiResult<List<StreetAddress>>();
+         apiresult.Result = new List<StreetAddress>();
          try {
-            foreach (DBModels.DBLocation loc in DBModels.DBLocation.SP_Locations_Search(Ctx, ParentLocationID: ParentLocationID, Name: Name, AddressLine: AddressLine, Locality: Locality, AdminDistrict: AdminDistrict, PostalCode: PostalCode, Description: Description)) {
-               result.Result.Add(new StreetAddress(loc));
+            var models = DBModels.DBLocation.SP_Locations_Search(Ctx, ParentLocationID, Name, AddressLine, Locality, AdminDistrict, PostalCode, Description);
+            foreach (DBModels.DBLocation loc in models) {
+               apiresult.Result.Add(new StreetAddress(loc));
             }
-            result.Success = true;
+            return apiresult.Win(apiresult.Result);
+
          } catch (Exception ex) {
-            result.Message = ex.Message;
+            return apiresult.Failure(ex);
          }
-         return result;
       }
 
 

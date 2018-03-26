@@ -609,8 +609,17 @@
             });
         },
         buildAjaxRequestFromInputs: (function () {
+            var rgxCSVSplit = /\s*,\s*/;
             var request, querystring, path;
-            function setParam(name, value, source) {
+            function setTargetValue(target, name, value, jsType, isCollection) {
+                if (isCollection) {
+                    target[name] = String(value).split(rgxCSVSplit);
+                }
+                else {
+                    target[name] = value;
+                }
+            }
+            function setParam(name, value, source, jsType, isCollection) {
                 if (ZMBA.IsNullOrWhitespace(value)) {
                     return;
                 }
@@ -618,7 +627,7 @@
                     querystring += name + "=" + encodeURIComponent(value) + "&";
                 }
                 else if (name.indexOf('.') === -1) {
-                    request.data[name] = value;
+                    setTargetValue(request.data, name, value, jsType, isCollection);
                 }
                 else {
                     var target = request.data;
@@ -626,7 +635,7 @@
                     while (parts.length > 0) {
                         var part = parts.shift();
                         if (parts.length === 0) {
-                            target[part] = value;
+                            setTargetValue(target, part, value, jsType, isCollection);
                         }
                         else {
                             if (!target[part]) {
@@ -645,15 +654,20 @@
                 if (inputs.length) {
                     for (var i = 0, len = inputs.length; i < len; i++) {
                         var input = inputs[i];
-                        var bHasGetAttrib = 'getAttribute' in input;
-                        setParam(bHasGetAttrib ? input.getAttribute("param") : input.param, input.value, bHasGetAttrib ? input.getAttribute("source") : input.source);
+                        if ('getAttribute' in input) {
+                            setParam(input.getAttribute("param"), input.value, input.getAttribute("source"), input.getAttribute("jsType"), input.getAttribute("isCollection"));
+                        }
+                        else {
+                            setParam(input.param, input.value, input.source, input.jsType, input.isCollection);
+                        }
                     }
                 }
                 else {
                     var names = Object.getOwnPropertyNames(inputs);
                     for (var i = 0, len = names.length; i < len; i++) {
                         var name_1 = names[i];
-                        setParam(name_1, inputs[name_1].value, inputs[name_1].source);
+                        var input = inputs[name_1];
+                        setParam(name_1, input.value, input.source, input.jsType, input.isCollection);
                     }
                 }
                 request.url = (path + querystring).replace(U.rgxTrimUri, '');
@@ -678,4 +692,11 @@
             document.body.classList.toggle('highlightRequiredInputs', bool);
         }
     }, { override: false, merge: true });
+    $(document).ready(function () {
+        document.querySelectorAll("time").forEach(function (el) {
+            if (!el.innerText) {
+                el.innerText = (new Date(el.dateTime)).toLocaleString();
+            }
+        });
+    });
 }(window, window.document, window.jQuery, window.ZMBA, window.U = window.U || {}));

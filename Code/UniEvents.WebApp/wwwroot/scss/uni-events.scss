@@ -215,24 +215,43 @@ a {
 
 /*Place rules that target the IndexPage specifically*/
 #IndexPage {
-	#LocationSearch {
-		ul {		
-			text-align: right;		
-			display: inline-flex;
-			justify-content: flex-end;
-		}
-		label {
-			margin-right: 10px;
-			min-width: 120px;
-		}
-		input {
-			flex-grow: 1;
-		}
-		textarea{
-			width:100%;
-			height:240px;
-		}
-	}
+   #EventFeed {
+      padding: 1em;
+
+      ul {
+         overflow:auto;
+      }
+
+      li {
+         flex-direction: column;
+         background-color: lightgray;
+         width: 100%;
+         padding: 5px 2vw 5px 2vw;
+         border-radius: 5px;
+         opacity:0.9;
+         &:hover {
+            opacity:1;
+         }
+      }
+   }
+
+   .ef_item_container {
+      width: 100%;
+   }
+
+   .ef_item {
+      width: 100%;
+
+      .title {
+         font-size: 24px;
+      }
+   }
+   .ef_left {
+      float:left;
+   }
+   .ef_right {
+      float:right;
+   }
 }
 
 
@@ -270,6 +289,20 @@ a {
       &:nth-child(3) {
          min-width: 25em;
          font-family: "Courier New", Courier, monospace;
+      }
+   }
+
+   #accountInfo {
+      label {
+         width: 150px;
+      }
+
+      ul {
+         max-width: 100rem;
+      }
+
+      span {
+         width: 350px;
       }
    }
 }

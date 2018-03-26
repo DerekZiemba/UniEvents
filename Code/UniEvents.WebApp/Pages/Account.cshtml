@@ -7,8 +7,71 @@
 }
 
 <div id="AccountPage">
-   <h2>Account</h2>
+   <div id="accountInfo">
+      <h4>Account Info</h4>
+      <ul>
+         <li>
+            <label>UserName: </label>
+            <span>@Model.UserContext.UserName</span>
+         </li>
+         <li>
+            <label>Display Name: </label>
+            <span>@Model.UserContext.UserDisplayName</span>
+         </li>
+      </ul>
+      <h4>Personal Info</h4>
+      <ul>
+         <li>
+            <label>First Name: </label>
+            <span>@Model.UserContext.FirstName</span>
+         </li>
+         <li>
+            <label>Last Name:  </label>
+            <span>@Model.UserContext.LastName</span>
+         </li>
+         <li>
+            <label>School Email: </label>
+            <span>@Model.UserContext.SchoolEmail</span>
+         </li>
+         <li>
+            <label>Contact Email: </label>
+            <span>@Model.UserContext.ContactEmail</span>
+         </li>
+         <li>
+            <label>Phone Number: </label>
+            <span>@Model.UserContext.PhoneNumber</span>
+         </li>
+      </ul>
 
+
+      <h4>Location Info</h4>
+      <ul>
+         <li>
+            <label>Name: </label>
+            <span>@Model.UserContext.LocationName</span>
+         </li>
+         <li>
+            <label>Address: </label>
+            <span>@Model.UserContext.AddressLine</span>
+         </li>
+         <li>
+            <label>City: </label>
+            <span>@Model.UserContext.Locality</span>
+         </li>
+         <li>
+            <label>State:</label>
+            <span>@Model.UserContext.AdminDistrict</span>
+         </li>
+         <li>
+            <label>Country: </label>
+            <span>@Model.UserContext.CountryRegion</span>
+         </li>
+         <li>
+            <label>Postal Code: </label>
+            <span>@Model.UserContext.PostalCode</span>
+         </li>
+      </ul>
+   </div>
    <h4>Active Logins on Record:</h4>
    <div id="allLoginsTableContainer">
       <table>
@@ -32,10 +95,6 @@
 </div>
 
 <script>
-   document.querySelectorAll("td time").forEach(function (el) {
-      el.innerText = (new Date(el.dateTime)).toLocaleString();
-   });
-
    function handleFailure(ev) { U.setPageMessage('error', ev.message); }
 
    document.querySelectorAll(".btnLogoutRecord").forEach(function (el) {
@@ -47,7 +106,7 @@
             url: `webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)&apikeyorpassword=${encodeURIComponent(key)}`,
             error: handleFailure,
             success: function (ev) {
-               if (!ev.success) { return handleFailure(ev); } 
+               if (!ev.success) { return handleFailure(ev); }
                U.setPageMessage('success', ev.message);
                tr.remove();
                if (tr.className === "current") {
@@ -67,7 +126,7 @@
          url: `webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)`,
          error: handleFailure,
          success: function (ev) {
-            if (!ev.success) { return handleFailure(ev); } 
+            if (!ev.success) { return handleFailure(ev); }
             U.setPageMessage('success', ev.message);
             window.setTimeout(function () {
                location.pathname = "";//Go to Homepage
