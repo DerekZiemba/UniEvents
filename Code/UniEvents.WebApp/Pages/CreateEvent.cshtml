@@ -52,12 +52,12 @@
    var EventCreationLabel = document.getElementById("EventCreationLabel");
    var EventCreationButton = document.getElementById("EventCreationButton");
 
-   signUpButton.addEventListener("click", function () {
+   EventCreationButton.addEventListener("click", function () {
       var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/TODO "});
 
       function handleFailure(ev) {
          console.log(oRequest, ev);
-         signUpLabel.value = "Failed!";
+         EventCreationLabel.value = "Failed!";
          InputParams.class = "Failed";
          U.setPageMessage('error', ev.message);
          U.highlightRequiredInputs(true);
@@ -71,7 +71,7 @@
                console.log(oRequest, ev);
                signUpLabel.value = "Success!";
                InputParams.class = "Success";
-               U.setPageMessage('success', 'Success!  Go to the <a href="/CreateEvent">Event feed to see events </a>');
+               U.setPageMessage('success', 'Success!  Go to the <a href="/Index">Event feed to see events </a>');
             } else {
                handleFailure(ev);
             }

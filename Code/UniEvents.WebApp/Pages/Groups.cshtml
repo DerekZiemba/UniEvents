@@ -5,5 +5,41 @@
     Layout = "~/Pages/_Layout.cshtml";
 }
 
-<h2>Groups</h2>
+
+<a asp-page="/CreateGroup">
+    <input id="CreateGroupButton" type="button" value="Create Group" />
+</a>
+
+<h3>Your Groups</h3>
+<div id="GroupFeed">
+    <ul>
+        @foreach (int Group in Model.UserGroups)
+        {
+            <li>
+                <div id="@Group" class="ef_item">
+                    <input id="LeaveGroup" type="button" value="Leave Group" />
+                    <div class="title">Title of Group</div>
+                    <div class="description">Description of Group</div>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+<h3>Invites</h3>
+<div id="Invitefeed">
+<ul>
+    @foreach (int invite in Model.UserInvites)
+    {
+        <li>
+            <div id="@invite" class="ef_item">
+
+                <div class="title">Title of Group are invited to </div>
+                <div class="description">Description of Group you are invited to</div>
+                <input id="Accept" type="button" value="Accept Invite" />
+                <input id="Decline" type="button" value="Decline Invite" />
+            </div>
+        </li>
+    }
+</ul>
+</div>
 

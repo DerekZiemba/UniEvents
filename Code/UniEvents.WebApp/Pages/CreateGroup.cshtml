@@ -1,0 +1,65 @@
+﻿@page
+@model UniEvents.WebApp.Pages.CreateGroupModel
+@{
+    ViewData["Title"] = "CreateGroup";
+}
+
+<h2>CreateGroup</h2>
+
+<div id="CreateEventPage">
+    <div id="InputParams">
+        <h4>New Group Info </h4>
+        <ul>
+            <li class="required">
+                <label>Group Name:</label>
+                <input type="text" param="GroupName" required />
+                <span></span>
+            </li>
+            <li class="required">
+                <label>Short Description:</label>
+                <input type="text" param="Description" required />
+                <span></span>
+            </li>
+        </ul>
+    </div>
+    <ul>
+        <li>
+            <label id="GroupCreationLabel"></label>
+            <input id="GroupCreationButton" type="button" value="Create Group" />
+        </li>
+    </ul>
+</div>
+
+<script>
+
+   var InputParams = document.getElementById("InputParams");
+   var GroupCreationLabel = document.getElementById("GroupCreationLabel");
+   var GroupCreationButton = document.getElementById("GroupCreationButton");
+
+   GroupCreationButton.addEventListener("click", function () {
+      var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/TODO "});
+
+      function handleFailure(ev) {
+         console.log(oRequest, ev);
+         GroupCreationLabel.value = "Failed!";
+         InputParams.class = "Failed";
+         U.setPageMessage('error', ev.message);
+         U.highlightRequiredInputs(true);
+      }
+
+      $.ajax(oRequest)
+         .fail(handleFailure)
+         .done(function (ev) {
+            if (ev.success) {
+               signUpButton.disabled = true;
+               console.log(oRequest, ev);
+               signUpLabel.value = "Success!";
+               InputParams.class = "Success";
+               U.setPageMessage('success', 'Success!  Go to the <a href="/Groups">Event feed to see your groups </a>');
+            } else {
+               handleFailure(ev);
+            }
+         });
+
+   });
+</script>

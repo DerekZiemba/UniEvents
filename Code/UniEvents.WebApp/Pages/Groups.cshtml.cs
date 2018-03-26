@@ -9,7 +9,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace UniEvents.WebApp.Pages {
    public class GroupsModel : WebAppPageModel {
 
-      public GroupsModel(IHttpContextAccessor accessor) : base(accessor) { }
+        public int[] UserGroups = { 1, 2, 3 };
+        public int[] UserInvites = { 1, 2 };
+
+        public GroupsModel(IHttpContextAccessor accessor) : base(accessor) { }
 
       public void OnGet() {
 
