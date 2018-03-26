@@ -125,4 +125,7 @@
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_RSVPTypes_Get.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="DBInit\CreateDatabase.v3.sql" />
+  </ItemGroup>
 </Project>
