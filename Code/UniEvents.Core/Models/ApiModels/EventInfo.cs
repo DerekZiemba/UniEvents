@@ -15,6 +15,8 @@ namespace UniEvents.Models.ApiModels {
       public Int64 LocationID { get; set; }
       public StreetAddress Location { get; set; }
 
+      public List<DBModels.DBTag> Tags { get; set; } = new List<DBModels.DBTag>();
+
 
       public EventInfo() { }
 

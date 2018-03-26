@@ -46,7 +46,7 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static DBTag SP_Tags_Create(CoreContext ctx, string Name, string Description) {
+      public static DBTag SP_Tag_Create(CoreContext ctx, string Name, string Description) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
             var tagidParam = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(TagID), null);
