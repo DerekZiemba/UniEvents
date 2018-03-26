@@ -237,26 +237,27 @@ namespace UniEvents.WebAPI.Controllers {
 
       }
 
-      /// <summary>
-      /// Note: this allows any auth'ed user to get any other users info.  We need to implement a permission system. 
-      /// </summary>
-      [HttpPost, Route("webapi/account/getuserinfo/{username?}/{apikey?}/{includeLocation?}")]
-      public async Task<ApiResult<UserAccount>> GetUserInfo(string username, string apikey, bool includeLocation) {
-         if (!await this.AccountManager().CheckPrivilege(username, apikey)) {
-            return new ApiResult<UserAccount>(false, "Check your privilege. This is a privileged operation.");
-         }
+      [HttpPost, Route("webapi/account/getuserinfo/{username?}/{includeLocation?}")]
+      public async Task<ApiResult<UserAccount>> GetUserInfo(string username, bool includeLocation) {
+         var apiresult = new ApiResult<UserAccount>();
+         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Check your privilege. This is a privileged operation."); }
+
          try {
             DBModels.DBAccount dbAccount = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
             if (dbAccount == null) {
-               return new ApiResult<UserAccount>(false, "User doesn't Exist");
+               return apiresult.Failure("User doesn't exist");
             }
-            if (includeLocation && dbAccount.LocationID.HasValue) {
+            apiresult.Result = new UserAccount(dbAccount, null);
+
+            if (includeLocation && dbAccount.LocationID.UnBox() > 0) {
                DBModels.DBLocation dbLocation = await DBModels.DBLocation.SP_Location_GetAsync(WebAppContext.CoreContext, dbAccount.LocationID.Value);
-               return new ApiResult<UserAccount>(true, "", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+               apiresult.Result.Location = new StreetAddress(dbLocation);
             }
-            return new ApiResult<UserAccount>(true, "", new UserAccount(dbAccount, null));
+            return apiresult.Win(apiresult.Result);
+
          } catch (Exception ex) {
-            return new ApiResult<UserAccount>(false, ex.Message + " \n " + ex.InnerException?.Message);
+            return apiresult.Failure(ex);
          }
       }
 

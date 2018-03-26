@@ -49,10 +49,6 @@ namespace UniEvents.WebAPI.Controllers {
          var apiresult = new ApiResult<StreetAddress>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
-
-         if (!await this.AccountManager().CheckPrivilege(username, apikey)) {
-            return new ApiResult<StreetAddress>(false, "Check your privilege. This is a privileged operation.");
-         }
          return await this.LocationManager().CreateLocation(address);         
       }
 
