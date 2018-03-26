@@ -19,9 +19,6 @@ namespace UniEvents.WebAPI.Controllers {
    [ApiExplorerSettings(IgnoreApi = false, GroupName = nameof(EventController))]
    public class EventController : WebAppController {
 
-      public IActionResult Index() {
-         return View();
-      }
 
       public EventController(IHttpContextAccessor accessor): base(accessor) { }
    }
