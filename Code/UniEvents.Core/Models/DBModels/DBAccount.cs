@@ -74,21 +74,15 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static async Task<DBAccount> SP_Account_GetAsync(CoreContext ctx, long AccountID, string UserName = null) {
+      public static async Task<DBAccount> SP_Account_GetOneAsync(CoreContext ctx, long AccountID, string UserName = null) {
          if(AccountID <= 0 && UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("AccountID or UserName must be specified."); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_GetOne]", conn) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@AccountID), AccountID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@UserName), @UserName);
 
-            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-            using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
-               while (await reader.ReadAsync().ConfigureAwait(false)) {
-                  return new DBAccount(reader);
-               }
-            }
-            return null;
+            return await cmd.ExecuteReader_GetOneAsync<DBAccount>().ConfigureAwait(false);
          }
       }
 
@@ -116,8 +110,7 @@ namespace UniEvents.Models.DBModels {
             //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedSchoolEmail), model.VerifiedSchoolEmail);
             //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedContactEmail), model.VerifiedContactEmail);
 
-            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-            int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+            int rowsAffected = await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
 
             model.AccountID = (long)AccountID.Value;
             return model.AccountID > 0;
@@ -142,8 +135,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), model.PhoneNumber);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@LocationID), model.LocationID);
 
-            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-            int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+            int rowsAffected = await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
 
             model.AccountID = (long)@GroupID.Value;
             return model.AccountID > 0;
@@ -168,15 +160,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Email), @Email);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), @PhoneNumber);
 
-            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-
-            var ls = new List<DBAccount>();
-            using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
-               while (await reader.ReadAsync().ConfigureAwait(false)) {
-                  ls.Add(new DBAccount(reader));
-               }
-            }
-            return ls;
+            return await cmd.ExecuteReader_GetManyAsync<DBAccount>().ConfigureAwait(false);
          }
       }
 
@@ -197,12 +181,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Email), @Email);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), @PhoneNumber);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-               while (reader.Read()) {
-                  yield return new DBAccount(reader);
-               }
-            }
+            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBAccount(item); }
          }
       }
 

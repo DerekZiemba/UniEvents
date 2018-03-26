@@ -11,12 +11,13 @@ using System.Linq.Expressions;
 namespace ZMBA {
 
 	public static class RuntimeCompiler {
-		public delegate void CopyIntoDelegate<T, S>(T location, S src);
+      public delegate void CopyIntoDelegate<T, S>(T location, S src);
 		public delegate T DataReaderDelegate<T>(IDataReader reader) where T : new();
 
 		private static class RCCache_Ctors<T> {
 			public static object CtorLock = new object();
 			public static Func<T> DefaultConstructor;
+         public static Func<IDataReader, T> DataModelCtor;
 			public static T MultiArgConstructor;
 		}
 
@@ -197,7 +198,28 @@ namespace ZMBA {
 			return RCCache_Ctors<T>.DefaultConstructor;
 		}
 
-		public static TDelegate CompileMultiArgumentConstructor<TDelegate>() where TDelegate : class {
+      public static Func<IDataReader, T> CompileDataModelDataReaderConstructor<T>() {
+         if (RCCache_Ctors<T>.DataModelCtor != null) { return RCCache_Ctors<T>.DataModelCtor; }
+         lock (RCCache_Ctors<T>.CtorLock) {
+            if (RCCache_Ctors<T>.DataModelCtor != null) { return RCCache_Ctors<T>.DataModelCtor; }
+
+            Type argType = typeof(IDataReader);
+            Type delegateType = typeof(Func<IDataReader, T>);
+
+            ParameterExpression[] callerParams = new ParameterExpression[] {Expression.Parameter(argType) };
+            ParameterExpression[] calleeParams = callerParams;
+
+            ConstructorInfo ctor = typeof(T).GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, new []{argType}, null);
+            NewExpression calleeExp = Expression.New(ctor, calleeParams);
+            LambdaExpression lambda = Expression.Lambda(delegateType, calleeExp, callerParams);
+            RCCache_Ctors<T>.DataModelCtor = (Func<IDataReader, T>)lambda.Compile();
+         }
+
+         return RCCache_Ctors<T>.DataModelCtor;
+      }
+
+
+      public static TDelegate CompileMultiArgumentConstructor<TDelegate>() where TDelegate : class {
 			if (RCCache_Ctors<TDelegate>.MultiArgConstructor is null) {
 				lock (RCCache_Ctors<TDelegate>.CtorLock) {
 					if (RCCache_Ctors<TDelegate>.MultiArgConstructor != null) {

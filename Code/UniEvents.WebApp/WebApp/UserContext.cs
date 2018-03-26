@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using UniEvents.Core;
@@ -6,8 +7,8 @@ using UniEvents.Models.ApiModels;
 using ZMBA;
 using static ZMBA.Common;
 
-using ApiModels = UniEvents.Models.ApiModels;
-using DBModels = UniEvents.Models.DBModels;
+using UniEvents.Models.ApiModels;
+using UniEvents.Models.DBModels;
 
 namespace UniEvents.WebApp {
 
@@ -89,7 +90,7 @@ namespace UniEvents.WebApp {
             ctx = new UserContext();
             ctx.Cookie = cookie;
 
-            DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.UserName, ctx.APIKey).ConfigureAwait(false);
+            DBLogin dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.UserName, ctx.APIKey).ConfigureAwait(false);
             if(dbLogin != null) {
                ctx.Cookie.UserName = dbLogin.UserName;
                ctx.LoginDate = dbLogin.LoginDate;
@@ -99,23 +100,25 @@ namespace UniEvents.WebApp {
             }
 
             if (ctx.IsVerifiedLogin) {
-               DBModels.DBAccount acct = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, ctx.UserName).ConfigureAwait(false);
+               DBAccount acct = await DBAccount.SP_Account_GetOneAsync(WebAppContext.CoreContext, 0, ctx.UserName).ConfigureAwait(false);
                ctx.AccountID = acct.AccountID;
                ctx.LocationID = acct.LocationID.UnBox();
                ctx.UserAccount = new UserAccount(acct, null);
                ctx.Cookie.VerifyDate = DateTime.UtcNow; //Rolling date
 
                if (ctx.LocationID > 0) {
-                  DBModels.DBLocation dbLoc = await DBModels.DBLocation.SP_Location_GetAsync(WebAppContext.CoreContext, ctx.LocationID).ConfigureAwait(false);
-                  if (dbLoc != null) {
-                     ctx.ParentLocationID = dbLoc.ParentLocationID.UnBox();
-                     ctx.UserAccount.Location = new StreetAddress(dbLoc);
+                  using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.CoreContext, ctx.LocationID)) {
+                     DBLocation dbLoc = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
+                     if (dbLoc != null) {
+                        ctx.ParentLocationID = dbLoc.ParentLocationID.UnBox();
+                        ctx.UserAccount.Location = new StreetAddress(dbLoc);
+                     }
                   }
                }
             }
          } else {
             if (ctx.Cookie.VerifyDate < DateTime.UtcNow.AddMinutes(-10)) {
-               DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.Cookie.UserName, ctx.Cookie.APIKey).ConfigureAwait(false);
+               DBLogin dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.Cookie.UserName, ctx.Cookie.APIKey).ConfigureAwait(false);
                if(dbLogin != null) {
                   ctx.Cookie.UserName = dbLogin.UserName;
                   ctx.LoginDate = dbLogin.LoginDate;

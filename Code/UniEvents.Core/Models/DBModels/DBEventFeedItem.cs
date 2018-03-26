@@ -68,8 +68,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Caption), Caption);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Details), Details);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            int rowsAffected = cmd.ExecuteNonQuery();
+            int rowsAffected = cmd.ExecuteProcedure();
 
             DBEventFeedItem result = new DBEventFeedItem(){
                EventID = (Int32)@EventID.Value,
@@ -110,12 +109,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Title), Title);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Caption), Caption);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-               while (reader.Read()) {
-                  yield return new DBEventFeedItem(reader);
-               }
-            }
+            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBEventFeedItem(item); }
          }
       }
    }

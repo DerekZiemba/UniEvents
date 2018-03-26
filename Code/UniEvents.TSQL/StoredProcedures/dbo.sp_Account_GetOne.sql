@@ -4,7 +4,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 USE [$(dbUniHangouts)]
 GO
-CREATE OR ALTER PROCEDURE [dbo].[sp_Account_Get]
+CREATE OR ALTER PROCEDURE [dbo].[sp_Account_GetOne]
 	@AccountID BIGINT,
    @UserName VARCHAR(20) = NULL
 AS

@@ -12,8 +12,8 @@ namespace UniEvents.Models.DBModels {
 
    public class DBEventType {
 
-      [DBCol("EventTypeID", SqlDbType.Int, 1, false, isAutoValue: true)]
-      public Int32 EventTypeID { get; set; }
+      [DBCol("EventTypeID", SqlDbType.BigInt, 1, false, isAutoValue: true)]
+      public Int64 EventTypeID { get; set; }
 
       [DBCol("Name", SqlDbType.VarChar, 50, false)]
       public string Name { get; set; }
@@ -24,7 +24,7 @@ namespace UniEvents.Models.DBModels {
       public DBEventType() { }
 
       public DBEventType(IDataReader reader) {
-         EventTypeID = reader.GetInt32(nameof(EventTypeID));
+         EventTypeID = reader.GetInt64(nameof(EventTypeID));
          Name = reader.GetString(nameof(Name));
          Description = reader.GetString(nameof(Description));
       }
@@ -32,7 +32,7 @@ namespace UniEvents.Models.DBModels {
       public static IEnumerable<DBEventType> SP_EventTypes_Search(CoreContext ctx, long? EventTypeID = null, string Name = null, string Description = null) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Int, nameof(EventTypeID), EventTypeID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
 

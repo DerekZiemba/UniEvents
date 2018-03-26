@@ -1,6 +1,7 @@
 "use strict";
 (function (window, document, $, extensionsAndPolyfills, factory) {
     var ZMBA = {
+        domainName: window.location.hostname.match(/(?:(\w{3,})(?=(?:\.[a-z]{2,4}){1,2}$))|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|(localhost)/igm)[0],
         extendType: (function () {
             function defMult(proto, name, prop, options, obj) { for (var i = 0, len = proto.length; i < len; i++) {
                 defOne(proto[i], name, prop, options, obj);
@@ -379,7 +380,7 @@
         First: function (value) { if (arguments.length > 0) {
             this[0] = arguments[0];
         } return this.length > 0 ? this[0] : undefined; }
-    });
+    }, { override: false });
     ZMBA.extendType([NodeList.prototype, HTMLCollection.prototype], {
         ToArray: function () {
             var len = this.length, args = new Array(len);

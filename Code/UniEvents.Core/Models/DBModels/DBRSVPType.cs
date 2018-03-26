@@ -32,12 +32,7 @@ namespace UniEvents.Models.DBModels {
       public static IEnumerable<DBRSVPType> SP_RSVPTypes_Get(CoreContext ctx) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsConfiguration))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_RSVPTypes_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-               while (reader.Read()) {
-                  yield return new DBRSVPType(reader);
-               }
-            }
+            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBRSVPType(item); }
          }
       }
 

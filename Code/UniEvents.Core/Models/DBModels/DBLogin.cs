@@ -50,8 +50,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.Binary, nameof(APIKeyHash), model.APIKeyHash);
             SqlParameter date = cmd.AddParam(ParameterDirection.Output, SqlDbType.DateTime, nameof(LoginDate), model.LoginDate);
 
-            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-            int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+            int rowsAffected = await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
 
             model.LoginDate = (DateTime)date.Value;
 
@@ -68,13 +67,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), UserName);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(APIKey), APIKey);
 
-            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-            using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
-               while (await reader.ReadAsync().ConfigureAwait(false)) {
-                  return new DBLogin(reader);
-               }
-            }
-            return null;
+            return await cmd.ExecuteReader_GetOneAsync<DBLogin>().ConfigureAwait(false);
          }
       }
 
@@ -84,12 +77,8 @@ namespace UniEvents.Models.DBModels {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Logins_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), UserName);
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-               while (reader.Read()) {
-                  yield return new DBLogin(reader);
-               }
-            }
+
+            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBLogin(item); }
          }
       }
 
@@ -101,9 +90,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), UserName);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(APIKey), APIKey);
 
-            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-
-            int rowsAffected = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+            int rowsAffected = await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
             return rowsAffected > 0;
          }
       }

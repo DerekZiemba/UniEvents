@@ -29,19 +29,22 @@ namespace UniEvents.Models.DBModels {
       }
 
 
+      public static DBTag SP_Tags_GetOne(CoreContext ctx, long? TagID = null, string Name = null) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_GetOne]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
+
+            return cmd.ExecuteReader_GetOne<DBTag>();
+         }
+      }
+
       public static IEnumerable<DBTag> SP_Tags_Search(CoreContext ctx, long? TagID = null, string Name = null, string Description = null) {
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-               while (reader.Read()) {
-                  yield return new DBTag(reader);
-               }
-            }
+            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBTag(item); }
          }
       }
 
@@ -53,8 +56,7 @@ namespace UniEvents.Models.DBModels {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            int rowsAffected = cmd.ExecuteNonQuery();
+            int rowsAffected = cmd.ExecuteProcedure();
 
             DBTag result = new DBTag(){
                TagID = (Int64)tagidParam.Value,

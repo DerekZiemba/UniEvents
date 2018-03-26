@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using UniEvents.WebApp;
 using UniEvents.Core;
 using UniEvents.Models.ApiModels;
-using ApiModels = UniEvents.Models.ApiModels;
-using DBModels = UniEvents.Models.DBModels;
+using UniEvents.Models.DBModels;
 using static ZMBA.Common;
 
 
@@ -26,17 +26,17 @@ namespace UniEvents.WebAPI.Controllers {
          if (this.UserContext != null) { return apiresult.Failure("You are all ready logged in. Logout before you can login."); }
          if (username.IsNullOrWhitespace() || password.IsNullOrWhitespace()) { return apiresult.Failure("Invalid Username/Password");  }
 
-         DBModels.DBAccount dbAccount = null;
+         DBAccount dbAccount = null;
          try {
-            dbAccount = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
+            dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
          if (dbAccount == null) {  return apiresult.Failure("Account does not exist.");  }
          if (!Crypto.VerifyHashMatch(password, dbAccount.Salt, dbAccount.PasswordHash)) {  return apiresult.Failure("Invalid Password");  }
 
-         DBModels.DBLogin dbLogin = null;
+         DBLogin dbLogin = null;
          try {
-            dbLogin = await DBModels.DBLogin.LoginUserNameAsync(WebAppContext.CoreContext, dbAccount.UserName).ConfigureAwait(false);
+            dbLogin = await DBLogin.LoginUserNameAsync(WebAppContext.CoreContext, dbAccount.UserName).ConfigureAwait(false);
          } catch (Exception ex) { return apiresult.Failure(ex); }
          
          if (dbLogin == null) {  apiresult.Failure("Login Failed");  }
@@ -59,9 +59,9 @@ namespace UniEvents.WebAPI.Controllers {
          if (this.UserContext == null) { return apiresult.Failure("You do not have permission to perform this action."); }
          if (!this.UserContext.IsVerifiedLogin) { return apiresult.Failure("Login Credentials Expired. Try Relogging In."); }
 
-         DBModels.DBLogin dbLogin;
+         DBLogin dbLogin;
          try {
-            dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, username, apikey).ConfigureAwait(false);
+            dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, username, apikey).ConfigureAwait(false);
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
          if (dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash)) {
@@ -103,7 +103,7 @@ namespace UniEvents.WebAPI.Controllers {
 
             bool bLoggedOut;
             try {
-               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, UserContext.APIKey).ConfigureAwait(false);
+               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, UserContext.APIKey).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
 
@@ -121,7 +121,7 @@ namespace UniEvents.WebAPI.Controllers {
 
             bool bLoggedOut;
             try {
-               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, null).ConfigureAwait(false);
+               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, null).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
@@ -136,7 +136,7 @@ namespace UniEvents.WebAPI.Controllers {
             ApiResult apiresult = new ApiResult();
             bool bLoggedOut;
             try {
-               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, _username, _apikey).ConfigureAwait(false);
+               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, _username, _apikey).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
@@ -148,9 +148,9 @@ namespace UniEvents.WebAPI.Controllers {
          }
          async Task<ApiResult> LogUserOutEverywhere(string _username, string _password) {
             ApiResult apiresult = new ApiResult();          
-            DBModels.DBAccount dbAccount;
+            DBAccount dbAccount;
             try {
-               dbAccount = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, _username).ConfigureAwait(false);
+               dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.CoreContext, 0, _username).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (dbAccount == null) {
@@ -162,7 +162,7 @@ namespace UniEvents.WebAPI.Controllers {
 
             bool bLoggedOut;
             try {
-               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, _username, null).ConfigureAwait(false);
+               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, _username, null).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
@@ -207,8 +207,8 @@ namespace UniEvents.WebAPI.Controllers {
             return apiresult.Failure("Attempt to submit unverified Emails logged and detected."); //not really, but sounds scary.
          }
 
-         DBModels.DBLocation dbLocation = new DBModels.DBLocation(user.Location);
-         DBModels.DBAccount dbAccount = new DBModels.DBAccount() {
+         DBLocation dbLocation = new DBLocation(user.Location);
+         DBAccount dbAccount = new DBAccount() {
             UserName = user.UserName,
             DisplayName = user.DisplayName,
             FirstName = user.FirstName,
@@ -220,12 +220,12 @@ namespace UniEvents.WebAPI.Controllers {
 
          (dbAccount.PasswordHash, dbAccount.Salt) = Crypto.HashPassword256(password);
          try {
-            if (!await DBModels.DBLocation.SP_Location_CreateAsync(WebAppContext.CoreContext, dbLocation).ConfigureAwait(false)) {
+            if (!await DBLocation.SP_Locations_CreateOneAsync(WebAppContext.CoreContext, dbLocation).ConfigureAwait(false)) {
                return apiresult.Failure("Failed to create location.");
             }
 
             dbAccount.LocationID = dbLocation.LocationID;
-            if (!await DBModels.DBAccount.SP_Account_CreateAsync(WebAppContext.CoreContext, dbAccount).ConfigureAwait(false)) {
+            if (!await DBAccount.SP_Account_CreateAsync(WebAppContext.CoreContext, dbAccount).ConfigureAwait(false)) {
                return apiresult.Failure("Failed to create account.");
             }
 
@@ -244,15 +244,17 @@ namespace UniEvents.WebAPI.Controllers {
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Check your privilege. This is a privileged operation."); }
 
          try {
-            DBModels.DBAccount dbAccount = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
+            DBAccount dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
             if (dbAccount == null) {
                return apiresult.Failure("User doesn't exist");
             }
             apiresult.Result = new UserAccount(dbAccount, null);
 
             if (includeLocation && dbAccount.LocationID.UnBox() > 0) {
-               DBModels.DBLocation dbLocation = await DBModels.DBLocation.SP_Location_GetAsync(WebAppContext.CoreContext, dbAccount.LocationID.Value);
-               apiresult.Result.Location = new StreetAddress(dbLocation);
+               using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.CoreContext, dbAccount.LocationID.Value)) {
+                  DBLocation dbLocation = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
+                  apiresult.Result.Location = new StreetAddress(dbLocation);
+               }
             }
             return apiresult.Win(apiresult.Result);
 

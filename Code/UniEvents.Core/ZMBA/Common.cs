@@ -402,7 +402,61 @@ namespace ZMBA {
 			return cmd.Parameters.Add(param);
 		}
 
-		public static byte[] GetBytes(this IDataRecord record, string name, int size) {
+      public static int ExecuteProcedure(this SqlCommand cmd) {
+         if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+         return cmd.ExecuteNonQuery();
+      }
+      public static async Task<int> ExecuteProcedureAsync(this SqlCommand cmd) {
+         if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+         return await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+      }
+
+
+      public static T ExecuteReader_GetOne<T>(this SqlCommand cmd) {
+         if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+         using (SqlDataReader reader = cmd.ExecuteReader()) {
+            if (reader.Read()) {
+               return RuntimeCompiler.CompileDataModelDataReaderConstructor<T>()(reader);
+            }
+         }
+         return default;
+      }
+
+      public static async Task<T> ExecuteReader_GetOneAsync<T>(this SqlCommand cmd) {
+         if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+         using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
+            if (await reader.ReadAsync().ConfigureAwait(false)) {
+               return RuntimeCompiler.CompileDataModelDataReaderConstructor<T>()(reader);
+            }
+         }
+         return default;
+      }
+
+      public static IEnumerable<IDataReader> ExecuteReader_GetManyRecords(this SqlCommand cmd) {
+         if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+         using (SqlDataReader reader = cmd.ExecuteReader()) {
+            while (reader.Read()) {
+               yield return reader;
+            }
+         }
+      }
+
+      public static async Task<List<T>> ExecuteReader_GetManyAsync<T>(this SqlCommand cmd) {
+         if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+         Func<IDataReader, T> ctor = RuntimeCompiler.CompileDataModelDataReaderConstructor<T>();
+
+         var ls = new List<T>();
+         using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
+            while (await reader.ReadAsync().ConfigureAwait(false)) {
+               ls.Add(ctor(reader));
+            }
+         }
+         return ls;
+      }
+
+
+
+      public static byte[] GetBytes(this IDataRecord record, string name, int size) {
 			int ord = record.GetOrdinal(name);
 			if (record.IsDBNull(ord)) { return null; }
 			Byte[] buffer = new byte[size];

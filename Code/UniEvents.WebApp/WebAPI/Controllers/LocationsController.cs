@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -8,8 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using UniEvents.WebApp;
 using UniEvents.Core;
 using UniEvents.Models.ApiModels;
-using DBModels = UniEvents.Models.DBModels;
-
+using UniEvents.Models.DBModels;
+using ZMBA;
 
 namespace UniEvents.WebAPI.Controllers {
 
@@ -32,9 +33,10 @@ namespace UniEvents.WebAPI.Controllers {
 
          apiresult.Result = new List<StreetAddress>();
          try {
-            var models = DBModels.DBLocation.SP_Locations_Search(WebAppContext.CoreContext, ParentLocationID, Name, AddressLine, Locality, AdminDistrict, PostalCode, Description);
-            foreach (DBModels.DBLocation loc in models) { 
-               apiresult.Result.Add(new StreetAddress(loc));
+            using(SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(WebAppContext.CoreContext, ParentLocationID, Name, AddressLine, Locality, AdminDistrict, PostalCode, Description)) {
+               foreach (var item in cmd.ExecuteReader_GetManyRecords()) {
+                  apiresult.Result.Add(new StreetAddress(new DBLocation(item)));
+               }
             }
             return apiresult.Win(apiresult.Result);
 
@@ -45,7 +47,7 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpPost, Route("webapi/locations/create")]
-      public async  Task<ApiResult<StreetAddress>> Create(StreetAddress address) {
+      public async Task<ApiResult<StreetAddress>> Create(StreetAddress address) {
          var apiresult = new ApiResult<StreetAddress>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
