@@ -14,11 +14,11 @@ using DBModels = UniEvents.Models.DBModels;
 namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
-   [ApiExplorerSettings(IgnoreApi = false, GroupName = nameof(CommonController))]
+   [ApiExplorerSettings(IgnoreApi = false)]
    public class CommonController : WebAppController {
 
       [HttpGet, Route("webapi/tags/search/{id?}/{name?}/{description?}")]
-      public ApiResult<DBModels.DBTag[]> TagSearch(int? id = null,
+      public ApiResult<DBModels.DBTag[]> TagSearch(long? id = null,
                                                    string name = null,
                                                    string description = null) {
 
@@ -33,6 +33,23 @@ namespace UniEvents.WebAPI.Controllers {
          } catch (Exception ex) { return apiresult.Failure(ex); }    
       }
 
+      [HttpPost, Route("webapi/tags/create")]
+      public ApiResult<DBModels.DBTag> TagCreate(string name, string description) {
+         var apiresult = new ApiResult<DBModels.DBTag>();
+         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
+
+         try {
+            var tag = DBModels.DBTag.SP_Tags_Create(WebAppContext.CoreContext,  name, description);
+            if(tag is null) {
+               return apiresult.Failure("Failed to create tag.");
+            }         
+            return apiresult.Win(tag);
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+
+      }
+
+
 
       [HttpPost, Route("webapi/rsvps")]
       public async  Task<ApiResult<DBModels.DBRSVPType[]>> GetRsvpTypes() {
@@ -44,6 +61,9 @@ namespace UniEvents.WebAPI.Controllers {
          } catch (Exception ex) { return apiresult.Failure(ex); }
    
       }
+
+
+
 
 
       public CommonController(IHttpContextAccessor accessor): base(accessor) { }

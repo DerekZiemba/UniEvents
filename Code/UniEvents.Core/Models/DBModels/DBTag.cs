@@ -11,7 +11,7 @@ using ZMBA;
 namespace UniEvents.Models.DBModels {
    public class DBTag {
 
-      [DBCol("TagID", SqlDbType.Int, 1, false, true)]
+      [DBCol("TagID", SqlDbType.BigInt, 1, false, true)]
       public Int64 TagID { get; set; }
 
       [DBCol("Name", SqlDbType.VarChar, 30, false, false)]
@@ -29,11 +29,11 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static IEnumerable<DBTag> SP_Tags_Search(CoreContext ctx, int? TagID = null, string Name = null, string Description = null) {
+      public static IEnumerable<DBTag> SP_Tags_Search(CoreContext ctx, long? TagID = null, string Name = null, string Description = null) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Int, nameof(TagID), TagID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Name), Name);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
 
             if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
@@ -45,6 +45,28 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
+
+      public static DBTag SP_Tags_Create(CoreContext ctx, string Name, string Description) {
+         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
+            var tagidParam = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(TagID), null);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
+
+            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+            int rowsAffected = cmd.ExecuteNonQuery();
+
+            DBTag result = new DBTag(){
+               TagID = (Int64)tagidParam.Value,
+               Name = Name,
+               Description = Description
+            };
+            if(result.TagID > 0) {
+               return result;
+            }
+         }
+         return null;
+      }
 
    }
 }

@@ -128,4 +128,7 @@
   <ItemGroup>
     <None Include="DBInit\CreateDatabase.v3.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Tags_Create.sql" />
+  </ItemGroup>
 </Project>

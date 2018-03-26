@@ -6,8 +6,8 @@ GO
 USE [$(dbUniHangouts)]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Tags_Search]
-	@TagID int = NULL,
-	@Name NVARCHAR(50) = NULL,
+	@TagID BIGINT = NULL,
+	@Name VARCHAR(50) = NULL,
 	@Description NVARCHAR(160) = NULL
 AS
 SET NOCOUNT ON;
