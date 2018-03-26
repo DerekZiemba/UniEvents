@@ -3,6 +3,10 @@
 /* Hide/rearrange for smaller screens */
 @media (max-width: 1200px) { .container { width: 100%; } }
 
+.highlightRequiredInputs input:required { border: 1px solid red; }
+
+a { cursor: pointer; }
+
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content { padding: 50px 5px 20px 5px; }
 
@@ -16,25 +20,45 @@
 
 .body-content li { list-style-type: none; display: inline-flex; justify-content: flex-end; overflow: hidden; margin-bottom: 5px; }
 
+.body-content li.required label:before { content: " *"; color: red; }
+
+.body-content li.required label:hover:before { content: "(required)"; color: red; font-weight: normal; }
+
 .body-content li label { text-align: right; margin-right: 10px; width: 160px; }
 
 .body-content li input { flex-grow: 1; }
 
 .body-content li select { flex-grow: 1; }
 
-#SignUp { padding-left: 15px; }
+.body-content h1, .body-content h2, .body-content h3 { margin-top: 10px; margin-bottom: 10px; }
 
-#SignUp label { width: 150px; }
+.body-content #divPageMessage { font-weight: bold; text-align: center; font-size: larger; margin-top: 10px; }
 
-#SignUp input { width: 350px; }
+.body-content #divPageMessage.error { color: red; }
 
-#SignUp #InputParams { min-width: 600px; width: 50vw; }
+.body-content #divPageMessage.alert { color: sandybrown; }
 
-#SignUp #InputParams.Success input { box-shadow: inset 1px 1px 10px 1px lightgreen, 1px 1px 10px 1px lightgreen; border: 1px solid lightgreen; }
+.body-content #divPageMessage.info { color: navy; }
 
-#SignUp #InputParams.Error input { box-shadow: inset 1px 1px 10px 1px , 1px 1px 10px 1px red; border: 1px solid red; }
+.body-content #divPageMessage.success { color: green; }
 
-#SignUp #InputParams ul li span { color: red; }
+#InputParams.Success input { box-shadow: inset 1px 1px 10px 1px lightgreen, 1px 1px 10px 1px lightgreen; border: 1px solid lightgreen; }
+
+#InputParams.Error input { box-shadow: inset 1px 1px 10px 1px, 1px 1px 10px 1px red; border: 1px solid red; }
+
+#InputParams ul li span { color: red; }
+
+#SignUpPage { padding-left: 15px; }
+
+#SignUpPage label { width: 150px; }
+
+#SignUpPage ul { max-width: 100rem; }
+
+#SignUpPage input { width: 350px; }
+
+#LoginPage input { margin-right: 10px; }
+
+#LoginPage input[param] { width: 250px; }
 
 #APITest { display: inline-block; }
 
@@ -64,6 +88,20 @@
 #IndexPage #LocationSearch input { flex-grow: 1; }
 
 #IndexPage #LocationSearch textarea { width: 100%; height: 240px; }
+
+#AccountPage #allLoginsTableContainer { overflow-x: auto; }
+
+#AccountPage th { font-size: larger; }
+
+#AccountPage tr.current { background-color: #d5f4e6; }
+
+#AccountPage td { padding: .25em; }
+
+#AccountPage td:nth-child(1) { min-width: 5em; text-align: right; font-size: smaller; padding-right: 1em; padding-left: 1em; }
+
+#AccountPage td:nth-child(2) { min-width: 12em; padding-right: 1em; }
+
+#AccountPage td:nth-child(3) { min-width: 25em; font-family: "Courier New", Courier, monospace; }
 
 .HTMLTemplates { display: none; }
 

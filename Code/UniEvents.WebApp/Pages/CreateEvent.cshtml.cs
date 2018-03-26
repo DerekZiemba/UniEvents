@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace UniEvents.WebApp.Pages
 {
-    public class GroupModel : PageModel
+    public class CreateEventModel : PageModel
     {
         public void OnGet()
         {

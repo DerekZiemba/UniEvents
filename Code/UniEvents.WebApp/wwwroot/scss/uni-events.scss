@@ -14,6 +14,16 @@
    }
 }
 
+.highlightRequiredInputs {
+   input:required {
+      border: 1px solid red;
+   }
+}
+
+a {
+   cursor: pointer;
+}
+
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content {
    padding: 50px 5px 20px 5px;
@@ -34,15 +44,28 @@
    ul {
       padding-left: 0;
       overflow: hidden;
-      width: 100%;
+      width: 100%;    
    }
 
    li {
       list-style-type: none;
       display: inline-flex;
       justify-content: flex-end;
-      overflow: hidden;  
+      overflow: hidden;
       margin-bottom: 5px;
+
+      &.required {
+         label:before {
+            content: " *";
+            color: red;
+         }
+
+         label:hover:before {
+            content: "(required)";
+            color: red;
+            font-weight: normal;
+         }
+      }
 
       label {
          text-align: right;
@@ -58,44 +81,85 @@
          flex-grow: 1;
       }
    }
+
+   h1, h2, h3 {
+      margin-top: 10px;
+      margin-bottom: 10px;
+   }
+
+   #divPageMessage {
+      font-weight: bold;
+      text-align: center;
+      font-size: larger;
+      margin-top: 10px;
+
+      &.error {
+         color: red;
+      }
+
+      &.alert {
+         color: sandybrown;
+      }
+
+      &.info {
+         color: navy;
+      }
+
+      &.success {
+         color: green;
+      }
+   }
 }
 
-#SignUp {
+#InputParams {
+
+   &.Success {
+      input {
+         box-shadow: inset 1px 1px 10px 1px lightgreen, 1px 1px 10px 1px lightgreen;
+         border: 1px solid lightgreen;
+      }
+   }
+
+   &.Error {
+      input {
+         box-shadow: inset 1px 1px 10px 1px, 1px 1px 10px 1px red;
+         border: 1px solid red;
+      }
+   }
+
+   ul {
+      li {
+         span {
+            color: red;
+         }
+      }
+   }
+}
+
+
+#SignUpPage {
    padding-left: 15px;
 
    label {
       width: 150px;
    }
 
+   ul {
+      max-width: 100rem;
+   }
+
    input {
       width: 350px;
    }
+}
 
-   #InputParams {
-      min-width: 600px;
-      width: 50vw;
+#LoginPage {
+   input {
+      margin-right: 10px;
+   }
 
-      &.Success {
-         input {
-            box-shadow: inset 1px 1px 10px 1px lightgreen, 1px 1px 10px 1px lightgreen;
-            border: 1px solid lightgreen;
-         }
-      }
-
-      &.Error {
-         input {
-            box-shadow: inset 1px 1px 10px 1px , 1px 1px 10px 1px red;
-            border: 1px solid red;
-         }
-      }
-
-      ul {
-         li {
-            span {
-               color: red;
-            }
-         }
-      }
+   input[param] {
+      width: 250px;
    }
 }
 
@@ -169,6 +233,45 @@
 			height:240px;
 		}
 	}
+}
+
+
+#AccountPage {
+   #allLoginsTableContainer {
+      overflow-x: auto;
+   }
+
+   th {
+      font-size: larger;
+   }
+
+   tr {
+      &.current {
+         background-color: #d5f4e6;
+      }
+   }
+
+   td {
+      padding: .25em;
+
+      &:nth-child(1) {
+         min-width: 5em;
+         text-align: right;
+         font-size: smaller;
+         padding-right: 1em;
+         padding-left: 1em;
+      }
+
+      &:nth-child(2) {
+         min-width: 12em;
+         padding-right: 1em;
+      }
+
+      &:nth-child(3) {
+         min-width: 25em;
+         font-family: "Courier New", Courier, monospace;
+      }
+   }
 }
 
 

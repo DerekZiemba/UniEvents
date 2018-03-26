@@ -9,6 +9,9 @@ using ZMBA;
 namespace UniEvents.Core {
 
 	public static class Crypto {
+      public const int APIKeyLength = 50;
+      public const int PasswordSaltLength = 20;
+
 		private static RNGCryptoServiceProvider _rngCryptoProvider = new RNGCryptoServiceProvider();
 		private static SHA256CryptoServiceProvider _sha256CryptoProvider = new SHA256CryptoServiceProvider();
 
@@ -21,12 +24,12 @@ namespace UniEvents.Core {
       }
 
 		public static (byte[], string) HashPassword256(string password, string salt = null) {
-			if(salt.IsEmpty()) { salt = GenerateRandomString(20); }		
+			if(salt.IsEmpty()) { salt = GenerateRandomString(PasswordSaltLength); }		
 			return (_sha256CryptoProvider.ComputeHash(Encoding.UTF8.GetBytes(password + salt)), salt);
 		}
 
       public static (byte[], string) CreateAPIKey256(string username) {
-         string salt = GenerateRandomString(50);
+         string salt = GenerateRandomString(APIKeyLength);
          return (_sha256CryptoProvider.ComputeHash(Encoding.UTF8.GetBytes(salt + username)), salt);
       }
 

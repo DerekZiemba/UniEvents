@@ -1,0 +1,81 @@
+﻿@page
+@model UniEvents.WebApp.Pages.CreateEventModel
+@{
+    ViewData["Title"] = "CreateEvent";
+}
+
+<h2>Create Event</h2>
+
+<div id="CreateEventPage">
+    <div id="InputParams">
+
+        <h4>Event Info </h4>
+        <ul>
+            <li class="required">
+                <label>Title:</label>
+                <input type="text" param="Title" required />
+                <span></span>
+            </li>
+            <li class="required">
+                <label>Start Time:</label>
+                <input type="text" param="DateStart" required />
+                <span></span>
+            </li>
+            <li class="required">
+                <label>End Time:</label>
+                <input type="text" param="DateEnd" required />
+                <span></span>
+            </li>
+            <li>
+                <label>Caption:</label>
+                <input type="text" param="Caption" placeholder="brief description" />
+                <span></span>
+            </li>
+            <li>
+                <label>Description:</label>
+                <textarea type="text" param="Details" placeholder="Details about your event"></textarea>
+                <span></span>
+            </li>
+        </ul>
+    </div>
+    <br />
+    <ul>
+        <li>
+            <label id="EventCreationLabel"></label>
+            <input id="EventCreationButton" type="button" value="Create Event" />
+        </li>
+    </ul>
+</div>
+<script>
+
+   var InputParams = document.getElementById("InputParams");
+   var EventCreationLabel = document.getElementById("EventCreationLabel");
+   var EventCreationButton = document.getElementById("EventCreationButton");
+
+   EventCreationButton.addEventListener("click", function () {
+      var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/TODO "});
+
+      function handleFailure(ev) {
+         console.log(oRequest, ev);
+         EventCreationLabel.value = "Failed!";
+         InputParams.class = "Failed";
+         U.setPageMessage('error', ev.message);
+         U.highlightRequiredInputs(true);
+      }
+
+      $.ajax(oRequest)
+         .fail(handleFailure)
+         .done(function (ev) {
+            if (ev.success) {
+               signUpButton.disabled = true;
+               console.log(oRequest, ev);
+               signUpLabel.value = "Success!";
+               InputParams.class = "Success";
+               U.setPageMessage('success', 'Success!  Go to the <a href="/Index">Event feed to see events </a>');
+            } else {
+               handleFailure(ev);
+            }
+         });
+
+   });
+</script>
