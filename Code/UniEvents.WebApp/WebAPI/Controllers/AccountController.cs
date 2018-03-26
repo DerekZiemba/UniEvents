@@ -80,10 +80,15 @@ namespace UniEvents.WebAPI.Controllers {
       /// </summary>
       [HttpGet, Route("webapi/account/logout/{username?}/{apikeyorpassword?}")]
       public async Task<ApiResult> Logout(string username, string apikeyorpassword) {
-         if (username.IsNullOrWhitespace() && apikeyorpassword.IsNullOrWhitespace()) {
+         var bHasUserName = !username.IsNullOrWhitespace();
+         var bHasPass = !apikeyorpassword.IsNullOrWhitespace();
+         if (!bHasUserName && !bHasPass) {
             return await LogOutCurrentUser().ConfigureAwait(false);
          }
-         if (username.IsNullOrWhitespace() || apikeyorpassword.IsNullOrWhitespace()) {
+         if(bHasUserName && !bHasPass) {
+            return await LogOutCurrentUserEverywhere().ConfigureAwait(false);
+         }
+         if (!bHasUserName || !bHasPass) {
             return new ApiResult().Failure("Invalid Username, Password, or APIKey");
          }
          if (apikeyorpassword.Length == Crypto.APIKeyLength) {
@@ -103,10 +108,27 @@ namespace UniEvents.WebAPI.Controllers {
 
 
             if (bLoggedOut) {
-               apiresult.Win($"Logged out current user: {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+               apiresult.Win($"Logged out {UserContext.UserName}'s APIKey {UserContext.APIKey}");
                UserContext.RemoveCurrentUserContext(this.HttpContext);
             } else {
-               apiresult.Failure($"Failed to log out current user: {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+               apiresult.Failure($"Failed to log out {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+            }
+            return apiresult;
+         }
+         async Task<ApiResult> LogOutCurrentUserEverywhere() {
+            ApiResult apiresult = new ApiResult();
+            if (this.UserContext == null) { return apiresult.Failure("You must be logged in order to logout."); }
+
+            bool bLoggedOut;
+            try {
+               bLoggedOut = await DBModels.DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, null).ConfigureAwait(false);
+            } catch (Exception ex) { return apiresult.Failure(ex); }
+
+            if (bLoggedOut) {
+               apiresult.Win($"Logged out {UserContext.UserName}'s everywhere.");
+               UserContext.RemoveCurrentUserContext(this.HttpContext);
+            } else {
+               apiresult.Failure($"Failed to log out {UserContext.UserName}'s anywhere.");
             }
             return apiresult;
          }
@@ -158,7 +180,61 @@ namespace UniEvents.WebAPI.Controllers {
 
       [HttpPost, Route("webapi/account/createuser/{password?}")]
       public async Task<ApiResult<UserAccount>> CreateUser(UserAccount user, string password) {
-         return await this.AccountManager().CreateUser(user, password);
+         ApiResult<UserAccount> apiresult = new ApiResult<UserAccount>();
+
+         if (user == null) {
+            return apiresult.Failure("Account Null.");
+         }
+         if (password.IsNullOrWhitespace()) {
+            return apiresult.Failure("Invalid Password.");
+         }
+         if (user.UserName.IsNullOrWhitespace()) {
+            return apiresult.Failure("Invalid UserName.");
+         }
+         if (user.Location == null) {
+            return apiresult.Failure("Location Invalid.");
+         }
+         if (user.Location.CountryRegion.IsNullOrWhitespace()) {
+            return apiresult.Failure("Invalid CountryRegion.");
+         }
+         if (user.Location.AdminDistrict.IsNullOrWhitespace()) {
+            return apiresult.Failure("Invalid State.");
+         }
+         if (user.Location.Locality.IsNullOrWhitespace()) {
+            return apiresult.Failure("Invalid City");
+         }
+         if (user.VerifiedContactEmail || user.VerifiedSchoolEmail) {
+            return apiresult.Failure("Attempt to submit unverified Emails logged and detected."); //not really, but sounds scary.
+         }
+
+         DBModels.DBLocation dbLocation = new DBModels.DBLocation(user.Location);
+         DBModels.DBAccount dbAccount = new DBModels.DBAccount() {
+            UserName = user.UserName,
+            DisplayName = user.DisplayName,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            SchoolEmail = user.SchoolEmail,
+            ContactEmail = user.ContactEmail,
+            PhoneNumber = user.PhoneNumber
+         };
+
+         (dbAccount.PasswordHash, dbAccount.Salt) = Crypto.HashPassword256(password);
+         try {
+            if (!await DBModels.DBLocation.SP_Location_CreateAsync(WebAppContext.CoreContext, dbLocation).ConfigureAwait(false)) {
+               return apiresult.Failure("Failed to create location.");
+            }
+
+            dbAccount.LocationID = dbLocation.LocationID;
+            if (!await DBModels.DBAccount.SP_Account_CreateAsync(WebAppContext.CoreContext, dbAccount).ConfigureAwait(false)) {
+               return apiresult.Failure("Failed to create account.");
+            }
+
+            return apiresult.Win("Account Created!", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+
+         } catch (Exception ex) {
+            return apiresult.Failure(ex);
+         }
+
       }
 
       /// <summary>

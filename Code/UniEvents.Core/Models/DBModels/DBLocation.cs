@@ -76,7 +76,7 @@ namespace UniEvents.Models.DBModels {
 			Description = reader.GetString(nameof(Description));
 		}
 
-      internal static async Task<bool> SP_Location_CreateAsync(CoreContext ctx, DBLocation model) {
+      public static async Task<bool> SP_Location_CreateAsync(CoreContext ctx, DBLocation model) {
          if(model == null) { throw new ArgumentNullException("DBLocation_Null"); }
          if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
          if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }

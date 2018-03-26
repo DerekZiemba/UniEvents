@@ -92,7 +92,7 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      internal static async Task<bool> SP_Account_CreateAsync(CoreContext ctx, DBAccount model) {
+      public static async Task<bool> SP_Account_CreateAsync(CoreContext ctx, DBAccount model) {
          if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
          if (model.IsGroup) { throw new ArgumentException("Is a Group not a User."); }
          if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }

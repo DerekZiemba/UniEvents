@@ -5,6 +5,8 @@
 
 .highlightRequiredInputs input:required { border: 1px solid red; }
 
+a { cursor: pointer; }
+
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content { padding: 50px 5px 20px 5px; }
 
@@ -86,6 +88,20 @@
 #IndexPage #LocationSearch input { flex-grow: 1; }
 
 #IndexPage #LocationSearch textarea { width: 100%; height: 240px; }
+
+#AccountPage #allLoginsTableContainer { overflow-x: auto; }
+
+#AccountPage th { font-size: larger; }
+
+#AccountPage tr.current { background-color: #d5f4e6; }
+
+#AccountPage td { padding: .25em; }
+
+#AccountPage td:nth-child(1) { min-width: 5em; text-align: right; font-size: smaller; padding-right: 1em; padding-left: 1em; }
+
+#AccountPage td:nth-child(2) { min-width: 12em; padding-right: 1em; }
+
+#AccountPage td:nth-child(3) { min-width: 25em; font-family: "Courier New", Courier, monospace; }
 
 .HTMLTemplates { display: none; }
 

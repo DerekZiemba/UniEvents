@@ -1,9 +1,87 @@
 ﻿@page
+@using System.Web
 @model UniEvents.WebApp.Pages.AccountModel
 @{
-    ViewData["Title"] = "Account";
-    Layout = "~/Pages/_Layout.cshtml";
+   ViewData["Title"] = "Account";
+   Layout = "~/Pages/_Layout.cshtml";
 }
 
-<h2>Account</h2>
+<div id="AccountPage">
+   <h2>Account</h2>
 
+   <h4>Active Logins on Record:</h4>
+   <div id="allLoginsTableContainer">
+      <table>
+         <tr><th></th><th>Logon Date</th><th>ApiKey</th></tr>
+         @foreach (var record in Model.AllLogins) {
+            bool bIsCurrent = record.APIKey == Model.CurrentLogin.APIKey;
+
+            <tr class="@(bIsCurrent? "current" : "")">
+               <td><span>@(bIsCurrent ? "(current)" : "")</span></td>
+               <td><time datetime="@record.LoginDate.ToString("u")"></time></td>
+               <td><span class="apikey">@record.APIKey</span></td>
+               <td><span><a class="btnLogoutRecord">Logout</a></span></td>
+            </tr>
+         }
+      </table>
+
+      <input id="btnLogoutAll" type="button" value="Logout Everywhere" />
+   </div>
+
+
+
+   @if (Model.CurrentLogin != null) {
+
+
+
+   }
+
+</div>
+
+<script>
+   document.querySelectorAll("td time").forEach(function (el) {
+      el.innerText = (new Date(el.dateTime)).toLocaleString();
+   });
+
+   function handleFailure(ev) { U.setPageMessage('error', ev.message); }
+
+   document.querySelectorAll(".btnLogoutRecord").forEach(function (el) {
+      el.addEventListener('click', function () {
+         var tr = el.closest('tr');
+         var key = tr.querySelector('.apikey').innerHTML;
+         $.ajax({
+            type: "GET",
+            url: `webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)&apikeyorpassword=${encodeURIComponent(key)}`,
+            error: handleFailure,
+            success: function (ev) {
+               if (!ev.success) { return handleFailure(ev); } 
+               U.setPageMessage('success', ev.message);
+               tr.remove();
+               if (tr.className === "current") {
+                  window.setTimeout(function () {
+                     location.pathname = "";//Go to Homepage
+                  }, 1000);
+               }
+            }
+         });
+
+      });
+   });
+
+   document.querySelector('#btnLogoutAll').addEventListener('click', function() {
+      $.ajax({
+         type: "GET",
+         url: `webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)`,
+         error: handleFailure,
+         success: function (ev) {
+            if (!ev.success) { return handleFailure(ev); } 
+            U.setPageMessage('success', ev.message);
+            window.setTimeout(function () {
+               location.pathname = "";//Go to Homepage
+            }, 1000);
+         }
+      });
+   });
+
+
+</script>
