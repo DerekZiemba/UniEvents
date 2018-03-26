@@ -82,7 +82,7 @@ namespace UniEvents.WebAPI.Controllers {
       public async Task<ApiResult> Logout(string username, string apikeyorpassword) {
          var bHasUserName = !username.IsNullOrWhitespace();
          var bHasPass = !apikeyorpassword.IsNullOrWhitespace();
-         if (!bHasUserName && !bHasPass) {
+         if (!bHasUserName && !bHasPass || (UserContext != null && UserContext.UserName == username && UserContext.APIKey == apikeyorpassword)) {
             return await LogOutCurrentUser().ConfigureAwait(false);
          }
          if(bHasUserName && !bHasPass) {
