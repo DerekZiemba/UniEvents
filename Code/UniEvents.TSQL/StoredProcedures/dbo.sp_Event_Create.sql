@@ -4,17 +4,17 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET XACT_ABORT ON  
 
-USE [dbUniHangouts]
+USE [$(dbUniHangouts)]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Event_Create]
-	@EventID BIGINT OUTPUT,
-	@EventTypeID int = NULL,
-	@DateStart datetime = NULL,
-	@DateEnd datetime = NULL,
-	@AccountID BIGINT = NULL,
-	@LocationID BIGINT = NULL,
-	@Title varchar(80) = NULL,
-	@Caption nvarchar(160) = NULL,
+	@EventID BIGINT = NULL OUTPUT,
+	@EventTypeID BIGINT,
+	@DateStart datetime,
+	@DateEnd datetime,
+	@AccountID BIGINT,
+	@LocationID BIGINT,
+	@Title varchar(80),
+	@Caption nvarchar(160),
 	@Details nvarchar(max) = NULL
 AS
 SET NOCOUNT ON;
@@ -29,5 +29,4 @@ Insert INTO dbo.EventDescription(EventId, Details)
 	VALUES (@EventID, @Details)
 
 
-	
 GO

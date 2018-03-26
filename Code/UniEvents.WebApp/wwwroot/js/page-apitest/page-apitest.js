@@ -42,7 +42,7 @@
          if (!metadata.params) {      
             metadata.params = [];
             metadata.input.forEach(param => {
-               param.elem = Element.From(`<li class="inputparam"><span>(${param.typeName})</span><label>${param.name}:</label><input type="text" param="${param.name}" source="${param.source}"/></li>`);
+               param.elem = Element.From(`<li class="inputparam"><span>(${param.typeName})</span><label>${param.name}:</label><input type="text" param="${param.name}" source="${param.source}" jsType="${param.jsType}" isCollection="${param.isCollection}"/></li>`);
                param.elemInput = param.elem.getElementsByTagName('input')[0];
                param.elemInput.addEventListener('change', handleParamChanage);
                param.elemInput.addEventListener('keyup', handleParamChanage);

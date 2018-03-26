@@ -44,8 +44,8 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
-      [HttpPost, Route("webapi/locations/create/{username?}/{apikey?}")]
-      public async  Task<ApiResult<StreetAddress>> Create(string username, string apikey, StreetAddress address) {
+      [HttpPost, Route("webapi/locations/create")]
+      public async  Task<ApiResult<StreetAddress>> Create(StreetAddress address) {
          var apiresult = new ApiResult<StreetAddress>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }

@@ -137,4 +137,7 @@
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_EventTypes_Create.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Event_Search.sql" />
+  </ItemGroup>
 </Project>
