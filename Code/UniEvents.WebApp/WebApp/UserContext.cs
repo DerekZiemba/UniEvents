@@ -7,7 +7,6 @@ using UniEvents.Models.ApiModels;
 using ZMBA;
 using static ZMBA.Common;
 
-using UniEvents.Models.ApiModels;
 using UniEvents.Models.DBModels;
 
 namespace UniEvents.WebApp {
@@ -73,7 +72,7 @@ namespace UniEvents.WebApp {
       }
 
       public static async Task<UserContext> InitContextFromCookie(HttpContext httpContext, UserLoginCookie cookie) {
-         if(cookie == null || cookie.UserName.IsNullOrWhitespace() || cookie.APIKey.IsNullOrWhitespace()) {
+         if(cookie == null || String.IsNullOrWhiteSpace(cookie.UserName) || String.IsNullOrWhiteSpace(cookie.APIKey)) {
             return null;
          }
 
@@ -90,24 +89,24 @@ namespace UniEvents.WebApp {
             ctx = new UserContext();
             ctx.Cookie = cookie;
 
-            DBLogin dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.UserName, ctx.APIKey).ConfigureAwait(false);
+            DBLogin dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.Factory, ctx.UserName, ctx.APIKey).ConfigureAwait(false);
             if(dbLogin != null) {
                ctx.Cookie.UserName = dbLogin.UserName;
                ctx.LoginDate = dbLogin.LoginDate;
-               ctx.IsVerifiedLogin = Crypto.VerifyHashMatch(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
+               ctx.IsVerifiedLogin = HashUtils.VerifyHashMatch256(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
             } else {
                ctx.IsVerifiedLogin = false;
             }
 
             if (ctx.IsVerifiedLogin) {
-               DBAccount acct = await DBAccount.SP_Account_GetOneAsync(WebAppContext.CoreContext, 0, ctx.UserName).ConfigureAwait(false);
+               DBAccount acct = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, ctx.UserName).ConfigureAwait(false);
                ctx.AccountID = acct.AccountID;
                ctx.LocationID = acct.LocationID.UnBox();
                ctx.UserAccount = new UserAccount(acct, null);
                ctx.Cookie.VerifyDate = DateTime.UtcNow; //Rolling date
 
                if (ctx.LocationID > 0) {
-                  using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.CoreContext, ctx.LocationID)) {
+                  using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.Factory, ctx.LocationID)) {
                      DBLocation dbLoc = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
                      if (dbLoc != null) {
                         ctx.ParentLocationID = dbLoc.ParentLocationID.UnBox();
@@ -118,11 +117,11 @@ namespace UniEvents.WebApp {
             }
          } else {
             if (ctx.Cookie.VerifyDate < DateTime.UtcNow.AddMinutes(-10)) {
-               DBLogin dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.Cookie.UserName, ctx.Cookie.APIKey).ConfigureAwait(false);
+               DBLogin dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.Factory, ctx.Cookie.UserName, ctx.Cookie.APIKey).ConfigureAwait(false);
                if(dbLogin != null) {
                   ctx.Cookie.UserName = dbLogin.UserName;
                   ctx.LoginDate = dbLogin.LoginDate;
-                  ctx.IsVerifiedLogin = Crypto.VerifyHashMatch(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
+                  ctx.IsVerifiedLogin = HashUtils.VerifyHashMatch256(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
                   ctx.Cookie.VerifyDate = DateTime.UtcNow; 
                } else {
                   ctx.IsVerifiedLogin = false;
@@ -132,10 +131,10 @@ namespace UniEvents.WebApp {
             }
          }
 
-         if (ctx.UserDisplayName.IsEmpty()) {
-            if (!(ctx.UserAccount?.DisplayName).IsNullOrWhitespace()) {
+         if (ctx.UserDisplayName.IsNullOrEmpty()) {
+            if ((ctx.UserAccount?.DisplayName).IsNotWhitespace()) {
                ctx.UserDisplayName = ctx.UserAccount.DisplayName;
-            } else if (!(ctx.UserAccount?.FirstName).IsNullOrWhitespace()) {
+            } else if ((ctx.UserAccount?.FirstName).IsNotWhitespace()) {
                ctx.UserDisplayName = new string[] { ctx.UserAccount.FirstName, ctx.UserAccount.LastName }.ToStringJoin(" ");
             } else {
                ctx.UserDisplayName = ctx.UserName;

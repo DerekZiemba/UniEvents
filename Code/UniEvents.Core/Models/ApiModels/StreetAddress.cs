@@ -48,10 +48,6 @@ namespace UniEvents.Models.ApiModels {
          Longitude = other.Longitude;
       }
 
-      public bool IsValid() {
-         if (CountryRegion.IsNullOrWhitespace()) return false;
-         return true;
-      }
 
 		public override string ToString() => FormatAddress(Name, AddressLine, Locality, AdminDistrict, PostalCode, CountryRegion);
 

@@ -10,7 +10,7 @@ using ZMBA;
 
 namespace UniEvents.Models.DBModels {
 
-   public class DBEventType {
+   public class DBEventType : DBModel {
 
       [DBCol("EventTypeID", SqlDbType.BigInt, 1, false, isAutoValue: true)]
       public Int64 EventTypeID { get; set; }
@@ -29,7 +29,7 @@ namespace UniEvents.Models.DBModels {
          Description = reader.GetString(nameof(Description));
       }
 
-      public static IEnumerable<DBEventType> SP_EventTypes_Search(CoreContext ctx, long? EventTypeID = null, string Name = null, string Description = null) {
+      public static IEnumerable<DBEventType> SP_EventTypes_Search(Factory ctx, long? EventTypeID = null, string Name = null, string Description = null) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
@@ -46,7 +46,7 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static DBEventType SP_EventType_Create(CoreContext ctx, string Name, string Description) {
+      public static DBEventType SP_EventType_Create(Factory ctx, string Name, string Description) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
             var tagidParam = cmd.AddParam(ParameterDirection.Output, SqlDbType.Int, nameof(EventTypeID), null);

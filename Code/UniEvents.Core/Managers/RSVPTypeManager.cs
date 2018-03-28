@@ -16,7 +16,7 @@ using DBModels = UniEvents.Models.DBModels;
 namespace UniEvents.Managers {
 
    public class RSVPTypeManager {
-      private readonly CoreContext Ctx;
+      private readonly Factory Ctx;
 
       public IList<RSVPType> RSVPTypes { get; private set; }
 
@@ -26,19 +26,19 @@ namespace UniEvents.Managers {
       public RSVPType Later { get; private set; }
       public RSVPType Attending { get; private set; }
 
-      internal RSVPTypeManager(CoreContext ctx) {
+      internal RSVPTypeManager(Factory ctx) {
          this.Ctx = ctx;
          this.RSVPTypes = DBModels.DBRSVPType.SP_RSVPTypes_Get(ctx).Select(x => {
             var y = new RSVPType(x);
-            if (y.Name.EqIgCaseSym(nameof(No))) {
+            if (y.Name.EqAlphaNumIgCase(nameof(No))) {
                this.No = y;
-            } else if (y.Name.EqIgCaseSym(nameof(Maybe))) {
+            } else if (y.Name.EqAlphaNumIgCase(nameof(Maybe))) {
                this.Maybe = y;
-            } else if (y.Name.EqIgCaseSym(nameof(StopBy))) {
+            } else if (y.Name.EqAlphaNumIgCase(nameof(StopBy))) {
                this.StopBy = y;
-            } else if (y.Name.EqIgCaseSym(nameof(Later))) {
+            } else if (y.Name.EqAlphaNumIgCase(nameof(Later))) {
                this.Later = y;
-            } else if (y.Name.EqIgCaseSym(nameof(Attending))) {
+            } else if (y.Name.EqAlphaNumIgCase(nameof(Attending))) {
                this.Attending = y;
             }
             return y;

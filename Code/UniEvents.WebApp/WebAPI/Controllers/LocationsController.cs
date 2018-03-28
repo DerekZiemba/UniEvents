@@ -33,7 +33,7 @@ namespace UniEvents.WebAPI.Controllers {
 
          apiresult.Result = new List<StreetAddress>();
          try {
-            using(SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(WebAppContext.CoreContext, ParentLocationID, Name, AddressLine, Locality, AdminDistrict, PostalCode, Description)) {
+            using(SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(WebAppContext.Factory, ParentLocationID, Name, AddressLine, Locality, AdminDistrict, PostalCode, Description)) {
                foreach (var item in cmd.ExecuteReader_GetManyRecords()) {
                   apiresult.Result.Add(new StreetAddress(new DBLocation(item)));
                }

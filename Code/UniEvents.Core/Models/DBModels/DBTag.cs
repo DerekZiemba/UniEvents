@@ -9,7 +9,7 @@ using ZMBA;
 
 
 namespace UniEvents.Models.DBModels {
-   public class DBTag {
+   public class DBTag : DBModel {
 
       [DBCol("TagID", SqlDbType.BigInt, 1, false, true)]
       public Int64 TagID { get; set; }
@@ -29,7 +29,7 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static DBTag SP_Tags_GetOne(CoreContext ctx, long? TagID = null, string Name = null) {
+      public static DBTag SP_Tags_GetOne(Factory ctx, long? TagID = null, string Name = null) {
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_GetOne]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
@@ -38,7 +38,7 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      public static IEnumerable<DBTag> SP_Tags_Search(CoreContext ctx, long? TagID = null, string Name = null, string Description = null) {
+      public static IEnumerable<DBTag> SP_Tags_Search(Factory ctx, long? TagID = null, string Name = null, string Description = null) {
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
@@ -48,8 +48,14 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
+      public static IEnumerable<DBTag> SP_Tags_Query(Factory ctx, string Query) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Query), Query);
+            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBTag(item); }
+         }
+      }
 
-      public static DBTag SP_Tag_Create(CoreContext ctx, string Name, string Description) {
+      public static DBTag SP_Tag_Create(Factory ctx, string Name, string Description) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
             var tagidParam = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(TagID), null);

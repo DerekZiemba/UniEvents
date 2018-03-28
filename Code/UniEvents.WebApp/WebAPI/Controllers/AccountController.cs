@@ -10,7 +10,7 @@ using UniEvents.WebApp;
 using UniEvents.Core;
 using UniEvents.Models.ApiModels;
 using UniEvents.Models.DBModels;
-using static ZMBA.Common;
+using ZMBA;
 
 
 namespace UniEvents.WebAPI.Controllers {
@@ -24,19 +24,19 @@ namespace UniEvents.WebAPI.Controllers {
          ApiResult<UserLoginCookie> apiresult = new ApiResult<UserLoginCookie>();
 
          if (this.UserContext != null) { return apiresult.Failure("You are all ready logged in. Logout before you can login."); }
-         if (username.IsNullOrWhitespace() || password.IsNullOrWhitespace()) { return apiresult.Failure("Invalid Username/Password");  }
+         if (String.IsNullOrWhiteSpace(username) || String.IsNullOrWhiteSpace(password)) { return apiresult.Failure("Invalid Username/Password");  }
 
          DBAccount dbAccount = null;
          try {
-            dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
+            dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, username).ConfigureAwait(false);
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
          if (dbAccount == null) {  return apiresult.Failure("Account does not exist.");  }
-         if (!Crypto.VerifyHashMatch(password, dbAccount.Salt, dbAccount.PasswordHash)) {  return apiresult.Failure("Invalid Password");  }
+         if (!HashUtils.VerifyHashMatch256(password, dbAccount.Salt, dbAccount.PasswordHash)) {  return apiresult.Failure("Invalid Password");  }
 
          DBLogin dbLogin = null;
          try {
-            dbLogin = await DBLogin.LoginUserNameAsync(WebAppContext.CoreContext, dbAccount.UserName).ConfigureAwait(false);
+            dbLogin = await DBLogin.LoginUserNameAsync(WebAppContext.Factory, dbAccount.UserName).ConfigureAwait(false);
          } catch (Exception ex) { return apiresult.Failure(ex); }
          
          if (dbLogin == null) {  apiresult.Failure("Login Failed");  }
@@ -54,17 +54,17 @@ namespace UniEvents.WebAPI.Controllers {
       [HttpGet, Route("webapi/account/verifyapikey/{username?}/{apikey?}")]
       public async Task<ApiResult> VerifyApiKey(string username, string apikey) {
          ApiResult apiresult = new ApiResult();
-         if (username.IsNullOrWhitespace()) { return apiresult.Failure("Invalid Username."); }
-         if (apikey?.Length != Crypto.APIKeyLength) { return apiresult.Failure("Invalid APIKey."); }
+         if (String.IsNullOrWhiteSpace(username)) { return apiresult.Failure("Invalid Username."); }
+         if (apikey?.Length != HashUtils.APIKeyLength256) { return apiresult.Failure("Invalid APIKey."); }
          if (this.UserContext == null) { return apiresult.Failure("You do not have permission to perform this action."); }
          if (!this.UserContext.IsVerifiedLogin) { return apiresult.Failure("Login Credentials Expired. Try Relogging In."); }
 
          DBLogin dbLogin;
          try {
-            dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, username, apikey).ConfigureAwait(false);
+            dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.Factory, username, apikey).ConfigureAwait(false);
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
-         if (dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash)) {
+         if (dbLogin != null && HashUtils.VerifyHashMatch256(apikey, dbLogin.UserName, dbLogin.APIKeyHash)) {
             apiresult.Win("Is Valid ApiKey");
          } else {
             apiresult.Failure("ApiKey is Invalid");
@@ -80,8 +80,8 @@ namespace UniEvents.WebAPI.Controllers {
       /// </summary>
       [HttpGet, Route("webapi/account/logout/{username?}/{apikeyorpassword?}")]
       public async Task<ApiResult> Logout(string username, string apikeyorpassword) {
-         var bHasUserName = !username.IsNullOrWhitespace();
-         var bHasPass = !apikeyorpassword.IsNullOrWhitespace();
+         var bHasUserName = username.IsNotWhitespace();
+         var bHasPass = apikeyorpassword.IsNotWhitespace();
          if (!bHasUserName && !bHasPass || (UserContext != null && UserContext.UserName == username && UserContext.APIKey == apikeyorpassword)) {
             return await LogOutCurrentUser().ConfigureAwait(false);
          }
@@ -91,7 +91,7 @@ namespace UniEvents.WebAPI.Controllers {
          if (!bHasUserName || !bHasPass) {
             return new ApiResult().Failure("Invalid Username, Password, or APIKey");
          }
-         if (apikeyorpassword.Length == Crypto.APIKeyLength) {
+         if (apikeyorpassword.Length == HashUtils.APIKeyLength256) {
             return await LogOutApiKey(username, apikeyorpassword).ConfigureAwait(false);
          } else {
             return await LogUserOutEverywhere(username, apikeyorpassword).ConfigureAwait(false);
@@ -103,7 +103,7 @@ namespace UniEvents.WebAPI.Controllers {
 
             bool bLoggedOut;
             try {
-               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, UserContext.APIKey).ConfigureAwait(false);
+               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.Factory, UserContext.UserName, UserContext.APIKey).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
 
@@ -121,7 +121,7 @@ namespace UniEvents.WebAPI.Controllers {
 
             bool bLoggedOut;
             try {
-               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, UserContext.UserName, null).ConfigureAwait(false);
+               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.Factory, UserContext.UserName, null).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
@@ -136,7 +136,7 @@ namespace UniEvents.WebAPI.Controllers {
             ApiResult apiresult = new ApiResult();
             bool bLoggedOut;
             try {
-               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, _username, _apikey).ConfigureAwait(false);
+               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.Factory, _username, _apikey).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
@@ -150,19 +150,19 @@ namespace UniEvents.WebAPI.Controllers {
             ApiResult apiresult = new ApiResult();          
             DBAccount dbAccount;
             try {
-               dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.CoreContext, 0, _username).ConfigureAwait(false);
+               dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, _username).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (dbAccount == null) {
                return apiresult.Failure("Account does not exist.");
             }
-            if (!Crypto.VerifyHashMatch(_password, dbAccount.Salt, dbAccount.PasswordHash)) {
+            if (!HashUtils.VerifyHashMatch256(_password, dbAccount.Salt, dbAccount.PasswordHash)) {
                return apiresult.Failure("Invalid Password");
             }
 
             bool bLoggedOut;
             try {
-               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.CoreContext, _username, null).ConfigureAwait(false);
+               bLoggedOut = await DBLogin.SP_Account_LogoutAsync(WebAppContext.Factory, _username, null).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
@@ -185,22 +185,22 @@ namespace UniEvents.WebAPI.Controllers {
          if (user == null) {
             return apiresult.Failure("Account Null.");
          }
-         if (password.IsNullOrWhitespace()) {
+         if (String.IsNullOrWhiteSpace(password)) {
             return apiresult.Failure("Invalid Password.");
          }
-         if (user.UserName.IsNullOrWhitespace()) {
+         if (String.IsNullOrWhiteSpace(user.UserName)) {
             return apiresult.Failure("Invalid UserName.");
          }
          if (user.Location == null) {
             return apiresult.Failure("Location Invalid.");
          }
-         if (user.Location.CountryRegion.IsNullOrWhitespace()) {
+         if (String.IsNullOrWhiteSpace(user.Location.CountryRegion)) {
             return apiresult.Failure("Invalid CountryRegion.");
          }
-         if (user.Location.AdminDistrict.IsNullOrWhitespace()) {
+         if (String.IsNullOrWhiteSpace(user.Location.AdminDistrict)) {
             return apiresult.Failure("Invalid State.");
          }
-         if (user.Location.Locality.IsNullOrWhitespace()) {
+         if (String.IsNullOrWhiteSpace(user.Location.Locality)) {
             return apiresult.Failure("Invalid City");
          }
          if (user.VerifiedContactEmail || user.VerifiedSchoolEmail) {
@@ -218,14 +218,14 @@ namespace UniEvents.WebAPI.Controllers {
             PhoneNumber = user.PhoneNumber
          };
 
-         (dbAccount.PasswordHash, dbAccount.Salt) = Crypto.HashPassword256(password);
+         (dbAccount.PasswordHash, dbAccount.Salt) = HashUtils.HashPassword256(password);
          try {
-            if (!await DBLocation.SP_Locations_CreateOneAsync(WebAppContext.CoreContext, dbLocation).ConfigureAwait(false)) {
+            if (!await DBLocation.SP_Locations_CreateOneAsync(WebAppContext.Factory, dbLocation).ConfigureAwait(false)) {
                return apiresult.Failure("Failed to create location.");
             }
 
             dbAccount.LocationID = dbLocation.LocationID;
-            if (!await DBAccount.SP_Account_CreateAsync(WebAppContext.CoreContext, dbAccount).ConfigureAwait(false)) {
+            if (!await DBAccount.SP_Account_CreateAsync(WebAppContext.Factory, dbAccount).ConfigureAwait(false)) {
                return apiresult.Failure("Failed to create account.");
             }
 
@@ -244,14 +244,14 @@ namespace UniEvents.WebAPI.Controllers {
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Check your privilege. This is a privileged operation."); }
 
          try {
-            DBAccount dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.CoreContext, 0, username).ConfigureAwait(false);
+            DBAccount dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, username).ConfigureAwait(false);
             if (dbAccount == null) {
                return apiresult.Failure("User doesn't exist");
             }
             apiresult.Result = new UserAccount(dbAccount, null);
 
             if (includeLocation && dbAccount.LocationID.UnBox() > 0) {
-               using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.CoreContext, dbAccount.LocationID.Value)) {
+               using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.Factory, dbAccount.LocationID.Value)) {
                   DBLocation dbLocation = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
                   apiresult.Result.Location = new StreetAddress(dbLocation);
                }

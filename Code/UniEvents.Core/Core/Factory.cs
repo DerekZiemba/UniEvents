@@ -11,7 +11,7 @@ using static ZMBA.Common;
 
 namespace UniEvents.Core {
 
-   public class CoreContext {
+   public class Factory {
       private readonly string _configFilePath;
       private readonly Lazy<Configuration> _Config;
       private readonly Lazy<AccountManager> _AccountManager;
@@ -25,7 +25,7 @@ namespace UniEvents.Core {
       public TagManager TagManager => _TagManager.Value;
       public RSVPTypeManager RSVPTypeManager => _RSVPTypeManager.Value;
 
-      public CoreContext(string configFilePath) {
+      public Factory(string configFilePath) {
          this._configFilePath = configFilePath;
 
          _Config = new Lazy<Configuration>(() => {

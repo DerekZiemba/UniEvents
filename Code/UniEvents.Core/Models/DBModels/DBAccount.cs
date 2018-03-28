@@ -10,7 +10,7 @@ using ZMBA;
 
 namespace UniEvents.Models.DBModels {
 
-   public class DBAccount {
+   public class DBAccount : DBModel {
 
       [DBCol("AccountID", SqlDbType.BigInt, 1, false, isAutoValue: true)]
       public Int64 AccountID { get; set; }
@@ -74,8 +74,8 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static async Task<DBAccount> SP_Account_GetOneAsync(CoreContext ctx, long AccountID, string UserName = null) {
-         if(AccountID <= 0 && UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("AccountID or UserName must be specified."); }
+      public static async Task<DBAccount> SP_Account_GetOneAsync(Factory ctx, long AccountID, string UserName = null) {
+         if(AccountID <= 0 && String.IsNullOrWhiteSpace(UserName)) { throw new ArgumentNullException("AccountID or UserName must be specified."); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_GetOne]", conn) { CommandType = CommandType.StoredProcedure }) {
@@ -86,11 +86,11 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      public static async Task<bool> SP_Account_CreateAsync(CoreContext ctx, DBAccount model) {
+      public static async Task<bool> SP_Account_CreateAsync(Factory ctx, DBAccount model) {
          if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
          if (model.IsGroup) { throw new ArgumentException("Is a Group not a User."); }
-         if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
-         if (model.PasswordHash.IsEmpty() || model.Salt.IsEmpty()) { throw new ArgumentException("PasswordHash or Salt invalid."); }
+         if (String.IsNullOrWhiteSpace(model.UserName)) { throw new ArgumentNullException("UserName_Invalid"); }
+         if (model.PasswordHash.IsEmpty() || model.Salt.IsNullOrEmpty()) { throw new ArgumentException("PasswordHash or Salt invalid."); }
 
          //TODO: Match params to properties
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
@@ -117,14 +117,14 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      public static async Task<bool> SP_Group_CreateAsync(CoreContext ctx, DBAccount model, long @GroupOwnerAccountID) {
+      public static async Task<bool> SP_Group_CreateAsync(Factory ctx, DBAccount model, long @GroupOwnerAccountID) {
          if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
          if (!model.IsGroup) { throw new ArgumentException("Is a User not a Group."); }
          if (@GroupOwnerAccountID <= 0) { throw new ArgumentNullException("GroupOwnerAccountID_Invalid"); }
-         if (model.UserName.IsNullOrWhitespace()) { throw new ArgumentNullException("UserName_Invalid"); }
-         if (!model.PasswordHash.IsEmpty() || !model.Salt.IsEmpty()) { throw new ArgumentException("Groups don't have Passwords"); }
-         if (!model.FirstName.IsNullOrWhitespace()) { throw new ArgumentException("Groups don't have FirstNames"); }
-         if (!model.LastName.IsNullOrWhitespace()) { throw new ArgumentException("Groups don't have LastNames"); }
+         if (String.IsNullOrWhiteSpace(model.UserName)) { throw new ArgumentNullException("UserName_Invalid"); }
+         if (!model.PasswordHash.IsEmpty() || !model.Salt.IsNullOrEmpty()) { throw new ArgumentException("Groups don't have Passwords"); }
+         if (model.FirstName.IsNotWhitespace()) { throw new ArgumentException("Groups don't have FirstNames"); }
+         if (model.LastName.IsNotWhitespace()) { throw new ArgumentException("Groups don't have LastNames"); }
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Group_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
@@ -143,7 +143,7 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static async Task<List<DBAccount>> SP_Account_SearchAsync(CoreContext ctx,
+      public static async Task<List<DBAccount>> SP_Account_SearchAsync(Factory ctx,
                                                                         string UserName = null,
                                                                         string DisplayName = null,
                                                                         string FirstName = null,
@@ -164,7 +164,7 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      public static IEnumerable<DBAccount> SP_Account_Search(CoreContext ctx,
+      public static IEnumerable<DBAccount> SP_Account_Search(Factory ctx,
                                                                string UserName = null,
                                                                string DisplayName = null,
                                                                string FirstName = null,

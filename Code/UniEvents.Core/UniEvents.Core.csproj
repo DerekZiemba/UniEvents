@@ -9,22 +9,35 @@
     <LangVersion>7.2</LangVersion>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	 <DefineConstants>RELEASE;TRACE;NETSTANDARD2_0</DefineConstants>
+	 <WarningLevel>4</WarningLevel>
+	 <NoWarn>1701;1702;1705;CS0649;CS0168</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>7.2</LangVersion>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>DEBUGMODE;TRACE;DEBUG;NETSTANDARD2_0</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1701;1702;1705;CS0649;CS0168;IDE0017</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
     <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\Abbreviations.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\USCities.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

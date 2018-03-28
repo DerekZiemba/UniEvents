@@ -11,7 +11,7 @@ using ZMBA;
 
 namespace UniEvents.Models.DBModels {
 
-   public class DBEventFeedItem {
+   public class DBEventFeedItem : DBModel {
 
 
       [DBCol("EventID", SqlDbType.BigInt, 1, false, isAutoValue: true)]
@@ -53,7 +53,7 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static DBEventFeedItem SP_Event_Create(CoreContext ctx,
+      public static DBEventFeedItem SP_Event_Create(Factory ctx,
          long EventTypeID, DateTime DateStart, DateTime DateEnd, long AccountID, long LocationID, string Title, string Caption, string Details) {
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
@@ -88,7 +88,7 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static IEnumerable<DBEventFeedItem> SP_Event_Search(CoreContext ctx,
+      public static IEnumerable<DBEventFeedItem> SP_Event_Search(Factory ctx,
          long? EventID = null,
          long? EventTypeID = null,
          long? AccountID = null,

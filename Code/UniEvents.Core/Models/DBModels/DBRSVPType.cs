@@ -8,7 +8,7 @@ using UniEvents.Core;
 using ZMBA;
 
 namespace UniEvents.Models.DBModels {
-   public class DBRSVPType {
+   public class DBRSVPType : DBModel {
 
 
       [DBCol("RSVPTypeID", SqlDbType.SmallInt, 1, false, isAutoValue: true)]
@@ -29,7 +29,7 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static IEnumerable<DBRSVPType> SP_RSVPTypes_Get(CoreContext ctx) {
+      public static IEnumerable<DBRSVPType> SP_RSVPTypes_Get(Factory ctx) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsConfiguration))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_RSVPTypes_Get]", conn) { CommandType = CommandType.StoredProcedure }) {
             foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBRSVPType(item); }

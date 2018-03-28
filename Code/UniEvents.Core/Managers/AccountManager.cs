@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 
 
-using static ZMBA.Common;
+using ZMBA;
 using UniEvents.Core;
 using UniEvents.Models.ApiModels;
 using ApiModels = UniEvents.Models.ApiModels;
@@ -16,18 +16,18 @@ using DBModels = UniEvents.Models.DBModels;
 namespace UniEvents.Managers {
 
 	public class AccountManager {
-      private readonly CoreContext Ctx;
+      private readonly Factory Ctx;
 
-		internal AccountManager(CoreContext ctx) {
+		internal AccountManager(Factory ctx) {
          this.Ctx = ctx;
 		}
 
       public async Task<bool> CheckPrivilege(string username, string apikey) {
-         if (!username.IsNullOrWhitespace() && !apikey.IsNullOrWhitespace()) {
+         if (username.IsNotWhitespace() && apikey.IsNotWhitespace()) {
             try {
                DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(Ctx, username, apikey).ConfigureAwait(false);
-               return dbLogin != null && Crypto.VerifyHashMatch(apikey, dbLogin.UserName, dbLogin.APIKeyHash);
-            } catch (Exception ex) { }
+               return dbLogin != null && HashUtils.VerifyHashMatch256(apikey, dbLogin.UserName, dbLogin.APIKeyHash);
+            } catch { if (Ctx.Config.IsDebugMode) { throw; } }
          }
          return false;
       }

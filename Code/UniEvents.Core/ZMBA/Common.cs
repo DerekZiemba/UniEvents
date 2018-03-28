@@ -74,17 +74,19 @@ namespace ZMBA {
       }
 
 
-      public static T Deserialize<T>(this Newtonsoft.Json.JsonSerializer ser, string value) {
+      public static T Deserialize<T>(this JsonSerializer ser, string value) {
          using (JsonTextReader reader = new JsonTextReader(new StringReader(value))) {
             return ser.Deserialize<T>(reader);
          }
       }
 
-      public static T DeserializeOrDefault<T>(this Newtonsoft.Json.JsonSerializer ser, string value, T @default = default(T)) {
-         if (!value.IsNullOrWhitespace()) {
+      public static T DeserializeOrDefault<T>(this JsonSerializer ser, string value, T @default = default(T)) {
+         if (value.IsNotWhitespace()) {
             try {
                return ser.Deserialize<T>(value);
+#pragma warning disable CS0168 // Variable is declared but never used
             } catch (Exception ex) { }
+#pragma warning restore CS0168 // Variable is declared but never used
          }
          return @default;
       }
@@ -95,6 +97,9 @@ namespace ZMBA {
 
 
       #region ************************************** String ******************************************************
+      private static readonly CompareInfo InvCmpInfo =CultureInfo.InvariantCulture.CompareInfo;
+      private static readonly CompareOptions VbCmp = CmpOp.IgnoreWidth | CmpOp.IgnoreNonSpace | CmpOp.IgnoreKanaType; //Compare like VisualBasic
+
 
       [Flags]
       public enum SubstrOptions {
@@ -107,28 +112,40 @@ namespace ZMBA {
          RetInput = 1 << 2
       }
 
+      [MethodImpl(AggressiveInlining)] public static bool IsNullOrEmpty(this string str) => String.IsNullOrEmpty(str);
 
-      [MethodImpl(AggressiveInlining)] public static bool IsNullOrWhitespace(this string str) => String.IsNullOrWhiteSpace(str);
-
-		[MethodImpl(AggressiveInlining)] public static bool IsEmpty(this string str) => String.IsNullOrEmpty(str);
+      [MethodImpl(AggressiveInlining)] public static bool IsNotWhitespace(this string str) => !String.IsNullOrWhiteSpace(str);
 
 		[MethodImpl(AggressiveInlining)] public static bool Eq(this string str, string other) => String.Equals(str, other, StringComparison.Ordinal);
 
 		[MethodImpl(AggressiveInlining)] public static bool EqIgCase(this string str, string other) => String.Equals(str, other, StringComparison.OrdinalIgnoreCase);
 
-		[MethodImpl(AggressiveInlining)] public static bool EqIgCaseSym(this string str, string other) => 0 == CultureInfo.InvariantCulture.CompareInfo.Compare(str, other, CmpOp.IgnoreWidth | CmpOp.IgnoreNonSpace | CmpOp.IgnoreKanaType | CmpOp.IgnoreSymbols | CmpOp.IgnoreCase);
+      [MethodImpl(AggressiveInlining)] public static bool EqAlphaNum(this string str, string other) => 0 == InvCmpInfo.Compare(str, other, VbCmp | CmpOp.IgnoreSymbols);
 
-		[MethodImpl(AggressiveInlining)] public static bool EqIgSym(this string str, string other) => 0 == CultureInfo.InvariantCulture.CompareInfo.Compare(str, other, CmpOp.IgnoreWidth | CmpOp.IgnoreNonSpace | CmpOp.IgnoreKanaType | CmpOp.IgnoreSymbols);
+      [MethodImpl(AggressiveInlining)] public static bool EqAlphaNumIgCase(this string str, string other) => 0 == InvCmpInfo.Compare(str, other, VbCmp | CmpOp.IgnoreSymbols | CmpOp.IgnoreCase);
 
 
-		public static string ReplaceIgCase(this string sInput, string oldValue, string newValue) {
+      public static string ToAlphaNumeric(this string str) {
+         if (str.IsNullOrEmpty()) { return str; }
+         var sb = StringBuilderCache.Take(str.Length);
+         for (var i = 0; i < str.Length; i++) { if (Char.IsLetter(str[i]) || char.IsNumber(str[i])) { sb.Append(str[i]); } }
+         return StringBuilderCache.Release(sb);
+      }
+      public static string ToAlphaNumericLower(this string str) {
+         if (str.IsNullOrEmpty()) { return str; }
+         var sb = StringBuilderCache.Take(str.Length);
+         for (var i = 0; i < str.Length; i++) { if (Char.IsLetter(str[i]) || char.IsNumber(str[i])) { sb.Append(char.ToLower(str[i])); } }
+         return StringBuilderCache.Release(sb);
+      }
+
+      public static string ReplaceIgCase(this string sInput, string oldValue, string newValue) {
 			if (!string.IsNullOrEmpty(sInput) && !string.IsNullOrEmpty(oldValue)) {
 				int idxLeft = sInput.IndexOf(oldValue, 0, StringComparison.OrdinalIgnoreCase);
 				//Don't build a new string if it doesn't even contain the value
 				if (idxLeft >= 0) {
 					if (newValue == null)
 						newValue = string.Empty;
-					var sb = new StringBuilder(sInput.Length + Math.Max(0, newValue.Length - oldValue.Length) + 16);
+					var sb = StringBuilderCache.Take(sInput.Length + Math.Max(0, newValue.Length - oldValue.Length) + 16);
 					int pos = 0;
 					while (pos < sInput.Length) {
 						if (idxLeft == -1) {
@@ -143,15 +160,15 @@ namespace ZMBA {
 							idxLeft = sInput.IndexOf(oldValue, pos, StringComparison.OrdinalIgnoreCase);
 						}
 					}
-					return sb.ToString();
+					return StringBuilderCache.Release(sb);
 				}
 			}
 			return sInput;
 		}
 
-		public static string ToStringJoin(this IEnumerable<string> ienum, string separator = ", ") => String.Join(separator, from string x in ienum where !string.IsNullOrWhiteSpace(x) select x.Trim());
-
-
+      public static string ToStringJoin(this IEnumerable<string> ienum, string separator = ", ") {
+         return String.Join(separator, from string x in ienum where !string.IsNullOrWhiteSpace(x) select x.Trim());
+      }
 
       public static string SubstrBefore(this string input, string seq, SubstrOptions opts = SubstrOptions.Default) {
          if (input?.Length > 0 && seq?.Length > 0) {
@@ -364,36 +381,51 @@ namespace ZMBA {
 		internal static bool IsCastableTo(this Type src, Type target) => target.IsAssignableFrom(src) || src.GetMethods(BindingFlags.Public | BindingFlags.Static).Any(x => x.ReturnType == target && (x.Name == "op_Implicit" || x.Name == "op_Explicit"));
 
 
-		#endregion
+      #endregion
 
 
 
-		#region ************************************** Reflection ******************************************************
+      #region ************************************** Reflection ******************************************************
 
-		//public static TTo CopyFieldsShallow<TTo, TFrom>(TTo target, TFrom src) where TTo : class {
-		//	var shallowcopy = RuntimeCompiler.CompileShallowFieldCopier<TTo, TFrom>();
-		//	shallowcopy(target, src);
-		//	return target;
-		//}
+      //public static TTo CopyFieldsShallow<TTo, TFrom>(TTo target, TFrom src) where TTo : class {
+      //	var shallowcopy = RuntimeCompiler.CompileShallowFieldCopier<TTo, TFrom>();
+      //	shallowcopy(target, src);
+      //	return target;
+      //}
 
-		//public static TTo CopyPropsShallow<TTo, TFrom>(TTo target, TFrom src) where TTo : class {
-		//	var shallowcopy = RuntimeCompiler.CompileShallowPropertyCopier<TTo, TFrom>();
-		//	shallowcopy(target, src);
-		//	return target;
-		//}
+      //public static TTo CopyPropsShallow<TTo, TFrom>(TTo target, TFrom src) where TTo : class {
+      //	var shallowcopy = RuntimeCompiler.CompileShallowPropertyCopier<TTo, TFrom>();
+      //	shallowcopy(target, src);
+      //	return target;
+      //}
 
-		#endregion
+      [MethodImpl(AggressiveInlining)]
+      public static ConstructorInfo GetConstructor(this Type type, BindingFlags flags, Type[] argTypes = null) {
+         return type.GetConstructor(flags, null, argTypes, null);
+      }
+
+      [MethodImpl(AggressiveInlining)]
+      public static MethodInfo GetMethod(this Type type, string name, BindingFlags flags, Type[] argTypes = null) {
+         return type.GetMethod(name, flags, null, argTypes, null);
+      }
+
+      [MethodImpl(AggressiveInlining)]
+      public static PropertyInfo GetProperty(this Type type, string name, BindingFlags flags, Type returnType, Type[] argTypes = null) {
+         return type.GetProperty(name, flags, null, returnType, argTypes, null);
+      }
+
+      #endregion
 
 
 
-		#region ************************************** SQL ******************************************************
+      #region ************************************** SQL ******************************************************
 
-		public static SqlParameter AddParam(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, object value) {
+      public static SqlParameter AddParam(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, object value) {
 			return cmd.Parameters.Add(new SqlParameter(name[0] != '@' ? '@' + name : name, dbtype) { Direction = direction, Value = value });
 		}
       public static SqlParameter AddParam(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, string value) {
          SqlParameter param = new SqlParameter(name[ 0 ] != '@' ? '@' + name : name, dbtype) { Direction = direction };
-         if (!value.IsNullOrWhitespace()) { param.Value = value; }
+         if (value.IsNotWhitespace()) { param.Value = value; }
          return cmd.Parameters.Add(param);
       }
       public static SqlParameter AddParam<T>(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, T? value) where T : struct, IConvertible, IFormattable, IComparable {
@@ -416,7 +448,7 @@ namespace ZMBA {
          if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
          using (SqlDataReader reader = cmd.ExecuteReader()) {
             if (reader.Read()) {
-               return RuntimeCompiler.CompileDataModelDataReaderConstructor<T>()(reader);
+               return RuntimeCompiler.GetConstructor<Func<IDataReader, T>>()(reader);
             }
          }
          return default;
@@ -426,7 +458,7 @@ namespace ZMBA {
          if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
          using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
             if (await reader.ReadAsync().ConfigureAwait(false)) {
-               return RuntimeCompiler.CompileDataModelDataReaderConstructor<T>()(reader);
+               return RuntimeCompiler.GetConstructor<Func<IDataReader, T>>()(reader);
             }
          }
          return default;
@@ -441,10 +473,23 @@ namespace ZMBA {
          }
       }
 
-      public static async Task<List<T>> ExecuteReader_GetManyAsync<T>(this SqlCommand cmd) {
-         if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
-         Func<IDataReader, T> ctor = RuntimeCompiler.CompileDataModelDataReaderConstructor<T>();
+      public static IEnumerable<T> ExecuteReader_GetMany<T>(this SqlCommand cmd) {
+         Func<IDataReader, T> ctor = RuntimeCompiler.GetConstructor<Func<IDataReader, T>>();
 
+         if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+         
+         using (SqlDataReader reader = cmd.ExecuteReader()) {
+            while (reader.Read()) {
+               yield return ctor(reader);
+            }
+         }
+      }
+
+      public static async Task<List<T>> ExecuteReader_GetManyAsync<T>(this SqlCommand cmd) {
+         Func<IDataReader, T> ctor = RuntimeCompiler.GetConstructor<Func<IDataReader, T>>();
+
+         if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+         
          var ls = new List<T>();
          using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
             while (await reader.ReadAsync().ConfigureAwait(false)) {

@@ -28,7 +28,7 @@ namespace UniEvents.WebAPI.Controllers {
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
 
          try {
-            apiresult.Win(DBModels.DBTag.SP_Tags_Search(WebAppContext.CoreContext, id, name, description).ToArray());
+            apiresult.Win(DBModels.DBTag.SP_Tags_Search(WebAppContext.Factory, id, name, description).ToArray());
             return apiresult;
          } catch (Exception ex) { return apiresult.Failure(ex); }    
       }
@@ -40,7 +40,7 @@ namespace UniEvents.WebAPI.Controllers {
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
 
          try {
-            var tag = DBModels.DBTag.SP_Tag_Create(WebAppContext.CoreContext,  name, description);
+            var tag = DBModels.DBTag.SP_Tag_Create(WebAppContext.Factory,  name, description);
             if(tag is null) {
                return apiresult.Failure("Failed to create tag.");
             }         
@@ -60,7 +60,7 @@ namespace UniEvents.WebAPI.Controllers {
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
 
          try {
-            apiresult.Win(DBModels.DBEventType.SP_EventTypes_Search(WebAppContext.CoreContext, id, name, description).ToArray());
+            apiresult.Win(DBModels.DBEventType.SP_EventTypes_Search(WebAppContext.Factory, id, name, description).ToArray());
             return apiresult;
          } catch (Exception ex) { return apiresult.Failure(ex); }    
       }
@@ -72,7 +72,7 @@ namespace UniEvents.WebAPI.Controllers {
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
 
          try {
-            var tag = DBModels.DBEventType.SP_EventType_Create(WebAppContext.CoreContext,  name, description);
+            var tag = DBModels.DBEventType.SP_EventType_Create(WebAppContext.Factory,  name, description);
             if(tag is null) {
                return apiresult.Failure("Failed to create tag.");
             }         
@@ -84,11 +84,11 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpPost, Route("webapi/rsvps")]
-      public async  Task<ApiResult<DBModels.DBRSVPType[]>> GetRsvpTypes() {
+      public ApiResult<DBModels.DBRSVPType[]> GetRsvpTypes() {
          var apiresult = new ApiResult<DBModels.DBRSVPType[]>();
 
          try {
-            apiresult.Win(DBModels.DBRSVPType.SP_RSVPTypes_Get(WebAppContext.CoreContext).ToArray());
+            apiresult.Win(DBModels.DBRSVPType.SP_RSVPTypes_Get(WebAppContext.Factory).ToArray());
             return apiresult;
          } catch (Exception ex) { return apiresult.Failure(ex); }
    

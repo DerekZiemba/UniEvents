@@ -10,7 +10,7 @@ using ZMBA;
 
 namespace UniEvents.Models.DBModels {
 
-	public class DBLocation  {
+	public class DBLocation : DBModel {
 
 		[DBCol("LocationID", SqlDbType.BigInt, 1, false, isAutoValue: true)]
 		public Int64 LocationID { get; set; }
@@ -76,9 +76,9 @@ namespace UniEvents.Models.DBModels {
 			Description = reader.GetString(nameof(Description));
 		}
 
-      public static async Task<bool> SP_Locations_CreateOneAsync(CoreContext ctx, DBLocation model) {
+      public static async Task<bool> SP_Locations_CreateOneAsync(Factory ctx, DBLocation model) {
          if(model == null) { throw new ArgumentNullException("DBLocation_Null"); }
-         if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
+         if (String.IsNullOrWhiteSpace(model.CountryRegion)) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
          if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }
          if (Math.Abs(model.Latitude) > 90) { throw new OverflowException("Latitude_Invalid"); }
          if (Math.Abs(model.Longitude) > 180) { throw new OverflowException("Longitude_Invalid"); }
@@ -106,13 +106,13 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static SqlCommand GetSqlCommandForSP_Locations_GetOne(CoreContext ctx, long LocationID) {
+      public static SqlCommand GetSqlCommandForSP_Locations_GetOne(Factory ctx, long LocationID) {
          SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_GetOne]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
          cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(DBLocation.@LocationID), LocationID);
          return cmd;
       }
 
-      public static SqlCommand GetSqlCommandForSP_Locations_Search(CoreContext ctx,
+      public static SqlCommand GetSqlCommandForSP_Locations_Search(Factory ctx,
                                                                   long? @ParentLocationID = null,
                                                                   string @Name = null,
                                                                   string @AddressLine = null,
@@ -133,10 +133,10 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      internal static async Task<bool> SP_Location_UpdateAsync(CoreContext ctx, DBLocation model) {
+      internal static async Task<bool> SP_Location_UpdateAsync(Factory ctx, DBLocation model) {
          if (model == null) { throw new ArgumentNullException("DBLocation_Null"); }
          if (model.LocationID <= 0) { throw new ArgumentNullException("LocationID_Invalid"); }
-         if (model.CountryRegion.IsNullOrWhitespace()) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
+         if (String.IsNullOrWhiteSpace(model.CountryRegion)) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
          if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }
          if (Math.Abs(model.Latitude) > 90) { throw new OverflowException("Latitude_Invalid"); }
          if (Math.Abs(model.Longitude) > 180) { throw new OverflowException("Longitude_Invalid"); }

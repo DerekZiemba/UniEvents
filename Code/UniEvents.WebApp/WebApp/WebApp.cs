@@ -44,7 +44,7 @@ namespace UniEvents.WebApp {
       private object _userctxLock = new object();
       private UserContext _UserContext = null;
 
-      public new HttpContext HttpContext { get => base.HttpContext ?? _httpContextAccessor.HttpContext; }
+      public new HttpContext HttpContext => base.HttpContext ?? _httpContextAccessor.HttpContext;
       public UserContext UserContext {
          get {
             if(_UserContext == null && _userctxLock != null) {
@@ -68,7 +68,7 @@ namespace UniEvents.WebApp {
       private object _userctxLock = new object();
       private UserContext _UserContext = null;
 
-      public new HttpContext HttpContext { get => base.HttpContext ?? _httpContextAccessor.HttpContext; }
+      public new HttpContext HttpContext => base.HttpContext ?? _httpContextAccessor.HttpContext;
       public UserContext UserContext {
          get {
             if (_UserContext == null && _userctxLock != null) {
@@ -97,7 +97,7 @@ namespace UniEvents.WebApp {
       internal static IServiceCollection Services;
       internal static IHostingEnvironment Environment;
       internal static MetaDataManager MetaData;
-      internal static CoreContext CoreContext;
+      internal static Factory Factory;
       
       internal static void _init(IConfiguration value) { Configuration = value; }
       internal static void _init(IServiceCollection value) {
@@ -107,18 +107,18 @@ namespace UniEvents.WebApp {
       internal static void _init(IHostingEnvironment value) {
          Environment = value;
          if (Environment.IsDevelopment()) {
-            CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
+            Factory = new Core.Factory("C:\\UniEvents.config.json");
          } else if (Environment.IsStaging()) {
-            CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
+            Factory = new Core.Factory("C:\\UniEvents.config.json");
          } else if (Environment.IsProduction()) {
-            CoreContext = new Core.CoreContext("C:\\UniEvents.config.json");
+            Factory = new Core.Factory("C:\\UniEvents.config.json");
          }
       }
 
 
       public static MetaDataManager MetaDataManager(this IWebAppContext context) => MetaData;
-      public static AccountManager AccountManager(this IWebAppContext context) => CoreContext.AccountManager;
-      public static LocationManager LocationManager(this IWebAppContext context) => CoreContext.LocationManager;
+      public static AccountManager AccountManager(this IWebAppContext context) => Factory.AccountManager;
+      public static LocationManager LocationManager(this IWebAppContext context) => Factory.LocationManager;
 
    }
 

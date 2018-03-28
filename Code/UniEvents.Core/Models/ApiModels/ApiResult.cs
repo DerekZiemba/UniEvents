@@ -20,8 +20,8 @@ namespace UniEvents.Models.ApiModels {
       public string Message { get => _message; set => _message = value ?? ""; }
 
       public ApiResult AppendMessage(string message) {
-         if (!message.IsNullOrWhitespace()) {
-            Message = Message.IsNullOrWhitespace() ? message : Message + " \r\n | " + message;
+         if (message.IsNotWhitespace()) {
+            Message = String.IsNullOrWhiteSpace(Message) ? message : Message + " \r\n | " + message;
          }
          return this;
       }

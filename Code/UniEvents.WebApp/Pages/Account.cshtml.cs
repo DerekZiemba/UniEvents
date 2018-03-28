@@ -16,7 +16,7 @@ namespace UniEvents.WebApp.Pages {
       
       public void OnGet() {
          if(UserContext != null && UserContext.IsVerifiedLogin) {
-            foreach(var dbLogin in Models.DBModels.DBLogin.SP_Account_Login_GetAll(WebAppContext.CoreContext, UserContext.UserName)) {
+            foreach(var dbLogin in Models.DBModels.DBLogin.SP_Account_Login_GetAll(WebAppContext.Factory, UserContext.UserName)) {
                var apiLogin = new Models.ApiModels.AccountLogin(dbLogin);
                if(apiLogin.APIKey == UserContext.APIKey) {
                   CurrentLogin = apiLogin;
