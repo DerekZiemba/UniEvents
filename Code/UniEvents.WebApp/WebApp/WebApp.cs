@@ -37,6 +37,7 @@ namespace UniEvents.WebApp {
       ViewDataDictionary ViewData { get; }
 
       UserContext UserContext { get; }
+      Factory Factory { get; }
    }
 
    public class WebAppPageModel : PageModel, IWebAppContext {
@@ -57,6 +58,8 @@ namespace UniEvents.WebApp {
             return _UserContext;
          }
       }
+
+      public Factory Factory => WebAppContext.Factory;
 
       public WebAppPageModel(IHttpContextAccessor accessor) {
          _httpContextAccessor = accessor;
@@ -82,6 +85,7 @@ namespace UniEvents.WebApp {
          }
       }
 
+      public Factory Factory => WebAppContext.Factory;
 
       public WebAppController(IHttpContextAccessor accessor) {
          _httpContextAccessor = accessor;

@@ -29,6 +29,14 @@ namespace UniEvents.Models.DBModels {
       }
 
 
+      public static SqlCommand GetSqlCommandForSP_Tags_Search(Factory ctx, long? TagID = null, string Name = null, string Description = null) {
+         SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
+         return cmd;
+      }
+
       public static DBTag SP_Tags_GetOne(Factory ctx, long? TagID = null, string Name = null) {
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_GetOne]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
@@ -38,15 +46,6 @@ namespace UniEvents.Models.DBModels {
          }
       }
 
-      public static IEnumerable<DBTag> SP_Tags_Search(Factory ctx, long? TagID = null, string Name = null, string Description = null) {
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
-
-            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBTag(item); }
-         }
-      }
 
       public static IEnumerable<DBTag> SP_Tags_Query(Factory ctx, string Query) {
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {

@@ -29,6 +29,15 @@ namespace UniEvents.Models.DBModels {
          Description = reader.GetString(nameof(Description));
       }
 
+
+      public static SqlCommand GetSqlCommandForSP_Tags_Search(Factory ctx, long? EventTypeID = null, string Name = null, string Description = null) {
+         SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
+         return cmd;
+      }
+
       public static IEnumerable<DBEventType> SP_EventTypes_Search(Factory ctx, long? EventTypeID = null, string Name = null, string Description = null) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_Search]", conn) { CommandType = CommandType.StoredProcedure }) {

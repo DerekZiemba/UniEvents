@@ -18,20 +18,35 @@ namespace UniEvents.WebAPI.Controllers {
    public class CommonController : WebAppController {
 
       [HttpGet, Route("webapi/tags/search/{id?}/{name?}/{description?}")]
-      public ApiResult<DBModels.DBTag[]> TagSearch(long? id = null,
-                                                   string name = null,
-                                                   string description = null) {
+      public ApiResult<IEnumerable<DBModels.DBTag>> TagSearch(long? id = null,
+                                                               string name = null,
+                                                               string description = null) {
 
 
-         var apiresult = new ApiResult<DBModels.DBTag[]>();
+         var apiresult = new ApiResult<IEnumerable<DBModels.DBTag>>();
          if (UserContext == null ) { return apiresult.Failure("Must be logged in.");  }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
 
          try {
-            apiresult.Win(DBModels.DBTag.SP_Tags_Search(WebAppContext.Factory, id, name, description).ToArray());
-            return apiresult;
+            if (id.HasValue) {
+               return apiresult.Success(new [] { Factory.TagManager[id.Value] });
+            } else {
+               return apiresult.Success(Factory.TagManager.Search(name, description));
+            }
          } catch (Exception ex) { return apiresult.Failure(ex); }    
       }
+
+      [HttpGet, Route("webapi/tags/query/{query?}")]
+      public ApiResult<IEnumerable<DBModels.DBTag>> TagQuery(string query) {
+         var apiresult = new ApiResult<IEnumerable<DBModels.DBTag>>();
+         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
+
+         try {
+            return apiresult.Success(Factory.TagManager.Query(query));
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+      }
+
 
       [HttpPost, Route("webapi/tags/create")]
       public ApiResult<DBModels.DBTag> TagCreate(string name, string description) {
@@ -44,7 +59,7 @@ namespace UniEvents.WebAPI.Controllers {
             if(tag is null) {
                return apiresult.Failure("Failed to create tag.");
             }         
-            return apiresult.Win(tag);
+            return apiresult.Success(tag);
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
       }
@@ -60,7 +75,7 @@ namespace UniEvents.WebAPI.Controllers {
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
 
          try {
-            apiresult.Win(DBModels.DBEventType.SP_EventTypes_Search(WebAppContext.Factory, id, name, description).ToArray());
+            apiresult.Success(DBModels.DBEventType.SP_EventTypes_Search(WebAppContext.Factory, id, name, description).ToArray());
             return apiresult;
          } catch (Exception ex) { return apiresult.Failure(ex); }    
       }
@@ -76,7 +91,7 @@ namespace UniEvents.WebAPI.Controllers {
             if(tag is null) {
                return apiresult.Failure("Failed to create tag.");
             }         
-            return apiresult.Win(tag);
+            return apiresult.Success(tag);
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
       }
@@ -88,7 +103,7 @@ namespace UniEvents.WebAPI.Controllers {
          var apiresult = new ApiResult<DBModels.DBRSVPType[]>();
 
          try {
-            apiresult.Win(DBModels.DBRSVPType.SP_RSVPTypes_Get(WebAppContext.Factory).ToArray());
+            apiresult.Success(DBModels.DBRSVPType.SP_RSVPTypes_Get(WebAppContext.Factory).ToArray());
             return apiresult;
          } catch (Exception ex) { return apiresult.Failure(ex); }
    

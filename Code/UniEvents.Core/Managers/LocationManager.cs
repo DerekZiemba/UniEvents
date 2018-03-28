@@ -28,13 +28,13 @@ namespace UniEvents.Managers {
          var result = new ApiResult<StreetAddress>();
          try {
             DBModels.DBLocation dbLocation = new DBModels.DBLocation(address);
-            result.Success = await DBModels.DBLocation.SP_Locations_CreateOneAsync(Ctx, dbLocation).ConfigureAwait(false);
+            result.bSuccess = await DBModels.DBLocation.SP_Locations_CreateOneAsync(Ctx, dbLocation).ConfigureAwait(false);
             result.Result = new StreetAddress(dbLocation);
-            if (!result.Success) {
-               result.Message = "Failed for Unknown Reason";
+            if (!result.bSuccess) {
+               result.sMessage = "Failed for Unknown Reason";
             }
          } catch (Exception ex) {
-            result.Message = ex.Message;
+            result.sMessage = ex.Message;
          }
          return result;
       }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,108 +16,150 @@ using ZMBA;
 
 namespace UniEvents.Managers {
 
-	public class TagManager {
-      private const int ExpireSeconds = 10*60;
-
+   public class TagManager {
       private readonly Factory Ctx;
 
-      private readonly ConcurrentBag<DBTag> _allTags = new ConcurrentBag<DBTag>();
+      private Task _initTask;
+      private CachedDBTag[] _allTags;
 
-      private readonly ConcurrentDictionary<long, DBTag> _byId = new ConcurrentDictionary<long, DBTag>();
-      private readonly ConcurrentDictionary<string, DBTag> _byName = new ConcurrentDictionary<string, DBTag>();
-
-      private readonly ConcurrentDictionary<long, DateTime> _idMisses = new ConcurrentDictionary<long, DateTime>();       
-      private readonly ConcurrentDictionary<string, DateTime> _nameMisses = new ConcurrentDictionary<string, DateTime>();
-
-      private readonly ConcurrentDictionary<string, DBTag[]> _searches = new ConcurrentDictionary<string, DBTag[]>();
-      private readonly ConcurrentDictionary<string, DateTime> _searchMisses = new ConcurrentDictionary<string, DateTime>();
+      private readonly ConcurrentDictionary<long, CachedDBTag> _byId = new ConcurrentDictionary<long, CachedDBTag>();
+      private readonly ConcurrentDictionary<string, CachedDBTag> _byName = new ConcurrentDictionary<string, CachedDBTag>();
 
       internal TagManager(Factory ctx) {
          this.Ctx = ctx;
-		}
+         _initTask = Task.Run(Init);
+      }
 
-      private void Add(DBTag tag) {
-         _byId[tag.TagID] = tag;
-         _byName[tag.Name.ToAlphaNumericLower()] = tag;
-         _allTags.Add(tag);
+      private async Task Init() {
+         using (var cmd = DBTag.GetSqlCommandForSP_Tags_Search(this.Ctx)) {
+            if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+            using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
+               while (await reader.ReadAsync().ConfigureAwait(false)) {
+                  var tag = new CachedDBTag(new DBTag(reader));
+                  _byId[tag.Tag.TagID] = tag;
+                  _byName[tag.NormName] = tag;
+               }
+            }
+            _allTags = _byId.Values.ToArray();
+         }
+      }
+      private void BlockUntilInit() {
+         if (_initTask == null) { return; }
+         if (!_initTask.IsCompleted) {
+            if (_initTask.IsFaulted) { throw _initTask.Exception; }
+            _initTask.ConfigureAwait(false).GetAwaiter().GetResult();
+         }
+         _initTask.Dispose();
+         _initTask = null;
       }
 
       public DBTag this[long id] {
          get {
             if (id <= 0) { return null; }
-            DBTag value = null;
-            if (_byId.TryGetValue(id, out value)) {
-               return value;
-            }
-            //Limit the amount of times we check the database for a record if this id has already failed to produce a record recently
-            if(_idMisses.TryGetValue(id, out DateTime time) && time < DateTime.Now.AddSeconds(-ExpireSeconds) ) {
-               return null;
-            }
-
-            try {
-               value = DBTag.SP_Tags_GetOne(Ctx, TagID: id);
-            } catch { if (Ctx.Config.IsDebugMode) { throw; } }
-
-            if (value == null) {
-               _idMisses[id] = DateTime.Now;
-            } else {
-               Add(value);
-            }
-            return value;
+            BlockUntilInit();
+            return _byId.TryGetValue(id, out var cached) ? cached.Tag : null;
          }
       }
 
       public DBTag this[string name] {
          get {
             if (String.IsNullOrWhiteSpace(name)) { return null; }
-            string normalized = name.ToAlphaNumericLower();
-            DBTag value = null;
-            if (_byName.TryGetValue(normalized, out value)) {
-               return value;
-            }
-            //Limit the amount of times we check the database for a record if this id has already failed to produce a record recently
-            if (_nameMisses.TryGetValue(normalized, out DateTime time) && time < DateTime.Now.AddSeconds(-ExpireSeconds)) {
-               return null;
-            }
-
-            try {
-               value = DBTag.SP_Tags_GetOne(Ctx, Name: name);
-            } catch { if (Ctx.Config.IsDebugMode) { throw; } }
-
-            if (value == null) {
-               _nameMisses[normalized] = DateTime.Now;
-            } else {
-               Add(value);
-            }
-            return value;
+            name = name.ToAlphaNumericLower();
+            BlockUntilInit();
+            return _byName.TryGetValue(name, out var cached) ? cached.Tag : null;
          }
       }
 
+      public IEnumerable<DBTag> Search(string name, string description) {
+         string normName = name.ToAlphaNumericLower();
+         string normDesc = description.ToAlphaNumericLower();
+         bool bHasName = normName != null && normName.Length > 0;
+         bool bHasDesc = normName != null && normName.Length > 1;
+         BlockUntilInit();
 
-      //public DBTag[] Search(string str) {
-      //   if(String.IsNullOrWhiteSpace(str)) { return null; }
-      //   string normalized = str.ToAlphaNumericLower();
-      //   if(_searches.TryGetValue(normalized, out var arr)) {
-      //      return arr;
-      //   }
-      //   if (_searchMisses.TryGetValue(normalized, out DateTime time) && time < DateTime.Now.AddSeconds(-ExpireSeconds)) {
-      //      return null;
-      //   }
+         if (!bHasName && !bHasDesc) {
+            for (var i = 0; i < _allTags.Length; i++) { yield return _allTags[i].Tag; }
+         } else {          
+            if (bHasName && _byName.TryGetValue(normName, out var outval)) {
+               yield return outval.Tag;
+            } else {
+               List<DBTag> Ctier = ListCache<DBTag>.Take();
+               if (bHasName && bHasDesc) {
+                  List<DBTag> Btier = ListCache<DBTag>.Take();
+                  for (var i = 0; i < _allTags.Length; i++) {
+                     var tag = _allTags[i];
+                     int idxName = tag.NormName.IndexOf(normName, StringComparison.Ordinal);
+                     int idxDesc = tag.NormDesc.IndexOf(normDesc, StringComparison.Ordinal);
+                     if (idxName == 0 && idxDesc >= 0) {
+                        yield return tag.Tag;
+                     } else if (idxName >= 0 && idxDesc >= 0) {
+                        Btier.Add(tag.Tag);
+                     } else if (idxName >= 0 || idxDesc >= 0) {
+                        Ctier.Add(tag.Tag);
+                     }
+                  }
+                  for (var i = 0; i < Btier.Count; i++) { yield return Btier[i]; }
+                  ListCache<DBTag>.Return(Btier);
+               } else {
+                  string value = bHasName ? normName : normDesc;
+                  for (var i = 0; i < _allTags.Length; i++) {
+                     var tag = _allTags[i];
+                     int idx = (bHasName ? tag.NormName : tag.NormDesc).IndexOf(value, StringComparison.Ordinal);
+                     if (idx == 0) {        //Matches at the start
+                        yield return tag.Tag;
+                     } else if (idx > 0) {  //Matches some where in the middle
+                        Ctier.Add(tag.Tag);
+                     }
+                  }
+               }
+               for (var i = 0; i < Ctier.Count; i++) { yield return Ctier[i]; }
+               ListCache<DBTag>.Return(Ctier);
+            }
+         }
+      }
 
-      //   IEnumerable<DBTag> tags = null;
-      //   try {
-      //      tags = DBTag.SP_Tags_Query(Ctx, str);
-      //   } catch (Exception ex) { if (Ctx.Config.IsDebugMode) { throw; } }
+      public IEnumerable<DBTag> Query(string query) {
+         string norm = query.ToAlphaNumericLower();
+         BlockUntilInit();
 
-      //   if(tags != null) {
-      //      List<DBTag> candidates = ListCache<DBTag>.Take(64);
-      //      foreach(var tag in tags) {
-      //         yield return tag;
-      //      }
-      //   }
+         if (String.IsNullOrEmpty(norm)) {
+            for (var i = 0; i < _allTags.Length; i++) { yield return _allTags[i].Tag; }
+         } else {         
+            if (_byName.TryGetValue(norm, out var outval)) {
+               yield return outval.Tag;
+            } else {
+               List<DBTag> Ctier = ListCache<DBTag>.Take();
+               List<DBTag> Btier = ListCache<DBTag>.Take();
+               for (var i = 0; i < _allTags.Length; i++) {
+                  var tag = _allTags[i];
+                  int idxName = tag.NormName.IndexOf(norm, StringComparison.Ordinal);
+                  int idxDesc = tag.NormDesc.IndexOf(norm, StringComparison.Ordinal);
+                  if (idxName == 0 && idxDesc >= 0) {
+                     yield return tag.Tag;
+                  } else if (idxName >= 0 && idxDesc >= 0) {
+                     Btier.Add(tag.Tag);
+                  } else if (idxName >= 0 || idxDesc >= 0) {
+                     Ctier.Add(tag.Tag);
+                  }
+               }
+               for (var i = 0; i < Btier.Count; i++) { yield return Btier[i]; }
+               ListCache<DBTag>.Return(Btier);
+               for (var i = 0; i < Ctier.Count; i++) { yield return Ctier[i]; }
+               ListCache<DBTag>.Return(Ctier);
+            }
+         }
+      }
 
-      //   return null;
-      //}
+      private class CachedDBTag {
+         public DBTag Tag;
+         public string NormName;
+         public string NormDesc;
+         public CachedDBTag(DBTag tag) {
+            Tag = tag;
+            NormName = tag.Name.ToAlphaNumericLower();
+            NormDesc = tag.Description.ToAlphaNumericLower();
+         }
+      }
 
    }
 }

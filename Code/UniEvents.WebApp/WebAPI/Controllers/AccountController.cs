@@ -41,7 +41,7 @@ namespace UniEvents.WebAPI.Controllers {
          
          if (dbLogin == null) {  apiresult.Failure("Login Failed");  }
 
-         apiresult.Win(new UserLoginCookie() { UserName = username, APIKey = dbLogin.APIKey, VerifyDate = dbLogin.LoginDate });
+         apiresult.Success(new UserLoginCookie() { UserName = username, APIKey = dbLogin.APIKey, VerifyDate = dbLogin.LoginDate });
 
          var ctx = await UserContext.InitContextFromCookie(this.HttpContext, apiresult.Result).ConfigureAwait(false);
          if (ctx == null) {
@@ -65,7 +65,7 @@ namespace UniEvents.WebAPI.Controllers {
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
          if (dbLogin != null && HashUtils.VerifyHashMatch256(apikey, dbLogin.UserName, dbLogin.APIKeyHash)) {
-            apiresult.Win("Is Valid ApiKey");
+            apiresult.Success("Is Valid ApiKey");
          } else {
             apiresult.Failure("ApiKey is Invalid");
          }
@@ -108,7 +108,7 @@ namespace UniEvents.WebAPI.Controllers {
 
 
             if (bLoggedOut) {
-               apiresult.Win($"Logged out {UserContext.UserName}'s APIKey {UserContext.APIKey}");
+               apiresult.Success($"Logged out {UserContext.UserName}'s APIKey {UserContext.APIKey}");
                UserContext.RemoveCurrentUserContext(this.HttpContext);
             } else {
                apiresult.Failure($"Failed to log out {UserContext.UserName}'s APIKey {UserContext.APIKey}");
@@ -125,7 +125,7 @@ namespace UniEvents.WebAPI.Controllers {
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
-               apiresult.Win($"Logged out {UserContext.UserName}'s everywhere.");
+               apiresult.Success($"Logged out {UserContext.UserName}'s everywhere.");
                UserContext.RemoveCurrentUserContext(this.HttpContext);
             } else {
                apiresult.Failure($"Failed to log out {UserContext.UserName}'s anywhere.");
@@ -140,7 +140,7 @@ namespace UniEvents.WebAPI.Controllers {
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
-               apiresult.Win($"Logged out: {_username}'s APIKey {_apikey}");
+               apiresult.Success($"Logged out: {_username}'s APIKey {_apikey}");
             } else {
                apiresult.Failure($"Failed to log out: {_username}'s APIKey {_apikey}");
             }
@@ -166,7 +166,7 @@ namespace UniEvents.WebAPI.Controllers {
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (bLoggedOut) {
-               apiresult.Win($"Logged out {_username} everywhere.");
+               apiresult.Success($"Logged out {_username} everywhere.");
                if(UserContext != null && UserContext.UserName == _username) {
                   UserContext.RemoveCurrentUserContext(this.HttpContext);
                }
@@ -229,7 +229,7 @@ namespace UniEvents.WebAPI.Controllers {
                return apiresult.Failure("Failed to create account.");
             }
 
-            return apiresult.Win("Account Created!", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+            return apiresult.Success("Account Created!", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
 
          } catch (Exception ex) {
             return apiresult.Failure(ex);
@@ -256,7 +256,7 @@ namespace UniEvents.WebAPI.Controllers {
                   apiresult.Result.Location = new StreetAddress(dbLocation);
                }
             }
-            return apiresult.Win(apiresult.Result);
+            return apiresult.Success(apiresult.Result);
 
          } catch (Exception ex) {
             return apiresult.Failure(ex);

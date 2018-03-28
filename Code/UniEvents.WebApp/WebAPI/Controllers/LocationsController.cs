@@ -38,7 +38,7 @@ namespace UniEvents.WebAPI.Controllers {
                   apiresult.Result.Add(new StreetAddress(new DBLocation(item)));
                }
             }
-            return apiresult.Win(apiresult.Result);
+            return apiresult.Success(apiresult.Result);
 
          } catch (Exception ex) {
             return apiresult.Failure(ex);

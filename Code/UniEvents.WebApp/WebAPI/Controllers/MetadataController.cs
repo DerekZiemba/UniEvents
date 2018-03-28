@@ -30,7 +30,7 @@ namespace UniEvents.WebAPI.Controllers {
 
          result.Result = this.MetaDataManager().MethodsByRoute.GetItemOrDefault(route) ?? this.MetaDataManager().MethodsByPath.GetItemOrDefault(route);
  
-         if(result.Result != null) { result.Success = true; }
+         if(result.Result != null) { result.bSuccess = true; }
          return result;
       }
 
