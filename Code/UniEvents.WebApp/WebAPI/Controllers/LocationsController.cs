@@ -46,12 +46,24 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
+
       [HttpPost, Route("webapi/locations/create")]
       public async Task<ApiResult<StreetAddress>> Create(StreetAddress address) {
          var apiresult = new ApiResult<StreetAddress>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
-         return await this.LocationManager().CreateLocation(address);         
+         return await Factory.LocationManager.CreateLocation(address);         
+      }
+
+
+      [HttpGet, Route("webapi/locations/cityquery/{query?}")]
+      public ApiResult<IEnumerable<Core.Managers.CityStateManager.CityEntry>> CityQuery(string query) {
+         var apiresult = new ApiResult<IEnumerable<Core.Managers.CityStateManager.CityEntry>>();
+         try {
+            return apiresult.Success(Factory.CityStateManager.QueryCity(query));
+         } catch (Exception ex) {
+            return apiresult.Failure(ex);
+         }
       }
 
 

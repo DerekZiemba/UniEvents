@@ -13,7 +13,7 @@ using ApiModels = UniEvents.Models.ApiModels;
 using DBModels = UniEvents.Models.DBModels;
 
 
-namespace UniEvents.Managers {
+namespace UniEvents.Core.Managers {
 
    public class RSVPTypeManager {
       private readonly Factory Ctx;

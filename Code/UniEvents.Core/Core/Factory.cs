@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
-using UniEvents.Managers;
+using UniEvents.Core.Managers;
 
 using static ZMBA.Common;
 
@@ -19,6 +19,7 @@ namespace UniEvents.Core {
       private readonly Lazy<TagManager> _TagManager;
       private readonly Lazy<EventTypeManager> _EventTypeManager;
       private readonly Lazy<RSVPTypeManager> _RSVPTypeManager;
+      private readonly Lazy<CityStateManager> _CityStateManager;
 
       public Configuration Config => _Config.Value;
       public AccountManager AccountManager => _AccountManager.Value;
@@ -26,6 +27,7 @@ namespace UniEvents.Core {
       public TagManager TagManager => _TagManager.Value;
       public EventTypeManager EventTypeManager => _EventTypeManager.Value;
       public RSVPTypeManager RSVPTypeManager => _RSVPTypeManager.Value;
+      public CityStateManager CityStateManager => _CityStateManager.Value;
 
       public Factory(string configFilePath) {
          this._configFilePath = configFilePath;
@@ -46,7 +48,7 @@ namespace UniEvents.Core {
          this._LocationManager = new Lazy<LocationManager>(() => new LocationManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
          this._TagManager = new Lazy<TagManager>(() => new TagManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
          this._EventTypeManager = new Lazy<EventTypeManager>(() => new EventTypeManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
-         this._RSVPTypeManager = new Lazy<RSVPTypeManager>(() => new RSVPTypeManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
+         this._CityStateManager = new Lazy<CityStateManager>(() => new CityStateManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
       }
 
 

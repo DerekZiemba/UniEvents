@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UniEvents.Core;
-using UniEvents.Managers;
 using UniEvents.WebApp;
 
 
@@ -121,8 +120,6 @@ namespace UniEvents.WebApp {
 
 
       public static MetaDataManager MetaDataManager(this IWebAppContext context) => MetaData;
-      public static AccountManager AccountManager(this IWebAppContext context) => Factory.AccountManager;
-      public static LocationManager LocationManager(this IWebAppContext context) => Factory.LocationManager;
 
    }
 

@@ -14,9 +14,9 @@ using UniEvents.Models.DBModels;
 using ZMBA;
 
 
-namespace UniEvents.Managers {
+namespace UniEvents.Core.Managers {
 
-	public class EventTypeManager {
+   public class EventTypeManager {
       private const int MissExpireSecs = 5 * 60;
       private readonly Factory Ctx;
 
@@ -130,7 +130,7 @@ namespace UniEvents.Managers {
                   for (var i = 0; i < _allEntries.Count; i++) {
                      var tag = _allEntries[i];
                      int idxName = tag.NormName.IndexOf(normName, StringComparison.Ordinal);
-                     int idxDesc = tag.NormDesc.IndexOf(normDesc, StringComparison.Ordinal);
+                     int idxDesc = tag.NormDesc?.IndexOf(normDesc, StringComparison.Ordinal)??-1;
                      if (idxName == 0 && idxDesc >= 0) {
                         yield return tag.Item;
                      } else if (idxName >= 0 && idxDesc >= 0) {
@@ -174,7 +174,7 @@ namespace UniEvents.Managers {
                for (var i = 0; i < _allEntries.Count; i++) {
                   var tag = _allEntries[i];
                   int idxName = tag.NormName.IndexOf(norm, StringComparison.Ordinal);
-                  int idxDesc = tag.NormDesc.IndexOf(norm, StringComparison.Ordinal);
+                  int idxDesc = tag.NormDesc?.IndexOf(norm, StringComparison.Ordinal) ?? -1;
                   if (idxName == 0 && idxDesc >= 0) {
                      yield return tag.Item;
                   } else if (idxName >= 0 && idxDesc >= 0) {

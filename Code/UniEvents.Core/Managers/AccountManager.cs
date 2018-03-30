@@ -13,9 +13,9 @@ using ApiModels = UniEvents.Models.ApiModels;
 using DBModels = UniEvents.Models.DBModels;
 
 
-namespace UniEvents.Managers {
+namespace UniEvents.Core.Managers {
 
-	public class AccountManager {
+   public class AccountManager {
       private readonly Factory Ctx;
 
 		internal AccountManager(Factory ctx) {

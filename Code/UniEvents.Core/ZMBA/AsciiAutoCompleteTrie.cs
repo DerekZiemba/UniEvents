@@ -6,71 +6,80 @@ using System.Threading.Tasks;
 
 namespace ZMBA {
 
-   public class AsciiAutoCompleteTrie {
+   public class AsciiAutoCompleteTrie<T> {
       private object _mutLock = new object();
       private Node[] Roots;
 
 
-      public AsciiAutoCompleteTrie(IEnumerable<string> sourcestrings) {
-         Roots = new Node[36];
-         for (byte i = 0; i < 36; i++) { Roots[i] = new Node() { Key = i }; }
+      //public AsciiAutoCompleteTrie(IEnumerable<string> sourcestrings) {
+      //   Roots = new Node[36];
+      //   for (byte i = 0; i < 36; i++) { Roots[i] = new Node() { KeyCode = i }; }
+      //   if(sourcestrings != null) {
+      //      IEnumerable<string> srcs = sourcestrings.Select(x=>x?.Trim()).Where(Common.IsNotWhitespace).OrderBy(x=>x).Distinct();
+      //      foreach (string str in srcs) {
+      //         AddEntryInternal(str);
+      //      }
+      //   }
+      //}
 
-         IEnumerable<string> srcs = sourcestrings.Select(x=>x?.Trim()).Where(Common.IsNotWhitespace).OrderBy(x=>x).Distinct();
-         foreach (string str in srcs) {
-            AddEntryInternal(str);
-         }
+      public AsciiAutoCompleteTrie() {
+         Roots = new Node[36];
+         for (byte i = 0; i < 36; i++) { Roots[i] = new Node() { KeyCode = i }; }
       }
 
 
-      private void AddEntryInternal(string entry) {
-         byte key = MapChar(entry[0]);
-         Node current = Roots[key];
+      internal void AddEntryInternal(string key, T value) {
+         byte code = MapChar(key[0]);
+         Node current = Roots[code];
 
-         for (int idx = 1; idx < entry.Length; idx++) {
-            key = MapChar(entry[idx]);
-            if (key != 255) {
+         for (int idx = 1; idx < key.Length; idx++) {
+            code = MapChar(key[idx]);
+            if (code != 255) {
                if (current.Children == null) {
-                  current.Children = new List<Node>() { new Node() { Key = key } };
+                  current.Children = new List<Node>() { new Node() { KeyCode = code } };
                }
                for (var i = 0; i < current.Children.Count; i++) {
-                  if (current.Children[i].Key == key) {
+                  if (current.Children[i].KeyCode == code) {
                      current = current.Children[i];
                      goto LoopNextChar;
                   }
                }
-               Node nextNode = new Node(){Key=key};
+               Node nextNode = new Node(){KeyCode=code};
                current.Children.Add(nextNode);
                current = nextNode;
             }
 LoopNextChar:;
          }
-         current.FullString = entry;
-      }
-
-
-      public void AddEntry(string entry) {
-         lock (_mutLock) {
-            AddEntryInternal(entry);
+         if(current.Items == null) { current.Items = new List<T>(); }
+         if (!current.Items.Contains(value)) {
+            current.Items.Add(value);
          }
       }
 
 
-      public IEnumerable<string> GetSuggestions(string query) {
+      public void AddEntry(string entry, T value) {
+         lock (_mutLock) {
+            AddEntryInternal(entry, value);
+         }
+      }
+
+
+      public IEnumerable<T> GetSuggestions(string query) {
          if (!String.IsNullOrEmpty(query)) {
             int idx = 0;
-            byte key = 255;
-            for (; key == 255 && idx < query.Length; idx++) { key = MapChar(query[idx]); }
+            byte code = 255;
+            for (; code == 255 && idx < query.Length; idx++) { code = MapChar(query[idx]); }
 
-            if (key != 255 && idx < query.Length) {
-               Node current = Roots[key];
+            if (code != 255 && idx < query.Length) {
+               Node current = Roots[code];
 
                for (; idx < query.Length; idx++) {
                   if (current.Children == null || current.Children.Count == 0) { break; }
 
-                  key = MapChar(query[idx]);
-                  if (key != 255) {
+                  code = MapChar(query[idx]);
+                  if (code != 255) {
                      for (var i = 0; i < current.Children.Count; i++) {
-                        if (current.Children[i].Key == key) {
+                        if (current.Children[i].KeyCode == code) {
                            current = current.Children[i];
                            goto LoopNextChar;
                         }
@@ -80,8 +89,8 @@ LoopNextChar:;
                }
 
                if(current.Children == null || current.Children.Count == 0) {
-                  if(current.FullString != null) {
-                     yield return current.FullString;
+                  if(current.Items != null) {
+                     for (idx = 0; idx < current.Items.Count; idx++) { yield return current.Items[idx]; }                
                   }                 
                } else {
                   Stack<Node> stack = StackCache<Node>.Take();
@@ -91,8 +100,8 @@ LoopNextChar:;
                      if (current.Children != null) {
                         for (idx = current.Children.Count - 1; idx >= 0; idx--) { stack.Push(current.Children[idx]); }
                      }
-                     if (current.FullString != null) {
-                        yield return current.FullString;
+                     if (current.Items != null) {
+                        for (idx = 0; idx < current.Items.Count; idx++) { yield return current.Items[idx]; }
                      }
                   }
                   StackCache<Node>.Return(ref stack);
@@ -140,9 +149,9 @@ LoopNextChar:;
 
 
       private class Node {
-         public byte Key;
+         public byte KeyCode;
          public List<Node> Children;
-         public string FullString;
+         public List<T> Items;
       }
 
    }

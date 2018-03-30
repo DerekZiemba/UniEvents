@@ -14,9 +14,9 @@ using DBModels = UniEvents.Models.DBModels;
 
 
 
-namespace UniEvents.Managers {
+namespace UniEvents.Core.Managers {
 
-	public class LocationManager {
+   public class LocationManager {
       private Factory Ctx;
 
 		internal LocationManager(Factory ctx) {

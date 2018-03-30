@@ -83,7 +83,7 @@
 		"West": [ "$W" ]
 	},
 	"AddressLine": {
-		"POBox": [ "PBox", "PostBox", "P.O. Box", "P.O.Box" ],
+		"POBox": [ "PBox", "PostBox", "P.O.Box" ],
 		"Alley": [ "Allee", "Ally", "Aly" ],
 		"Anex": [ "Annex", "Annx", "Anx" ],
 		"Arcade": [ "Arc" ],
