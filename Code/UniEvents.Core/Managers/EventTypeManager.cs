@@ -16,9 +16,8 @@ using ZMBA;
 
 namespace UniEvents.Managers {
 
-   public class TagManager {
+	public class EventTypeManager {
       private const int MissExpireSecs = 5 * 60;
-
       private readonly Factory Ctx;
 
       private Task _initTask;
@@ -30,18 +29,18 @@ namespace UniEvents.Managers {
       private readonly ConcurrentDictionary<long, DateTime> _idMisses = new ConcurrentDictionary<long, DateTime>();
       private readonly ConcurrentDictionary<string, DateTime> _nameMisses = new ConcurrentDictionary<string, DateTime>();
 
-      internal TagManager(Factory ctx) {
+      internal EventTypeManager(Factory ctx) {
          this.Ctx = ctx;
          _initTask = Task.Run(Init);
       }
 
       private async Task Init() {
-         using (var cmd = DBTag.GetSqlCommandForSP_Search(this.Ctx)) {
+         using (var cmd = DBEventType.GetSqlCommandForSP_Search(this.Ctx)) {
             if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
             using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
                while (await reader.ReadAsync().ConfigureAwait(false)) {
-                  var tag = new CachedEntry(new DBTag(reader));
-                  _byId[tag.Item.TagID] = tag;
+                  var tag = new CachedEntry(new DBEventType(reader));
+                  _byId[tag.Item.EventTypeID] = tag;
                   _byName[tag.NormName] = tag;
                }
             }
@@ -58,7 +57,7 @@ namespace UniEvents.Managers {
          _initTask = null;
       }
 
-      public DBTag this[long id] {
+      public DBEventType this[long id] {
          get {
             if (id <= 0) { return null; }
             BlockUntilInit();
@@ -67,8 +66,8 @@ namespace UniEvents.Managers {
             }
             DateTime lastMiss = _idMisses.GetItemOrDefault(id);
             if (lastMiss < DateTime.Now.AddSeconds(-MissExpireSecs)) {
-               using (var cmd = DBTag.GetSqlCommandForSP_GetOne(Ctx, id)) {
-                  CachedEntry tag = AddTag(cmd.ExecuteReader_GetOne<DBTag>());
+               using (var cmd = DBEventType.GetSqlCommandForSP_GetOne(Ctx, id)) {
+                  CachedEntry tag = AddTag(cmd.ExecuteReader_GetOne<DBEventType>());
                   if (tag != null) {
                      return tag.Item;
                   }
@@ -79,32 +78,32 @@ namespace UniEvents.Managers {
          }
       }
 
-      public DBTag this[string name] {
+      public DBEventType this[string name] {
          get {
             if (String.IsNullOrWhiteSpace(name)) { return null; }
             name = name.ToAlphaNumericLower();
             BlockUntilInit();
-            if(_byName.TryGetValue(name, out var cached)){
+            if (_byName.TryGetValue(name, out var cached)) {
                return cached.Item;
             }
             DateTime lastMiss = _nameMisses.GetItemOrDefault(name);
-            if(lastMiss < DateTime.Now.AddSeconds(-MissExpireSecs)) {
-               using (var cmd = DBTag.GetSqlCommandForSP_GetOne(Ctx, null, name)) {
-                  CachedEntry tag = AddTag(cmd.ExecuteReader_GetOne<DBTag>());
-                  if(tag != null) {
+            if (lastMiss < DateTime.Now.AddSeconds(-MissExpireSecs)) {
+               using (var cmd = DBEventType.GetSqlCommandForSP_GetOne(Ctx, null, name)) {
+                  CachedEntry tag = AddTag(cmd.ExecuteReader_GetOne<DBEventType>());
+                  if (tag != null) {
                      return tag.Item;
                   }
                }
                _nameMisses[name] = DateTime.Now;
-            }           
+            }
             return null;
          }
       }
 
-      private CachedEntry AddTag(DBTag dbtag) {
+      private CachedEntry AddTag(DBEventType dbtag) {
          if (dbtag != null) {
             var tag = new CachedEntry(dbtag);
-            _byId[tag.Item.TagID] = tag;
+            _byId[tag.Item.EventTypeID] = tag;
             _byName[tag.NormName] = tag;
             _allEntries.Add(tag);
             return tag;
@@ -112,7 +111,7 @@ namespace UniEvents.Managers {
          return null;
       }
 
-      public IEnumerable<DBTag> SearchCached(string name, string description) {
+      public IEnumerable<DBEventType> SearchCached(string name, string description) {
          string normName = name.ToAlphaNumericLower();
          string normDesc = description.ToAlphaNumericLower();
          bool bHasName = normName != null && normName.Length > 0;
@@ -121,13 +120,13 @@ namespace UniEvents.Managers {
 
          if (!bHasName && !bHasDesc) {
             for (var i = 0; i < _allEntries.Count; i++) { yield return _allEntries[i].Item; }
-         } else {          
+         } else {
             if (bHasName && _byName.TryGetValue(normName, out var outval)) {
                yield return outval.Item;
             } else {
-               List<DBTag> Ctier = ListCache<DBTag>.Take();
+               List<DBEventType> Ctier = ListCache<DBEventType>.Take();
                if (bHasName && bHasDesc) {
-                  List<DBTag> Btier = ListCache<DBTag>.Take();
+                  List<DBEventType> Btier = ListCache<DBEventType>.Take();
                   for (var i = 0; i < _allEntries.Count; i++) {
                      var tag = _allEntries[i];
                      int idxName = tag.NormName.IndexOf(normName, StringComparison.Ordinal);
@@ -141,7 +140,7 @@ namespace UniEvents.Managers {
                      }
                   }
                   for (var i = 0; i < Btier.Count; i++) { yield return Btier[i]; }
-                  ListCache<DBTag>.Return(ref Btier);
+                  ListCache<DBEventType>.Return(ref Btier);
                } else {
                   string value = bHasName ? normName : normDesc;
                   for (var i = 0; i < _allEntries.Count; i++) {
@@ -155,23 +154,23 @@ namespace UniEvents.Managers {
                   }
                }
                for (var i = 0; i < Ctier.Count; i++) { yield return Ctier[i]; }
-               ListCache<DBTag>.Return(ref Ctier);
+               ListCache<DBEventType>.Return(ref Ctier);
             }
          }
       }
 
-      public IEnumerable<DBTag> QueryCached(string query) {
+      public IEnumerable<DBEventType> QueryCached(string query) {
          string norm = query.ToAlphaNumericLower();
          BlockUntilInit();
 
          if (String.IsNullOrEmpty(norm)) {
             for (var i = 0; i < _allEntries.Count; i++) { yield return _allEntries[i].Item; }
-         } else {         
+         } else {
             if (_byName.TryGetValue(norm, out var outval)) {
                yield return outval.Item;
             } else {
-               List<DBTag> Ctier = ListCache<DBTag>.Take();
-               List<DBTag> Btier = ListCache<DBTag>.Take();
+               List<DBEventType> Ctier = ListCache<DBEventType>.Take();
+               List<DBEventType> Btier = ListCache<DBEventType>.Take();
                for (var i = 0; i < _allEntries.Count; i++) {
                   var tag = _allEntries[i];
                   int idxName = tag.NormName.IndexOf(norm, StringComparison.Ordinal);
@@ -185,26 +184,26 @@ namespace UniEvents.Managers {
                   }
                }
                for (var i = 0; i < Btier.Count; i++) { yield return Btier[i]; }
-               ListCache<DBTag>.Return(ref Btier);
+               ListCache<DBEventType>.Return(ref Btier);
                for (var i = 0; i < Ctier.Count; i++) { yield return Ctier[i]; }
-               ListCache<DBTag>.Return(ref Ctier);
+               ListCache<DBEventType>.Return(ref Ctier);
             }
          }
       }
 
 
 
-      public DBTag Create(string name, string description) {
-         return AddTag(DBTag.SP_Create(Ctx, name, description))?.Item;
+      public DBEventType Create(string name, string description) {
+         return AddTag(DBEventType.SP_EventType_Create(Ctx, name, description))?.Item;
       }
 
 
 
       private class CachedEntry {
-         public DBTag Item;
+         public DBEventType Item;
          public string NormName;
          public string NormDesc;
-         public CachedEntry(DBTag tag) {
+         public CachedEntry(DBEventType tag) {
             Item = tag;
             NormName = tag.Name.ToAlphaNumericLower();
             NormDesc = tag.Description.ToAlphaNumericLower();

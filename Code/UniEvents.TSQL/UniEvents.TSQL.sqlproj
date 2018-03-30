@@ -146,4 +146,7 @@
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Tags_Query.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_EventTypes_GetOne.sql" />
+  </ItemGroup>
 </Project>

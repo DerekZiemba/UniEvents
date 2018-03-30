@@ -17,7 +17,7 @@ namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
    [ApiExplorerSettings(IgnoreApi = false)]
-   public class AccountsController : WebAppController {
+   public class AccountsController : WebAPIController {
 
       [HttpGet, Route("webapi/account/login/{UserName?}/{Password?}")]
       public async Task<ApiResult<UserLoginCookie>> Login(string username, string password) {

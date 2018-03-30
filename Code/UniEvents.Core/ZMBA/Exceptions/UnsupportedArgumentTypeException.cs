@@ -39,7 +39,7 @@ namespace ZMBA.Exceptions {
          if (caller.IsNotWhitespace()) { sb.Append(" | Method: ").Append(caller); }
          if (line > 0) { sb.Append(" | Line: ").Append(line); }
          if (file.IsNotWhitespace()) { sb.AppendLine().Append(" | File: ").Append(file); }
-         return StringBuilderCache.Release(sb);
+         return StringBuilderCache.Release(ref sb);
       }
    }
 

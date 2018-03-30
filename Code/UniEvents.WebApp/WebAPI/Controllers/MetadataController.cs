@@ -17,7 +17,7 @@ namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
    [ApiExplorerSettings(IgnoreApi = false)]
-   public class MetadataController : WebAppController {
+   public class MetadataController : WebAPIController {
 
       [HttpGet, Route("webapi/metadata")]
       public ApiResult<SortedDictionary<string, MethodMetadata>> Get() {

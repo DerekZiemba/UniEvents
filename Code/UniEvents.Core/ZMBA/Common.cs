@@ -129,13 +129,13 @@ namespace ZMBA {
          if (str.IsNullOrEmpty()) { return str; }
          var sb = StringBuilderCache.Take(str.Length);
          for (var i = 0; i < str.Length; i++) { if (Char.IsLetter(str[i]) || char.IsNumber(str[i])) { sb.Append(str[i]); } }
-         return StringBuilderCache.Release(sb);
+         return StringBuilderCache.Release(ref sb);
       }
       public static string ToAlphaNumericLower(this string str) {
          if (str.IsNullOrEmpty()) { return str; }
          var sb = StringBuilderCache.Take(str.Length);
          for (var i = 0; i < str.Length; i++) { if (Char.IsLetter(str[i]) || char.IsNumber(str[i])) { sb.Append(char.ToLower(str[i])); } }
-         return StringBuilderCache.Release(sb);
+         return StringBuilderCache.Release(ref sb);
       }
 
       public static string ReplaceIgCase(this string sInput, string oldValue, string newValue) {
@@ -160,15 +160,50 @@ namespace ZMBA {
 							idxLeft = sInput.IndexOf(oldValue, pos, StringComparison.OrdinalIgnoreCase);
 						}
 					}
-					return StringBuilderCache.Release(sb);
+					return StringBuilderCache.Release(ref sb);
 				}
 			}
 			return sInput;
 		}
 
       public static string ToStringJoin(this IEnumerable<string> ienum, string separator = ", ") {
-         return String.Join(separator, from string x in ienum where !string.IsNullOrWhiteSpace(x) select x.Trim());
+         if(ienum == null) { return ""; }
+         if(separator == null) { separator = ""; }
+         var ls = ListCache<string>.Take();
+         var size = 0;
+         foreach(string item in ienum) {
+            if (!string.IsNullOrWhiteSpace(item)) {
+               var str = item.Trim();
+               size += str.Length + separator.Length;
+               ls.Add(str);
+            }
+         }
+         var sb = StringBuilderCache.Take(size);
+         for(var i = 0; i < ls.Count; i++) {
+            sb.Append(ls[i]);
+            if (i < ls.Count - 1) { sb.Append(separator); }
+         }
+         ListCache<string>.Return(ref ls);
+         return StringBuilderCache.Release(ref sb);
       }
+
+      public static string ToStringJoin(this string[] arr, string separator = ", ") {
+         if (arr == null || arr.Length == 0) { return ""; }
+         if (separator == null) { separator = ""; }
+         var sb = StringBuilderCache.Take(Math.Min(StringBuilderCache.MAX_ITEM_CAPACITY, arr.Length * 16));
+         bool bSep = false;
+         for (var i = 0; i < arr.Length; i++) {
+            var item = arr[i];
+            if (!string.IsNullOrWhiteSpace(item)) {
+               if (bSep) { sb.Append(separator); }
+               sb.Append(item.Trim());
+               bSep = true;
+            }
+         }
+         return StringBuilderCache.Release(ref sb);
+      }
+
+
 
       public static string SubstrBefore(this string input, string seq, SubstrOptions opts = SubstrOptions.Default) {
          if (input?.Length > 0 && seq?.Length > 0) {

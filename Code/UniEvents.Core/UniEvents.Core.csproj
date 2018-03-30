@@ -24,6 +24,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ZMBA\Geocoding.cs" />
+    <Compile Remove="ZMBA\LurchTable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />

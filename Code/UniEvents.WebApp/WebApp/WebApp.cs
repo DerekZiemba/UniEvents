@@ -66,7 +66,7 @@ namespace UniEvents.WebApp {
       }
    }
 
-   public class WebAppController : Controller, IWebAppContext {
+   public class WebAPIController : Controller, IWebAppContext {
       private readonly IHttpContextAccessor _httpContextAccessor;
       private object _userctxLock = new object();
       private UserContext _UserContext = null;
@@ -87,7 +87,7 @@ namespace UniEvents.WebApp {
 
       public Factory Factory => WebAppContext.Factory;
 
-      public WebAppController(IHttpContextAccessor accessor) {
+      public WebAPIController(IHttpContextAccessor accessor) {
          _httpContextAccessor = accessor;
       }
    }

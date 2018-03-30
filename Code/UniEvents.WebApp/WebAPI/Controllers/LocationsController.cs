@@ -16,7 +16,7 @@ namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
    [ApiExplorerSettings(IgnoreApi = false, GroupName = nameof(LocationsController))]
-   public class LocationsController : WebAppController {
+   public class LocationsController : WebAPIController {
 
       [HttpGet, Route("webapi/locations/search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
       public ApiResult<List<StreetAddress>> Search(long? ParentLocationID = null,
