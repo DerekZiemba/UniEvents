@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -8,14 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 using UniEvents.WebApp;
 using UniEvents.Core;
 using UniEvents.Models.ApiModels;
-using DBModels = UniEvents.Models.DBModels;
-
+using UniEvents.Models.DBModels;
+using ZMBA;
 
 namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
    [ApiExplorerSettings(IgnoreApi = false, GroupName = nameof(LocationsController))]
-   public class LocationsController : WebAppController {
+   public class LocationsController : WebAPIController {
 
       [HttpGet, Route("webapi/locations/search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
       public ApiResult<List<StreetAddress>> Search(long? ParentLocationID = null,
@@ -32,11 +33,12 @@ namespace UniEvents.WebAPI.Controllers {
 
          apiresult.Result = new List<StreetAddress>();
          try {
-            var models = DBModels.DBLocation.SP_Locations_Search(WebAppContext.CoreContext, ParentLocationID, Name, AddressLine, Locality, AdminDistrict, PostalCode, Description);
-            foreach (DBModels.DBLocation loc in models) { 
-               apiresult.Result.Add(new StreetAddress(loc));
+            using(SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(WebAppContext.Factory, ParentLocationID, Name, AddressLine, Locality, AdminDistrict, PostalCode, Description)) {
+               foreach (var item in cmd.ExecuteReader_GetManyRecords()) {
+                  apiresult.Result.Add(new StreetAddress(new DBLocation(item)));
+               }
             }
-            return apiresult.Win(apiresult.Result);
+            return apiresult.Success(apiresult.Result);
 
          } catch (Exception ex) {
             return apiresult.Failure(ex);
@@ -44,12 +46,25 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
+
       [HttpPost, Route("webapi/locations/create")]
-      public async  Task<ApiResult<StreetAddress>> Create(StreetAddress address) {
+      public async Task<ApiResult<StreetAddress>> Create(StreetAddress address) {
          var apiresult = new ApiResult<StreetAddress>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
-         return await this.LocationManager().CreateLocation(address);         
+         return await Factory.LocationManager.CreateLocation(address);         
+      }
+
+
+      [HttpGet, Route("webapi/locations/autocomplete/{query?}")]
+      public ApiResult<IEnumerable<Models.LocationNode>> AutoComplete(string query) {
+         var apiresult = new ApiResult<IEnumerable<Models.LocationNode>>();
+         try {
+            apiresult.Success(Factory.CityStateManager.QueryLocations(query));
+            return apiresult;
+         } catch (Exception ex) {
+            return apiresult.Failure(ex);
+         }
       }
 
 

@@ -8,7 +8,7 @@ using ZMBA;
 
 namespace UniEvents.Models.DBModels {
 
-   public class DBEventDetails {
+   public class DBEventDetails : DBModel {
 
 
       [DBCol("EventID", SqlDbType.BigInt, 1, false)]

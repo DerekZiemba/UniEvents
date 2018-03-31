@@ -8,7 +8,7 @@ GO
 -- =============================================
 USE [dbUniHangouts]
 GO
-CREATE OR ALTER PROCEDURE dbo.sp_Location_Get
+CREATE OR ALTER PROCEDURE dbo.sp_Locations_GetOne
 	@LocationID bigint
 AS
 SET NOCOUNT ON;

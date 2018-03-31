@@ -3,6 +3,7 @@
 /*! ZMBA.js */
 (function (window, document, $, extensionsAndPolyfills, factory) {
    const ZMBA = {    
+      domainName: window.location.hostname.match(/(?:(\w{3,})(?=(?:\.[a-z]{2,4}){1,2}$))|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|(localhost)/igm)[0],
       extendType: (function () {        
          function defMult(proto, name, prop, options, obj) { for (var i = 0, len = proto.length; i < len; i++) { defOne(proto[i], name, prop, options, obj); } };
          function defOne(proto, name, prop, options, obj) {
@@ -303,8 +304,8 @@ function ExtensionsAndPolyfills(window, document, ZMBA){
       includes: function (searchElement, fromIndex) { return Array.Includes(this, searchElement, fromIndex); },
       map: function (cb, thisArg) { return Array.Map(this, !thisArg ? cb : (el, i, arr) => cb.call(thisArg, el, i, arr)); },
       Last: function (value) { if (arguments.length > 0) { this[Math.max(0, this.length - 1)] = arguments[0]; } return this.length > 0 ? this[this.length - 1] : undefined; },
-      First: function (value) { if (arguments.length > 0) { this[0] = arguments[0]; } return this.length > 0 ? this[0] : undefined;  }
-   }); //Override because my implementation is faster than native. 
+      First: function (value) { if (arguments.length > 0) { this[0] = arguments[0]; } return this.length > 0 ? this[0] : undefined; }
+   }, { override: false });
 
 
    ZMBA.extendType([NodeList.prototype, HTMLCollection.prototype], {

@@ -17,11 +17,5 @@ namespace UniEvents.Models.ApiModels {
 
       public RSVPType() { }
 
-      public RSVPType(DBRSVPType model) {
-         RSVPTypeID = model.RSVPTypeID;
-         Name = model.Name;
-         Description = model.Description;
-      }
-
    }
 }

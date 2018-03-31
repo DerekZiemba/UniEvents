@@ -7,7 +7,7 @@ using ZMBA;
 
 namespace UniEvents.Models.DBModels {
 
-   public class DBAccountGroupMap {
+   public class DBAccountGroupMap : DBModel {
 
       [DBCol("AccountID", SqlDbType.BigInt, 1, false)]
       public Int64 AccountID { get; set; }
