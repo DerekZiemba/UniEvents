@@ -10,10 +10,10 @@ using ZMBA;
 
 namespace UniEvents.Models.DBModels {
 
-   public class DBEventType {
+   public class DBEventType : DBModel {
 
-      [DBCol("EventTypeID", SqlDbType.Int, 1, false, isAutoValue: true)]
-      public Int32 EventTypeID { get; set; }
+      [DBCol("EventTypeID", SqlDbType.BigInt, 1, false, isAutoValue: true)]
+      public Int64 EventTypeID { get; set; }
 
       [DBCol("Name", SqlDbType.VarChar, 50, false)]
       public string Name { get; set; }
@@ -24,44 +24,45 @@ namespace UniEvents.Models.DBModels {
       public DBEventType() { }
 
       public DBEventType(IDataReader reader) {
-         EventTypeID = reader.GetInt32(nameof(EventTypeID));
+         EventTypeID = reader.GetInt64(nameof(EventTypeID));
          Name = reader.GetString(nameof(Name));
          Description = reader.GetString(nameof(Description));
       }
 
-      public static IEnumerable<DBEventType> SP_EventTypes_Search(CoreContext ctx, long? EventTypeID = null, string Name = null, string Description = null) {
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Int, nameof(EventTypeID), EventTypeID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-               while (reader.Read()) {
-                  yield return new DBEventType(reader);
-               }
-            }
-         }
+      internal static SqlCommand GetSqlCommandForSP_Search(Factory ctx, long? EventTypeID = null, string Name = null, string Description = null) {
+         SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
+         return cmd;
+      }
+
+      internal static SqlCommand GetSqlCommandForSP_GetOne(Factory ctx, long? EventTypeID = null, string Name = null) {
+         SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_GetOne]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
+         return cmd;
       }
 
 
-      public static DBEventType SP_EventType_Create(CoreContext ctx, string Name, string Description) {
+
+      internal static DBEventType SP_EventType_Create(Factory ctx, string Name, string Description) {
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_EventTypes_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
-            var tagidParam = cmd.AddParam(ParameterDirection.Output, SqlDbType.Int, nameof(EventTypeID), null);
+            var tagidParam = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(EventTypeID), null);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            int rowsAffected = cmd.ExecuteNonQuery();
+            int rowsAffected = cmd.ExecuteProcedure();
+            long id = (Int64)tagidParam.Value;
 
-            DBEventType result = new DBEventType(){
-               EventTypeID = (Int32)tagidParam.Value,
-               Name = Name,
-               Description = Description
-            };
-            if (result.EventTypeID > 0) {
+            if (id > 0) {
+               DBEventType result = new DBEventType(){
+                  EventTypeID = id,
+                  Name = Name,
+                  Description = Description
+               };
                return result;
             }
          }

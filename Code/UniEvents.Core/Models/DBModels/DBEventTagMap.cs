@@ -6,7 +6,7 @@ using System.Text;
 using ZMBA;
 
 namespace UniEvents.Models.DBModels {
-   public class DBEventTagMap {
+   public class DBEventTagMap : DBModel {
       
       [DBCol("EventID", SqlDbType.BigInt, 1, false)]
       public Int64 EventID { get; set; }

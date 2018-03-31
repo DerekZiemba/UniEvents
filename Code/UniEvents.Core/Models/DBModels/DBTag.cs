@@ -8,8 +8,9 @@ using UniEvents.Core;
 using ZMBA;
 
 
+
 namespace UniEvents.Models.DBModels {
-   public class DBTag {
+   public class DBTag : DBModel {
 
       [DBCol("TagID", SqlDbType.BigInt, 1, false, true)]
       public Int64 TagID { get; set; }
@@ -29,44 +30,45 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static IEnumerable<DBTag> SP_Tags_Search(CoreContext ctx, long? TagID = null, string Name = null, string Description = null) {
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
-
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-               while (reader.Read()) {
-                  yield return new DBTag(reader);
-               }
-            }
-         }
+      internal static SqlCommand GetSqlCommandForSP_Search(Factory ctx, long? TagID = null, string Name = null, string Description = null) {
+         SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
+         return cmd;
+      }
+      internal static SqlCommand GetSqlCommandForSP_Query(Factory ctx, string Query) {
+         SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Query]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Query), Query);
+         return cmd;
+      }
+      internal static SqlCommand GetSqlCommandForSP_GetOne(Factory ctx, long? TagID = null, string Name = null) {
+         SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_GetOne]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
+         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
+         return cmd;
       }
 
-
-      public static DBTag SP_Tag_Create(CoreContext ctx, string Name, string Description) {
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
+      internal static DBTag SP_Create(Factory ctx, string Name, string Description) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Tags_Create]", new SqlConnection(ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
             var tagidParam = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(TagID), null);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Name), Name);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Description), Description);
 
-            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
-            int rowsAffected = cmd.ExecuteNonQuery();
+            int rowsAffected = cmd.ExecuteProcedure();
+            long id = (Int64)tagidParam.Value;
 
-            DBTag result = new DBTag(){
-               TagID = (Int64)tagidParam.Value,
-               Name = Name,
-               Description = Description
-            };
-            if(result.TagID > 0) {
+            if(id > 0) {
+               DBTag result = new DBTag(){
+                  TagID = id,
+                  Name = Name,
+                  Description = Description
+               };
                return result;
             }
          }
          return null;
       }
 
-   }
+    }
 }

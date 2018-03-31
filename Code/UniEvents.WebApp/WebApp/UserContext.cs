@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using UniEvents.Core;
@@ -6,8 +7,7 @@ using UniEvents.Models.ApiModels;
 using ZMBA;
 using static ZMBA.Common;
 
-using ApiModels = UniEvents.Models.ApiModels;
-using DBModels = UniEvents.Models.DBModels;
+using UniEvents.Models.DBModels;
 
 namespace UniEvents.WebApp {
 
@@ -18,6 +18,8 @@ namespace UniEvents.WebApp {
    }
 
    public class UserContext {
+      private const string CookieKey = "uinfo";
+
       public UserLoginCookie Cookie { get; set; }
       public UserAccount UserAccount { get; set; }
       public StreetAddress Location => UserAccount?.Location;
@@ -51,34 +53,34 @@ namespace UniEvents.WebApp {
 
 
       public static void RemoveCurrentUserContext(HttpContext httpContext) {
-         httpContext.Response.Cookies.Delete("userlogin");
+         httpContext.Response.Cookies.Delete(CookieKey);
          if (httpContext.Items.ContainsKey(nameof(UserContext))) { httpContext.Items.Remove(nameof(UserContext)); }
 
          if (httpContext.Session.TryGetValue(nameof(UserContext), out byte[] bytes)) {
-            var ctx = CompactSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
+            var ctx = CompactJsonSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
             ctx.Cookie.VerifyDate = default;
             ctx.IsVerifiedLogin = false;
-            httpContext.Session.Set(nameof(UserContext), CompactSerializer.SerializeToGZippedBytes(ctx));
+            httpContext.Session.Set(nameof(UserContext), CompactJsonSerializer.SerializeToGZippedBytes(ctx));
          }
       }
 
       public static async Task<UserContext> InitContext(HttpContext httpContext) {
-         UserContext ctx = (UserContext)httpContext.Items.GetItemOrDefault(nameof(UserContext)); //Check if we already Inited the context in another controller
+         UserContext ctx = (UserContext)httpContext.Items.GetValueOrDefault(nameof(UserContext)); //Check if we already Inited the context in another controller
          if (ctx != null) { return ctx; }
 
-         UserLoginCookie cookie = Common.JsonSerializer.DeserializeOrDefault<UserLoginCookie>(httpContext.Request.Cookies["userlogin"]);
+         UserLoginCookie cookie = CompactJsonSerializer.DeserializeOrDefault<UserLoginCookie>(httpContext.Request.Cookies[CookieKey]);
 
          return await InitContextFromCookie(httpContext, cookie).ConfigureAwait(false);
       }
 
       public static async Task<UserContext> InitContextFromCookie(HttpContext httpContext, UserLoginCookie cookie) {
-         if(cookie == null || cookie.UserName.IsNullOrWhitespace() || cookie.APIKey.IsNullOrWhitespace()) {
+         if(cookie == null || String.IsNullOrWhiteSpace(cookie.UserName) || String.IsNullOrWhiteSpace(cookie.APIKey)) {
             return null;
          }
 
          UserContext ctx = null;
          if (httpContext.Session.TryGetValue(nameof(UserContext), out byte[] bytes)) {
-            ctx = CompactSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
+            ctx = CompactJsonSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
             if(ctx.UserName != cookie.UserName || ctx.APIKey != cookie.APIKey) {
                httpContext.Session.Remove(nameof(UserContext));
                ctx = null;
@@ -89,37 +91,39 @@ namespace UniEvents.WebApp {
             ctx = new UserContext();
             ctx.Cookie = cookie;
 
-            DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.UserName, ctx.APIKey).ConfigureAwait(false);
+            DBLogin dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.Factory, ctx.UserName, ctx.APIKey).ConfigureAwait(false);
             if(dbLogin != null) {
                ctx.Cookie.UserName = dbLogin.UserName;
                ctx.LoginDate = dbLogin.LoginDate;
-               ctx.IsVerifiedLogin = Crypto.VerifyHashMatch(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
+               ctx.IsVerifiedLogin = HashUtils.VerifyHashMatch256(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
             } else {
                ctx.IsVerifiedLogin = false;
             }
 
             if (ctx.IsVerifiedLogin) {
-               DBModels.DBAccount acct = await DBModels.DBAccount.SP_Account_GetAsync(WebAppContext.CoreContext, 0, ctx.UserName).ConfigureAwait(false);
+               DBAccount acct = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, ctx.UserName).ConfigureAwait(false);
                ctx.AccountID = acct.AccountID;
                ctx.LocationID = acct.LocationID.UnBox();
                ctx.UserAccount = new UserAccount(acct, null);
                ctx.Cookie.VerifyDate = DateTime.UtcNow; //Rolling date
 
                if (ctx.LocationID > 0) {
-                  DBModels.DBLocation dbLoc = await DBModels.DBLocation.SP_Location_GetAsync(WebAppContext.CoreContext, ctx.LocationID).ConfigureAwait(false);
-                  if (dbLoc != null) {
-                     ctx.ParentLocationID = dbLoc.ParentLocationID.UnBox();
-                     ctx.UserAccount.Location = new StreetAddress(dbLoc);
+                  using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.Factory, ctx.LocationID)) {
+                     DBLocation dbLoc = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
+                     if (dbLoc != null) {
+                        ctx.ParentLocationID = dbLoc.ParentLocationID.UnBox();
+                        ctx.UserAccount.Location = new StreetAddress(dbLoc);
+                     }
                   }
                }
             }
          } else {
             if (ctx.Cookie.VerifyDate < DateTime.UtcNow.AddMinutes(-10)) {
-               DBModels.DBLogin dbLogin = await DBModels.DBLogin.SP_Account_Login_GetAsync(WebAppContext.CoreContext, ctx.Cookie.UserName, ctx.Cookie.APIKey).ConfigureAwait(false);
+               DBLogin dbLogin = await DBLogin.SP_Account_Login_GetAsync(WebAppContext.Factory, ctx.Cookie.UserName, ctx.Cookie.APIKey).ConfigureAwait(false);
                if(dbLogin != null) {
                   ctx.Cookie.UserName = dbLogin.UserName;
                   ctx.LoginDate = dbLogin.LoginDate;
-                  ctx.IsVerifiedLogin = Crypto.VerifyHashMatch(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
+                  ctx.IsVerifiedLogin = HashUtils.VerifyHashMatch256(ctx.Cookie.APIKey, dbLogin.UserName, dbLogin.APIKeyHash);
                   ctx.Cookie.VerifyDate = DateTime.UtcNow; 
                } else {
                   ctx.IsVerifiedLogin = false;
@@ -129,10 +133,10 @@ namespace UniEvents.WebApp {
             }
          }
 
-         if (ctx.UserDisplayName.IsEmpty()) {
-            if (!(ctx.UserAccount?.DisplayName).IsNullOrWhitespace()) {
+         if (ctx.UserDisplayName.IsNullOrEmpty()) {
+            if ((ctx.UserAccount?.DisplayName).IsNotWhitespace()) {
                ctx.UserDisplayName = ctx.UserAccount.DisplayName;
-            } else if (!(ctx.UserAccount?.FirstName).IsNullOrWhitespace()) {
+            } else if ((ctx.UserAccount?.FirstName).IsNotWhitespace()) {
                ctx.UserDisplayName = new string[] { ctx.UserAccount.FirstName, ctx.UserAccount.LastName }.ToStringJoin(" ");
             } else {
                ctx.UserDisplayName = ctx.UserName;
@@ -140,14 +144,14 @@ namespace UniEvents.WebApp {
          }
 
          if (!ctx.IsVerifiedLogin) {
-            httpContext.Response.Cookies.Delete("userlogin");
+            httpContext.Response.Cookies.Delete(CookieKey);
          } else {
             ctx.Cookie.VerifyDate = DateTime.UtcNow;
-            httpContext.Response.Cookies.Append("userlogin", JsonSerializer.Serialize(ctx.Cookie), new CookieOptions() { Expires = DateTime.Now.AddDays(14), SameSite = SameSiteMode.None });
+            httpContext.Response.Cookies.Append(CookieKey, CompactJsonSerializer.Serialize(ctx.Cookie), new CookieOptions() { Expires = DateTime.Now.AddDays(14), SameSite = SameSiteMode.None });
          }
 
          httpContext.Items[nameof(UserContext)] = ctx; //Expose it to the views and cached it hear for faster access if InitContext is called again in this request. 
-         httpContext.Session.Set(nameof(UserContext), CompactSerializer.SerializeToGZippedBytes(ctx));
+         httpContext.Session.Set(nameof(UserContext), CompactJsonSerializer.SerializeToGZippedBytes(ctx));
 
          return ctx;
       }

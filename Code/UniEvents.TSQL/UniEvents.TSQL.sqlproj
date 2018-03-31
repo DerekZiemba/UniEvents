@@ -74,8 +74,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Account_Create.sql" />
-    <None Include="StoredProcedures\dbo.sp_Location_Create.sql" />
-    <None Include="StoredProcedures\dbo.sp_Location_Get.sql" />
+    <None Include="StoredProcedures\dbo.sp_Locations_CreateOne.sql" />
+    <None Include="StoredProcedures\dbo.sp_Locations_GetOne.sql" />
     <None Include="StoredProcedures\dbo.sp_Location_Update.sql" />
     <None Include="StoredProcedures\dbo.sp_Locations_Search.sql" />
     <None Include="DBInit\AddInitialData.sql" />
@@ -89,7 +89,7 @@
     <None Include="StoredProcedures\dbo.sp_Account_Login.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="StoredProcedures\dbo.sp_Account_Get.sql" />
+    <None Include="StoredProcedures\dbo.sp_Account_GetOne.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Account_Search.sql" />
@@ -139,5 +139,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Event_Search.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Tags_GetOne.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Tags_Query.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_EventTypes_GetOne.sql" />
   </ItemGroup>
 </Project>

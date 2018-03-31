@@ -18,7 +18,7 @@ namespace UniEvents.WebAPI.Controllers {
 
    [Produces("application/json")]
    [ApiExplorerSettings(IgnoreApi = false)]
-   public class EventController : WebAppController {
+   public class EventController : WebAPIController {
 
 
       [HttpGet, Route("webapi/events/search/{EventID?}/{EventTypeID?}/{AccountID?}/{LocationID?}/{DateFrom?}/{DateTo?}/{Title?}/{Caption?}/")]
@@ -39,7 +39,7 @@ namespace UniEvents.WebAPI.Controllers {
          return apiresult.Failure("TODO");
          try {
             //This is why we need to implement Managers with caching abilities or do the whole thing in SQL, because this will quickly cripple the server. 
-           var feedItems = DBModels.DBEventFeedItem.SP_Event_Search(WebAppContext.CoreContext, EventID, EventTypeID, AccountID, LocationID, DateFrom, DateTo, Title, Caption);
+           var feedItems = DBModels.DBEventFeedItem.SP_Event_Search(WebAppContext.Factory, EventID, EventTypeID, AccountID, LocationID, DateFrom, DateTo, Title, Caption);
             foreach(var item in feedItems) {
 
             }
