@@ -20,12 +20,11 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpPost, Route("webapi/rsvps")]
-      public ApiResult<DBModels.DBRSVPType[]> GetRsvpTypes() {
-         var apiresult = new ApiResult<DBModels.DBRSVPType[]>();
+      public ApiResult<RSVPType[]> GetRsvpTypes() {
+         var apiresult = new ApiResult<RSVPType[]>();
 
          try {
-            apiresult.Success(DBModels.DBRSVPType.SP_RSVPTypes_Get(WebAppContext.Factory).ToArray());
-            return apiresult;
+            return apiresult.Success(Factory.RSVPTypeManager.RSVPTypes.ToArray());
          } catch (Exception ex) { return apiresult.Failure(ex); }
    
       }

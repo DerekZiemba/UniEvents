@@ -656,7 +656,7 @@
                     for (var i = 0, len = inputs.length; i < len; i++) {
                         var input = inputs[i];
                         if ('getAttribute' in input) {
-                            setParam(input.getAttribute("param"), input.value, input.getAttribute("source"), input.getAttribute("jsType"), input.getAttribute("isCollection"));
+                            setParam(input.getAttribute("param"), input.value, input.getAttribute("source"), input.getAttribute("jsType"), input.getAttribute("isCollection") === "true");
                         }
                         else {
                             setParam(input.param, input.value, input.source, input.jsType, input.isCollection);

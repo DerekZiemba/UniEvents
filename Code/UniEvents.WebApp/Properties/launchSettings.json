@@ -16,6 +16,7 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
+        "ASPNETCORE_preventHostingStartup": "true",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
@@ -23,6 +24,7 @@
       "commandName": "IIS",
       "launchBrowser": true,
       "environmentVariables": {
+        "ASPNETCORE_preventHostingStartup": "true",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:1332/"
@@ -30,6 +32,7 @@
     "IIS": {
       "commandName": "IIS",
       "environmentVariables": {
+        "ASPNETCORE_preventHostingStartup": "true",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }

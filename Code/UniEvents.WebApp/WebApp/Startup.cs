@@ -10,14 +10,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace UniEvents.WebApp {
-	public class Startup {
-		public Startup(IConfiguration configuration) {        
-		   WebApp.WebAppContext._init(configuration);
-		}
+   public class Startup {
+      public Startup(IConfiguration configuration) {        
+         WebApp.WebAppContext._init(configuration);
+      }
 
-		// This method gets called by the runtime. Use this method to add services to the container.
-		public void ConfigureServices(IServiceCollection services) {
-			services.AddMvc().AddJsonOptions(options=> {
+      // This method gets called by the runtime. Use this method to add services to the container.
+      public void ConfigureServices(IServiceCollection services) {
+         services.AddMvc().AddJsonOptions(options=> {
             options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
             options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
          });
@@ -30,25 +30,25 @@ namespace UniEvents.WebApp {
       }
 
 
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
-			if (env.IsDevelopment()) {
-				app.UseBrowserLink();
-				app.UseDeveloperExceptionPage();
-			} else {
-				//app.UseExceptionHandler("/Error");
+      // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+      public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+         if (env.IsDevelopment()) {
+            app.UseBrowserLink();
             app.UseDeveloperExceptionPage();
-			}
+         } else {
+            //app.UseExceptionHandler("/Error");
+            app.UseDeveloperExceptionPage();
+         }
          WebApp.WebAppContext._init(env);
 
-			app.UseStaticFiles();
-
+         app.UseStaticFiles();
+         
          app.UseSession();
 
-         app.UseCookiePolicy();
+         //app.UseCookiePolicy();
 
-			app.UseMvc();
+         app.UseMvc();
 
-		}
-	}
+      }
+   }
 }

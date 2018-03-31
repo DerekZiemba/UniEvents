@@ -26,6 +26,7 @@
    var postBody = document.getElementById('postBody');
    var inputParams = document.getElementById('InputParams');
    var resultJson = document.getElementById('resultJson');
+   var milliseconds = document.getElementById('millitime');
 
    function handleWebMethodSelected(ev) {
       btnClear.disabled = true;
@@ -65,7 +66,10 @@
       btnClear.disabled = false;
       var oData = U.buildAjaxRequestFromInputs(metadata.params, { url: metadata.path });
       route.value = oData.url;
-      postBody.value = JSON.stringify(oData.data, null, '\t');    
+      postBody.value = JSON.stringify(oData.data, null, '\t');  
+      if (metadata.path.includes('autocomplete')) {
+         executeRequest();
+      }
    }
 
    btnClear.addEventListener('click', () => {
@@ -74,14 +78,22 @@
       }
    });
 
-   btnExecute.addEventListener('click', () => {
+   var start;
+   function logStart() { start = performance.now(); }
+   function executeRequest() {
       $.ajax({
          type: currentHttpType.value,
          url: route.value,
-         data: postBody.value && JSON.parse(postBody.value)
-      }).done(data => resultJson.value = JSON.stringify(data, null, '\t'));
-   });
+         data: postBody.value && JSON.parse(postBody.value),
+         beforeSend: logStart
+      }).done(data => {
+         milliseconds.innerText = performance.now() - start;
+         resultJson.value = JSON.stringify(data, null, '\t');
+      });
+   }
 
+   btnExecute.addEventListener('click', executeRequest);
 
+   U.executeRequest = executeRequest;
 }));
 

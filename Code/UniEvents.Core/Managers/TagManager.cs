@@ -48,24 +48,15 @@ namespace UniEvents.Core.Managers {
             _allEntries = _byId.Values.ToList();
          }
       }
-      private void BlockUntilInit() {
-         if (_initTask == null) { return; }
-         if (!_initTask.IsCompleted) {
-            if (_initTask.IsFaulted) { throw _initTask.Exception; }
-            _initTask.ConfigureAwait(false).GetAwaiter().GetResult();
-         }
-         _initTask.Dispose();
-         _initTask = null;
-      }
 
       public DBTag this[long id] {
          get {
             if (id <= 0) { return null; }
-            BlockUntilInit();
+            Helpers.BlockUntilFinished(ref _initTask);
             if (_byId.TryGetValue(id, out var cached)) {
                return cached.Item;
             }
-            DateTime lastMiss = _idMisses.GetItemOrDefault(id);
+            DateTime lastMiss = _idMisses.GetValueOrDefault(id);
             if (lastMiss < DateTime.Now.AddSeconds(-MissExpireSecs)) {
                using (var cmd = DBTag.GetSqlCommandForSP_GetOne(Ctx, id)) {
                   CachedEntry tag = AddTag(cmd.ExecuteReader_GetOne<DBTag>());
@@ -83,11 +74,11 @@ namespace UniEvents.Core.Managers {
          get {
             if (String.IsNullOrWhiteSpace(name)) { return null; }
             name = name.ToAlphaNumericLower();
-            BlockUntilInit();
-            if(_byName.TryGetValue(name, out var cached)){
+            Helpers.BlockUntilFinished(ref _initTask);
+            if (_byName.TryGetValue(name, out var cached)){
                return cached.Item;
             }
-            DateTime lastMiss = _nameMisses.GetItemOrDefault(name);
+            DateTime lastMiss = _nameMisses.GetValueOrDefault(name);
             if(lastMiss < DateTime.Now.AddSeconds(-MissExpireSecs)) {
                using (var cmd = DBTag.GetSqlCommandForSP_GetOne(Ctx, null, name)) {
                   CachedEntry tag = AddTag(cmd.ExecuteReader_GetOne<DBTag>());
@@ -117,7 +108,7 @@ namespace UniEvents.Core.Managers {
          string normDesc = description.ToAlphaNumericLower();
          bool bHasName = normName != null && normName.Length > 0;
          bool bHasDesc = normName != null && normName.Length > 1;
-         BlockUntilInit();
+         Helpers.BlockUntilFinished(ref _initTask);
 
          if (!bHasName && !bHasDesc) {
             for (var i = 0; i < _allEntries.Count; i++) { yield return _allEntries[i].Item; }
@@ -162,7 +153,7 @@ namespace UniEvents.Core.Managers {
 
       public IEnumerable<DBTag> QueryCached(string query) {
          string norm = query.ToAlphaNumericLower();
-         BlockUntilInit();
+         Helpers.BlockUntilFinished(ref _initTask);
 
          if (String.IsNullOrEmpty(norm)) {
             for (var i = 0; i < _allEntries.Count; i++) { yield return _allEntries[i].Item; }

@@ -19,9 +19,9 @@ namespace UniEvents.Core.Managers {
    public class LocationManager {
       private Factory Ctx;
 
-		internal LocationManager(Factory ctx) {
+      internal LocationManager(Factory ctx) {
          this.Ctx = ctx;
-		}
+      }
 
 
       public async Task<ApiResult<StreetAddress>> CreateLocation(StreetAddress address) {

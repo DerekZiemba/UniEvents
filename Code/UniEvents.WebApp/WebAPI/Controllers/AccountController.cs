@@ -237,11 +237,12 @@ namespace UniEvents.WebAPI.Controllers {
 
       }
 
-      [HttpPost, Route("webapi/account/getuserinfo/{username?}/{includeLocation?}")]
-      public async Task<ApiResult<UserAccount>> GetUserInfo(string username, bool includeLocation) {
+      [HttpPost, Route("webapi/account/getuserinfo/{username?}")]
+      public async Task<ApiResult<UserAccount>> GetUserInfo(string username) {
          var apiresult = new ApiResult<UserAccount>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Check your privilege. This is a privileged operation."); }
+         if (String.IsNullOrWhiteSpace(username)) { return apiresult.Failure("AccountID or UserName must be specified."); }
 
          try {
             DBAccount dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, username).ConfigureAwait(false);
@@ -250,7 +251,7 @@ namespace UniEvents.WebAPI.Controllers {
             }
             apiresult.Result = new UserAccount(dbAccount, null);
 
-            if (includeLocation && dbAccount.LocationID.UnBox() > 0) {
+            if (dbAccount.LocationID.UnBox() > 0) {
                using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.Factory, dbAccount.LocationID.Value)) {
                   DBLocation dbLocation = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
                   apiresult.Result.Location = new StreetAddress(dbLocation);

@@ -18,9 +18,9 @@ namespace UniEvents.Core.Managers {
    public class AccountManager {
       private readonly Factory Ctx;
 
-		internal AccountManager(Factory ctx) {
+      internal AccountManager(Factory ctx) {
          this.Ctx = ctx;
-		}
+      }
 
       public async Task<bool> CheckPrivilege(string username, string apikey) {
          if (username.IsNotWhitespace() && apikey.IsNotWhitespace()) {

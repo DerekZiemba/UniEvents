@@ -22,10 +22,10 @@ namespace UniEvents.WebApp {
             foreach (var desc in group.Items) {
                var meta = new MethodMetadata();
                meta.Route = desc.RelativePath;
-               meta.Path = meta.Route.SubstrBefore("/{", Common.SubstrOptions.RetInput);
+               meta.Path = meta.Route.SubstrBefore("/{", SubstrOptions.RetInput);
                meta.HttpMethod = Enum.Parse<Models.EHttpVerbs>(desc.HttpMethod, true);
                meta.MethodName = desc.ActionDescriptor.RouteValues["action"];
-               meta.FullMethodName = desc.ActionDescriptor.DisplayName.SubstrBefore(" (", Common.SubstrOptions.RetInput);
+               meta.FullMethodName = desc.ActionDescriptor.DisplayName.SubstrBefore(" (", SubstrOptions.RetInput);
 
                var responseTYpe = desc.SupportedResponseTypes.FirstOrDefault();
                if (responseTYpe != null) {

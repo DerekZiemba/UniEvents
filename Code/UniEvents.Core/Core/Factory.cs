@@ -13,45 +13,47 @@ namespace UniEvents.Core {
 
    public class Factory {
       private readonly string _configFilePath;
-      private readonly Lazy<Configuration> _Config;
-      private readonly Lazy<AccountManager> _AccountManager;
-      private readonly Lazy<LocationManager> _LocationManager;
-      private readonly Lazy<TagManager> _TagManager;
-      private readonly Lazy<EventTypeManager> _EventTypeManager;
-      private readonly Lazy<RSVPTypeManager> _RSVPTypeManager;
-      private readonly Lazy<CityStateManager> _CityStateManager;
+      private Configuration _Config;
 
-      public Configuration Config => _Config.Value;
-      public AccountManager AccountManager => _AccountManager.Value;
-      public LocationManager LocationManager => _LocationManager.Value;
-      public TagManager TagManager => _TagManager.Value;
-      public EventTypeManager EventTypeManager => _EventTypeManager.Value;
-      public RSVPTypeManager RSVPTypeManager => _RSVPTypeManager.Value;
-      public CityStateManager CityStateManager => _CityStateManager.Value;
+      private Task _loadConfigTask;
+      public Configuration Config { get { Helpers.BlockUntilFinished(ref _loadConfigTask); return _Config; } }
+
+      public AccountManager AccountManager { get; private set; }
+      public LocationManager LocationManager { get; private set; }
+      public TagManager TagManager { get; private set; }
+      public EventTypeManager EventTypeManager { get; private set; }
+      public RSVPTypeManager RSVPTypeManager { get; private set; }
+      public CityStateManager CityStateManager { get; private set; }
+
 
       public Factory(string configFilePath) {
          this._configFilePath = configFilePath;
 
-         _Config = new Lazy<Configuration>(() => {
-            Configuration result = null;
-            if (System.IO.File.Exists(_configFilePath)) {             
-               using (var fs = new FileStream(_configFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-               using (var sr = new StreamReader(fs, Encoding.UTF8))
-               using (var jsreader = new Newtonsoft.Json.JsonTextReader(sr)) {
-                  result = JsonSerializer.Deserialize<Configuration>(jsreader);
-               }
-            }
-            return result;
-         }, LazyThreadSafetyMode.ExecutionAndPublication);
+         _loadConfigTask = Task.Run((Func<bool>)LoadConfiguration);
 
-         this._AccountManager = new Lazy<AccountManager>(() => new AccountManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
-         this._LocationManager = new Lazy<LocationManager>(() => new LocationManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
-         this._TagManager = new Lazy<TagManager>(() => new TagManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
-         this._EventTypeManager = new Lazy<EventTypeManager>(() => new EventTypeManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
-         this._CityStateManager = new Lazy<CityStateManager>(() => new CityStateManager(this), LazyThreadSafetyMode.ExecutionAndPublication);
+         this.AccountManager = new AccountManager(this);
+         this.LocationManager = new LocationManager(this);
+         this.TagManager = new TagManager(this);
+         this.EventTypeManager = new EventTypeManager(this);
+         this.RSVPTypeManager = new RSVPTypeManager(this);
+         this.CityStateManager = new CityStateManager(this);
+      }
+
+      private bool LoadConfiguration() {
+         Configuration result = null;
+         if (System.IO.File.Exists(_configFilePath)) {
+            using (var fs = new FileStream(_configFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var sr = new StreamReader(fs, Encoding.UTF8))
+            using (var jsreader = new Newtonsoft.Json.JsonTextReader(sr)) {
+               result = CompactJsonSerializer.Deserialize<Configuration>(jsreader);
+            }
+         }
+         _Config = result;
+         return true;
       }
 
 
 
-	}
+
+   }
 }

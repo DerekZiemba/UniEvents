@@ -28,7 +28,7 @@ namespace UniEvents.WebAPI.Controllers {
       public ApiResult<MethodMetadata> Get(string route) {
          var result = new ApiResult<MethodMetadata>();
 
-         result.Result = this.MetaDataManager().MethodsByRoute.GetItemOrDefault(route) ?? this.MetaDataManager().MethodsByPath.GetItemOrDefault(route);
+         result.Result = ZMBA.Common.GetValueOrDefault((this).MetaDataManager().MethodsByRoute, route) ?? ZMBA.Common.GetValueOrDefault((this).MetaDataManager().MethodsByPath, route);
  
          if(result.Result != null) { result.bSuccess = true; }
          return result;

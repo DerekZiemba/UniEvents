@@ -56,11 +56,12 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
-      [HttpGet, Route("webapi/locations/cityquery/{query?}")]
-      public ApiResult<IEnumerable<Core.Managers.CityStateManager.CityEntry>> CityQuery(string query) {
-         var apiresult = new ApiResult<IEnumerable<Core.Managers.CityStateManager.CityEntry>>();
+      [HttpGet, Route("webapi/locations/autocomplete/{query?}")]
+      public ApiResult<IEnumerable<Models.LocationNode>> AutoComplete(string query) {
+         var apiresult = new ApiResult<IEnumerable<Models.LocationNode>>();
          try {
-            return apiresult.Success(Factory.CityStateManager.QueryCity(query));
+            apiresult.Success(Factory.CityStateManager.QueryLocations(query));
+            return apiresult;
          } catch (Exception ex) {
             return apiresult.Failure(ex);
          }

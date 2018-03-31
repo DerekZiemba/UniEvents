@@ -18,6 +18,8 @@ namespace UniEvents.WebApp {
    }
 
    public class UserContext {
+      private const string CookieKey = "uinfo";
+
       public UserLoginCookie Cookie { get; set; }
       public UserAccount UserAccount { get; set; }
       public StreetAddress Location => UserAccount?.Location;
@@ -51,22 +53,22 @@ namespace UniEvents.WebApp {
 
 
       public static void RemoveCurrentUserContext(HttpContext httpContext) {
-         httpContext.Response.Cookies.Delete("userlogin");
+         httpContext.Response.Cookies.Delete(CookieKey);
          if (httpContext.Items.ContainsKey(nameof(UserContext))) { httpContext.Items.Remove(nameof(UserContext)); }
 
          if (httpContext.Session.TryGetValue(nameof(UserContext), out byte[] bytes)) {
-            var ctx = CompactSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
+            var ctx = CompactJsonSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
             ctx.Cookie.VerifyDate = default;
             ctx.IsVerifiedLogin = false;
-            httpContext.Session.Set(nameof(UserContext), CompactSerializer.SerializeToGZippedBytes(ctx));
+            httpContext.Session.Set(nameof(UserContext), CompactJsonSerializer.SerializeToGZippedBytes(ctx));
          }
       }
 
       public static async Task<UserContext> InitContext(HttpContext httpContext) {
-         UserContext ctx = (UserContext)httpContext.Items.GetItemOrDefault(nameof(UserContext)); //Check if we already Inited the context in another controller
+         UserContext ctx = (UserContext)httpContext.Items.GetValueOrDefault(nameof(UserContext)); //Check if we already Inited the context in another controller
          if (ctx != null) { return ctx; }
 
-         UserLoginCookie cookie = Common.JsonSerializer.DeserializeOrDefault<UserLoginCookie>(httpContext.Request.Cookies["userlogin"]);
+         UserLoginCookie cookie = CompactJsonSerializer.DeserializeOrDefault<UserLoginCookie>(httpContext.Request.Cookies[CookieKey]);
 
          return await InitContextFromCookie(httpContext, cookie).ConfigureAwait(false);
       }
@@ -78,7 +80,7 @@ namespace UniEvents.WebApp {
 
          UserContext ctx = null;
          if (httpContext.Session.TryGetValue(nameof(UserContext), out byte[] bytes)) {
-            ctx = CompactSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
+            ctx = CompactJsonSerializer.DeserializeGZippedBytes<UserContext>(bytes); //Using Session may be expensive in both memory and CPU. 
             if(ctx.UserName != cookie.UserName || ctx.APIKey != cookie.APIKey) {
                httpContext.Session.Remove(nameof(UserContext));
                ctx = null;
@@ -142,14 +144,14 @@ namespace UniEvents.WebApp {
          }
 
          if (!ctx.IsVerifiedLogin) {
-            httpContext.Response.Cookies.Delete("userlogin");
+            httpContext.Response.Cookies.Delete(CookieKey);
          } else {
             ctx.Cookie.VerifyDate = DateTime.UtcNow;
-            httpContext.Response.Cookies.Append("userlogin", JsonSerializer.Serialize(ctx.Cookie), new CookieOptions() { Expires = DateTime.Now.AddDays(14), SameSite = SameSiteMode.None });
+            httpContext.Response.Cookies.Append(CookieKey, CompactJsonSerializer.Serialize(ctx.Cookie), new CookieOptions() { Expires = DateTime.Now.AddDays(14), SameSite = SameSiteMode.None });
          }
 
          httpContext.Items[nameof(UserContext)] = ctx; //Expose it to the views and cached it hear for faster access if InitContext is called again in this request. 
-         httpContext.Session.Set(nameof(UserContext), CompactSerializer.SerializeToGZippedBytes(ctx));
+         httpContext.Session.Set(nameof(UserContext), CompactJsonSerializer.SerializeToGZippedBytes(ctx));
 
          return ctx;
       }

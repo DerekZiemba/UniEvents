@@ -32,6 +32,6 @@ namespace UniEvents.Core {
 
       public Configuration() { }
 
-	}
+   }
 
 }
