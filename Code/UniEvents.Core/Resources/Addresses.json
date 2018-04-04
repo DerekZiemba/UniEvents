@@ -67,7 +67,7 @@
 			}
 		},
 		"Canada": {
-			"Variations": [ "Can", "Ca" ],
+			"Variations": [ "CAN", "Ca" ],
 			"States": {
 				"Alberta": [ "AB", "Alta." ],
 				"British Columbia": [ "BC", "B.C." ],
@@ -85,7 +85,7 @@
 			}
 		},
 		"Mexico": {
-			"Variations": [ "Mex", "MX" ],
+			"Variations": [ "MEX", "MX" ],
 			"States": {
 				"Aguascalientes": [ "Ags.", "AG", "AGU" ],
 				"Baja California": [ "BC", "BCN" ],

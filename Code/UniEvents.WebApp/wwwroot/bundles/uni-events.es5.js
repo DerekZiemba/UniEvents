@@ -691,7 +691,77 @@
         }()),
         highlightRequiredInputs: function (bool) {
             document.body.classList.toggle('highlightRequiredInputs', bool);
-        }
+        },
+        LocationAutoComplete: (function () {
+            LocAutoComplete.defaults = {
+                search: null,
+                city: "[param='Location.Locality']",
+                state: "[param='Location.AdminDistrict']",
+                zip: "[param='Location.PostalCode']",
+                country: "[param='Location.CountryRegion']"
+            };
+            function LocAutoComplete(options) {
+                var cfg = this.cfg = Object.assign({}, LocAutoComplete.defaults, options);
+                this.$search = $(cfg.search);
+                this.$city = $(cfg.city);
+                this.$state = $(cfg.state);
+                this.$zip = $(cfg.zip);
+                this.$country = $(cfg.country);
+                this.$els = $().add(this.$city).add(this.$state).add(this.$zip).add(this.$country);
+                var self = this;
+                var settings = {
+                    ajaxSettings: {
+                        cache: true,
+                        dataType: "json"
+                    },
+                    showNoSuggestionNotice: true,
+                    paramName: 'query',
+                    transformResult: function (response) { return { suggestions: response.result.map(function (x) { return { value: x.Formatted, data: x }; }) }; },
+                    formatResult: function (suggestion) { return suggestion.data.Formatted; },
+                    onSearchStart: function (query) {
+                        query.query = self.$els.map(function () { return this.value; }).get().join(' ');
+                    }
+                };
+                this.autoSearch = this.$search.length > 0 && this.$search.autocomplete(Object.assign({}, settings, {
+                    serviceUrl: 'webapi/autocomplete/locations',
+                    onSearchStart: function () { },
+                    onSelect: function (suggestion) {
+                        var data = suggestion.data;
+                        if (data) {
+                            if (data.City) {
+                                self.$city.val(data.City);
+                            }
+                            if (data.State) {
+                                self.$state.val(data.State);
+                            }
+                            if (data.Zip) {
+                                self.$zip.val(data.Zip);
+                            }
+                            if (data.Country) {
+                                self.$country.val(data.Country);
+                            }
+                        }
+                    }
+                })).autocomplete();
+                this.autoCity = this.$city.length > 0 && this.$city.autocomplete(Object.assign({}, settings, {
+                    serviceUrl: 'webapi/autocomplete/cities',
+                    transformResult: function (response) { return { suggestions: response.result.map(function (x) { return { value: x.City, data: x }; }) }; }
+                })).autocomplete();
+                this.autoState = this.$state.length > 0 && this.$state.autocomplete(Object.assign({}, settings, {
+                    serviceUrl: 'webapi/autocomplete/states',
+                    formatResult: function (suggestion) { return suggestion.data.State + ", " + suggestion.data.Country; },
+                    transformResult: function (response) { return { suggestions: response.result.map(function (x) { return { value: x.State, data: x }; }) }; }
+                })).autocomplete();
+                this.autoZip = this.$zip.length > 0 && this.$zip.autocomplete(Object.assign({}, settings, {
+                    serviceUrl: 'webapi/autocomplete/postalcodes',
+                    transformResult: function (response) { return { suggestions: response.result.map(function (x) { return { value: x.Zip, data: x }; }) }; }
+                })).autocomplete();
+                this.autoCountry = this.$country.length > 0 && this.$country.autocomplete(Object.assign({}, settings, {
+                    serviceUrl: 'webapi/autocomplete/countries'
+                })).autocomplete();
+            }
+            return LocAutoComplete;
+        }())
     }, { override: false, merge: true });
     $(document).ready(function () {
         document.querySelectorAll("time").forEach(function (el) {

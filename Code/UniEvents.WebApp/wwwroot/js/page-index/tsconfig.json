@@ -7,7 +7,7 @@
 		"pretty": true,
 		"alwaysStrict": true,
 		//compile down to ES5 for browser compatibility
-		"outFile": "../../bundles/page-index.es5.js"
+		"outFile": "./page-index.es5.js"
 	},
 	"compileOnSave": true,
 	"typeAcquisition": {

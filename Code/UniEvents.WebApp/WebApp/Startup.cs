@@ -20,9 +20,14 @@ namespace UniEvents.WebApp {
          services.AddMvc().AddJsonOptions(options=> {
             options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
             options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
-         });
+         }).AddSessionStateTempDataProvider();
+
          services.AddDistributedMemoryCache();
-         services.AddSession();
+
+         services.AddSession(opts=> {
+            opts.Cookie.SecurePolicy = CookieSecurePolicy.None;
+            opts.Cookie.SameSite = SameSiteMode.None;
+         });
 
          services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 

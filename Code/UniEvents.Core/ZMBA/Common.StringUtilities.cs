@@ -170,6 +170,23 @@ namespace ZMBA {
       #endregion
 
 
+      #region ************************************** StringBuilder ******************************************************
+
+      public static StringBuilder Reverse(this StringBuilder sb) {
+         int end = sb.Length - 1;
+         int start = 0;
+         while(end-start > 0) {
+            char ch = sb[end];
+            sb[end] = sb[start];
+            sb[start] = ch;
+            start++;
+            end--;
+         }
+         return sb;
+      }
+
+      #endregion
+
 
       #region ************************************** Substring ******************************************************
 

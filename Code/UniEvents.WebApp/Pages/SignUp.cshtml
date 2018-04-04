@@ -5,6 +5,10 @@
    ViewData["Title"] = "SignUp";
    Layout = "~/Pages/_Layout.cshtml";
 }
+@section Scripts {
+   <script src="~/lib/jquery.autocomplete/jquery.autocomplete.js" asp-append-version="false"></script>
+   <script src="~/js/page-signup/page-signup.es5.js" asp-append-version="true"></script>
+}
 
 <h2>SignUp</h2>
 
@@ -64,6 +68,11 @@
       <h4>Location Info</h4>
       <ul>
          <li>
+            <label>Location Search:</label>
+            <input type="text" placeholder="Search known locations to autocomplete." id="searchLocations" />
+            <span></span>
+         </li>
+         <li>
             <label>Name:</label>
             <input type="text" param="Location.Name" placeholder="House, Apartment, etc." />
             <span></span>
@@ -88,9 +97,9 @@
             <input type="text" param="Location.CountryRegion" required />
             <span></span>
          </li>
-         <li>
+         <li class="required">
             <label>Postal Code:</label>
-            <input type="text" param="Location.PostalCode" />
+            <input type="text" param="Location.PostalCode" required />
             <span></span>
          </li>
       </ul>
@@ -108,37 +117,4 @@
 
 </div>
 
-<script>
-
-   var InputParams = document.getElementById("InputParams");
-   var signUpLabel = document.getElementById("signUpLabel");
-   var signUpButton = document.getElementById("signUpButton");
-
-   signUpButton.addEventListener("click", function () {
-      var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/account/createuser" });
-
-      function handleFailure(ev) {
-         console.log(oRequest, ev);
-         signUpLabel.value = "Failed!";
-         InputParams.class = "Failed";
-         U.setPageMessage('error', ev.message);
-         U.highlightRequiredInputs(true);
-      }
-
-      $.ajax(oRequest)
-         .fail(handleFailure)
-         .done(function (ev) {
-            if (ev.success) {
-               signUpButton.disabled = true;
-               console.log(oRequest, ev);
-               signUpLabel.value = "Success!";
-               InputParams.class = "Success";
-               U.setPageMessage('success', 'Success!  Go to the <a href="/Login">Login Page to Login!</a>');
-            } else {
-               handleFailure(ev);
-            }
-         });
-
-   });
-</script>
 

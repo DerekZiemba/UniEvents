@@ -17,33 +17,15 @@ namespace UniEvents.WebAPI.Controllers {
    [ApiExplorerSettings(IgnoreApi = false)]
    public class TagsController : WebAPIController {
 
-      [HttpGet, Route("webapi/tags/search/{id?}/{name?}/{description?}")]
-      public ApiResult<IEnumerable<DBModels.DBTag>> TagSearch(long? id = null,
-                                                               string name = null,
-                                                               string description = null) {
-
-
-         var apiresult = new ApiResult<IEnumerable<DBModels.DBTag>>();
-         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
-         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
-
+      [HttpGet, Route("webapi/tags/get/{id?}/{name?}")]
+      public ApiResult<DBModels.DBTag> TagGet(long? id = null, string name = null) {
+         var apiresult = new ApiResult<DBModels.DBTag>();
          try {
             if (id.HasValue) {
-               return apiresult.Success(new[] { Factory.TagManager[id.Value] });
+               return apiresult.Success(Factory.TagManager[id.Value]);
             } else {
-               return apiresult.Success(Factory.TagManager.SearchCached(name, description));
+               return apiresult.Success(Factory.TagManager[name]);
             }
-         } catch (Exception ex) { return apiresult.Failure(ex); }
-      }
-
-      [HttpGet, Route("webapi/tags/query/{query?}")]
-      public ApiResult<IEnumerable<DBModels.DBTag>> TagQuery(string query) {
-         var apiresult = new ApiResult<IEnumerable<DBModels.DBTag>>();
-         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
-         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
-
-         try {
-            return apiresult.Success(Factory.TagManager.QueryCached(query));
          } catch (Exception ex) { return apiresult.Failure(ex); }
       }
 

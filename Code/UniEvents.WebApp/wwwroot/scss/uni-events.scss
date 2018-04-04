@@ -24,6 +24,38 @@ a {
    cursor: pointer;
 }
 
+.autocomplete-suggestions {
+   border: 1px solid #999;
+   background: #FFF;
+   overflow: auto;
+}
+
+.autocomplete-suggestion {
+   padding: 2px 5px;
+   white-space: nowrap;
+   overflow: hidden;
+}
+
+.autocomplete-selected {
+   background: #F0F0F0;
+}
+
+.autocomplete-suggestions strong {
+   font-weight: normal;
+   color: #3399FF;
+}
+
+.autocomplete-group {
+   padding: 2px 5px;
+}
+
+.autocomplete-group strong {
+   display: block;
+   border-bottom: 1px solid #000;
+}
+
+
+
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content {
    padding: 50px 5px 20px 5px;
@@ -276,6 +308,9 @@ a {
       overflow-x: auto;
    }
 
+   #btnLogoutAll {
+      margin-top: 10px;
+   }
    th {
       font-size: larger;
    }
