@@ -19,6 +19,12 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="wwwroot\lib\flatpickr-4.4.2\**" />
+    <Content Remove="wwwroot\lib\flatpickr-4.4.2\**" />
+    <EmbeddedResource Remove="wwwroot\lib\flatpickr-4.4.2\**" />
+    <None Remove="wwwroot\lib\flatpickr-4.4.2\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="app_offline.html" />
   </ItemGroup>
 

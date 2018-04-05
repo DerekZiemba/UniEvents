@@ -161,29 +161,43 @@ a {
 
    ul {
       li {
-         span {
+         /*span {
             color: red;
-         }
+         }*/
+      }
+   }
+
+   &.vert_list {
+      .input_label {
+         width: 15rem;
+      }
+
+      .input_ul {
+         max-width: 100rem;
+      }
+
+      .input_param {
+         width: 35rem;
+      }
+
+      textarea.input_param {
+         width: 70rem;
+         height: 10rem;
       }
    }
 }
 
+#CreateEventPage {
+   padding-left: 15px;
+   #txtCaption{
+      height:2em;
+   }
+}
 
 #SignUpPage {
    padding-left: 15px;
-
-   label {
-      width: 150px;
-   }
-
-   ul {
-      max-width: 100rem;
-   }
-
-   input {
-      width: 350px;
-   }
 }
+
 
 #LoginPage {
    input {
