@@ -40,12 +40,31 @@
       enableTime: true,
       inline: true,
       onReady: function (arg0, arg1, inst) {
-         console.log(inst):
          inst.showTimeInput = true;
       }
    }
    U._startDatePicker = flatpickr('[param="DateStart"]', datepickerOptions);
    U._endDatePicker = flatpickr('[param="DateEnd"]', datepickerOptions);
+
+
+   var autocompleteSettings = {
+      ajaxSettings: {
+         cache: true,
+         dataType: "json"
+      },
+      showNoSuggestionNotice: true,
+      paramName: 'query',
+      transformResult: (response) => { return { suggestions: response.result.map(x => { return { value: x.name, data: x } }) } },
+      formatResult: (suggestion) => suggestion.data.name + (suggestion.data.description && " - " + suggestion.data.description)
+   }
+
+   U._autoEventType = $("#eventType").autocomplete(Object.assign({}, autocompleteSettings, {
+      serviceUrl: 'webapi/autocomplete/eventtypes'
+   })).autocomplete();
+
+   U._autoTags = $("#eventTags").autocomplete(Object.assign({}, autocompleteSettings, {
+      serviceUrl: 'webapi/autocomplete/tags',
+   })).autocomplete();
 
 
 }());
