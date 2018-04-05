@@ -1,81 +1,109 @@
 ﻿@page
 @model UniEvents.WebApp.Pages.CreateEventModel
 @{
-    ViewData["Title"] = "CreateEvent";
+   ViewData["Title"] = "CreateEvent";
+}
+
+@section Scripts {
+   <script src="~/bundles/jquery.plugins.es5.js" asp-append-version="true"></script>
+   <script src="~/js/page-createevent/page-createevent.es5.js" asp-append-version="true"></script>
 }
 
 <h2>Create Event</h2>
 
 <div id="CreateEventPage">
-    <div id="InputParams">
+   <div id="InputParams" class="vert_list">
 
-        <h4>Event Info </h4>
-        <ul>
-            <li class="required">
-                <label>Title:</label>
-                <input type="text" param="Title" required />
-                <span></span>
-            </li>
-            <li class="required">
-                <label>Start Time:</label>
-                <input type="text" param="DateStart" required />
-                <span></span>
-            </li>
-            <li class="required">
-                <label>End Time:</label>
-                <input type="text" param="DateEnd" required />
-                <span></span>
-            </li>
-            <li>
-                <label>Caption:</label>
-                <input type="text" param="Caption" placeholder="brief description" />
-                <span></span>
-            </li>
-            <li>
-                <label>Description:</label>
-                <textarea type="text" param="Details" placeholder="Details about your event"></textarea>
-                <span></span>
-            </li>
-        </ul>
-    </div>
-    <br />
-    <ul>
-        <li>
-            <label id="EventCreationLabel"></label>
-            <input id="EventCreationButton" type="button" value="Create Event" />
-        </li>
-    </ul>
+      <h4>Event Info </h4>
+      <ul class="input_ul">
+         <li class="required">
+            <label class="input_label">Title:</label>
+            <input class="input_param" type="text" param="Title" required />
+            <span></span>
+         </li>
+         <li>
+            <label class="input_label">Event Type:</label>
+            <input id="eventType" class="input_param" type="text" param="EventType"></input>
+            <span></span>
+         </li>
+         <li>
+            <label class="input_label">Event Tags:</label>
+            <input id="eventTags" class="input_param" type="text" param="Tags"></input>
+            <span></span>
+         </li>
+         <li class="required" class="daterange">
+            <ul>
+               <li class="required" class="startDate">
+                  <label>Start Time:</label>
+                  <input class="input_param" type="date" param="DateStart" required hidden />
+                  <span></span>
+               </li>
+               <li class="required" class="endDate">
+                  <label>End Time:</label>
+                  <input class="input_param" type="date" param="DateEnd" required hidden />
+                  <span></span>
+               </li>
+            </ul>
+         </li>
+         <li>
+            <label class="input_label">Caption:</label>
+            <textarea class="input_param" type="text" param="Caption" placeholder="brief description" id="txtCaption"></textarea>
+            <span></span>
+         </li>
+         <li>
+            <label class="input_label">Description:</label>
+            <textarea class="input_param" type="text" param="Details" placeholder="Details about your event"></textarea>
+            <span></span>
+         </li>
+      </ul>
+
+      <h4>Location Info</h4>
+      <ul class="input_ul">
+         <li>
+            <label class="input_label">Location Search:</label>
+            <input class="input_param" type="text" placeholder="Search known locations to autocomplete." id="searchLocations" />
+            <span></span>
+         </li>
+         <li>
+            <label class="input_label">Name:</label>
+            <input class="input_param" type="text" param="Location.Name" placeholder="House, Apartment, etc." />
+            <span></span>
+         </li>
+         <li>
+            <label class="input_label">Address:</label>
+            <input class="input_param" type="text" param="Location.AddressLine" />
+            <span></span>
+         </li>
+         <li class="required">
+            <label class="input_label">City:</label>
+            <input class="input_param" type="text" param="Location.Locality" required />
+            <span></span>
+         </li>
+         <li class="required">
+            <label class="input_label">State:</label>
+            <input class="input_param" type="text" param="Location.AdminDistrict" required />
+            <span></span>
+         </li>
+         <li class="required">
+            <label class="input_label">Country:</label>
+            <input class="input_param" type="text" param="Location.CountryRegion" required />
+            <span></span>
+         </li>
+         <li class="required">
+            <label class="input_label">Postal Code:</label>
+            <input class="input_param" type="text" param="Location.PostalCode" required />
+            <span></span>
+         </li>
+      </ul>
+
+
+   </div>
+   <br />
+   <ul>
+      <li>
+         <label id="EventCreationLabel"></label>
+         <input id="EventCreationButton" type="button" value="Create Event" />
+      </li>
+   </ul>
 </div>
-<script>
 
-   var InputParams = document.getElementById("InputParams");
-   var EventCreationLabel = document.getElementById("EventCreationLabel");
-   var EventCreationButton = document.getElementById("EventCreationButton");
-
-   EventCreationButton.addEventListener("click", function () {
-      var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/TODO "});
-
-      function handleFailure(ev) {
-         console.log(oRequest, ev);
-         EventCreationLabel.value = "Failed!";
-         InputParams.class = "Failed";
-         U.setPageMessage('error', ev.message);
-         U.highlightRequiredInputs(true);
-      }
-
-      $.ajax(oRequest)
-         .fail(handleFailure)
-         .done(function (ev) {
-            if (ev.success) {
-               signUpButton.disabled = true;
-               console.log(oRequest, ev);
-               signUpLabel.value = "Success!";
-               InputParams.class = "Success";
-               U.setPageMessage('success', 'Success!  Go to the <a href="/Index">Event feed to see events </a>');
-            } else {
-               handleFailure(ev);
-            }
-         });
-
-   });
-</script>

@@ -7,7 +7,7 @@
       "pretty": true,
       "alwaysStrict": true,
       //compile down to ES5 for browser compatibility
-      "outFile": "./page-apitest.es5.js"
+      "outFile": "./page-signup.es5.js"
    },
    "compileOnSave": true,
    "typeAcquisition": {
@@ -16,7 +16,7 @@
       "exclude": [ "node" ] // Specific libs to not fetch .d.ts files for
    },
 
-   "files": [ "page-apitest.js" ] // list of explicit files to include in the project context. Highest priority.
+   "files": [ "page-signup.js" ] // list of explicit files to include in the project context. Highest priority.
 
 
 }

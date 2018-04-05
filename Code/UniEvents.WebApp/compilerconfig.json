@@ -1,6 +1,6 @@
 ﻿[
-   {
-      "outputFile": "wwwroot/bundles/uni-events.css",
-      "inputFile": "wwwroot/scss/uni-events.scss"
-   }
+	{
+		"outputFile": "wwwroot/scss/uni-events.css",
+		"inputFile": "wwwroot/scss/uni-events.scss"
+	}
 ]

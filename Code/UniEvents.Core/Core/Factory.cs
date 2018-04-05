@@ -23,7 +23,6 @@ namespace UniEvents.Core {
       public TagManager TagManager { get; private set; }
       public EventTypeManager EventTypeManager { get; private set; }
       public RSVPTypeManager RSVPTypeManager { get; private set; }
-      public CityStateManager CityStateManager { get; private set; }
 
 
       public Factory(string configFilePath) {
@@ -36,7 +35,6 @@ namespace UniEvents.Core {
          this.TagManager = new TagManager(this);
          this.EventTypeManager = new EventTypeManager(this);
          this.RSVPTypeManager = new RSVPTypeManager(this);
-         this.CityStateManager = new CityStateManager(this);
       }
 
       private bool LoadConfiguration() {

@@ -2,12 +2,12 @@
 // More info at https://go.microsoft.com/fwlink/?LinkId=808241
 [
 	{
-		"outputFileName": "wwwroot/bundles/uni-events.min.css",
+		"outputFileName": "wwwroot/bundles/uni-events.css",
 		"inputFiles": [
-			"wwwroot/bundles/uni-events.css"
+			"wwwroot/scss/flatpickr.css",
+			"wwwroot/scss/uni-events.css"
 		]
-	}
-	,
+	},
 	{
 		"outputFileName": "wwwroot/bundles/uni-events.es5.min.js",
 		"inputFiles": [ "wwwroot/bundles/uni-events.es5.js" ] //minify

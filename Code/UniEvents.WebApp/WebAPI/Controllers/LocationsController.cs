@@ -56,17 +56,6 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
-      [HttpGet, Route("webapi/locations/autocomplete/{query?}")]
-      public ApiResult<IEnumerable<Models.LocationNode>> AutoComplete(string query) {
-         var apiresult = new ApiResult<IEnumerable<Models.LocationNode>>();
-         try {
-            apiresult.Success(Factory.CityStateManager.QueryLocations(query));
-            return apiresult;
-         } catch (Exception ex) {
-            return apiresult.Failure(ex);
-         }
-      }
-
 
       public LocationsController(IHttpContextAccessor accessor): base(accessor) { }
    }

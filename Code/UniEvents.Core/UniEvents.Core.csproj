@@ -1,41 +1,57 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks> 
     <RootNamespace>UniEvents</RootNamespace>
+	 <LangVersion>7.2</LangVersion>
+	 <NoWarn>1701;1702;1705;CS0649;CS0168;IDE0017</NoWarn>
+	 <WarningLevel>4</WarningLevel>  
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>7.2</LangVersion>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">   
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
 	 <DefineConstants>RELEASE;TRACE;NETSTANDARD2_0</DefineConstants>
-	 <WarningLevel>4</WarningLevel>
-	 <NoWarn>1701;1702;1705;CS0649;CS0168</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>7.2</LangVersion>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUGMODE;TRACE;DEBUG;NETSTANDARD2_0</DefineConstants>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>1701;1702;1705;CS0649;CS0168;IDE0017</NoWarn>
+    <DefineConstants>DEBUGMODE;TRACE;DEBUG;NETSTANDARD2_0</DefineConstants>    
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="ZMBA\Geocoding.cs" />
-    <Compile Remove="ZMBA\LurchTable.cs" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net461|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net461|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+	 <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />  
+    <Reference Include="System.Data.DataSetExtensions" />   
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+	 <Reference Include="System.Xml.Linq" />
+  </ItemGroup> 
+  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
     <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0-preview1-26216-02" />
+  </ItemGroup> 
+  
   <ItemGroup>
     <Reference Include="Microsoft.CSharp">
       <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\Microsoft.CSharp\v4.0_4.0.0.0__b03f5f7f11d50a3a\Microsoft.CSharp.dll</HintPath>

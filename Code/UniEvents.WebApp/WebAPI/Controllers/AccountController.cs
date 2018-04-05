@@ -203,6 +203,9 @@ namespace UniEvents.WebAPI.Controllers {
          if (String.IsNullOrWhiteSpace(user.Location.Locality)) {
             return apiresult.Failure("Invalid City");
          }
+         if (String.IsNullOrWhiteSpace(user.Location.PostalCode)) {
+            return apiresult.Failure("Invalid PostalCode");
+         }
          if (user.VerifiedContactEmail || user.VerifiedSchoolEmail) {
             return apiresult.Failure("Attempt to submit unverified Emails logged and detected."); //not really, but sounds scary.
          }

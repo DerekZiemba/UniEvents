@@ -5,92 +5,101 @@
    ViewData["Title"] = "SignUp";
    Layout = "~/Pages/_Layout.cshtml";
 }
+@section Scripts {
+   <script src="~/lib/jquery.autocomplete/jquery.autocomplete.js" asp-append-version="false"></script>
+   <script src="~/js/page-signup/page-signup.es5.js" asp-append-version="true"></script>
+}
 
 <h2>SignUp</h2>
 
 <div id="SignUpPage">
 
-   <div id="InputParams">
+   <div id="InputParams" class="vert_list">
 
       <h4>Account Info</h4>
-      <ul>
+      <ul class="input_ul">
          <li class="required">
-            <label>UserName:</label>
-            <input type="text" param="UserName" required />
+            <label class="input_label">UserName:</label>
+            <input class="input_param" type="text" param="UserName" required />
             <span></span>
          </li>
          <li class="required">
-            <label>Password:</label>
-            <input type="text" param="password" source="QueryString" required />
+            <label class="input_label">Password:</label>
+            <input class="input_param" type="text" param="password" source="QueryString" required />
             <span></span>
          </li>
          <li>
-            <label>Display Name:</label>
-            <input type="text" param="DisplayName" placeholder="Name Other Users See" />
+            <label class="input_label">Display Name:</label>
+            <input class="input_param" type="text" param="DisplayName" placeholder="Name Other Users See" />
             <span></span>
          </li>
       </ul>
 
       <h4>Personal Info</h4>
-      <ul>
+      <ul class="input_ul">
          <li>
-            <label>First Name:</label>
-            <input type="text" param="FirstName" />
+            <label class="input_label">First Name:</label>
+            <input class="input_param" type="text" param="FirstName" />
             <span></span>
          </li>
          <li>
-            <label>Last Name:</label>
-            <input type="text" param="LastName" />
+            <label class="input_label">Last Name:</label>
+            <input class="input_param" type="text" param="LastName" />
             <span></span>
          </li>
          <li>
-            <label>School Email:</label>
-            <input type="text" param="SchoolEmail" />
+            <label class="input_label">School Email:</label>
+            <input class="input_param" type="text" param="SchoolEmail" />
             <span></span>
          </li>
          <li>
-            <label>Contact Email:</label>
-            <input type="text" param="ContactEmail" />
+            <label class="input_label">Contact Email:</label>
+            <input class="input_param" type="text" param="ContactEmail" />
             <span></span>
          </li>
          <li>
-            <label>Phone Number:</label>
-            <input type="text" param="PhoneNumber" />
+            <label class="input_label">Phone Number:</label>
+            <input class="input_param" type="text" param="PhoneNumber" />
             <span></span>
          </li>
       </ul>
 
 
       <h4>Location Info</h4>
-      <ul>
+      <ul class="input_ul">
          <li>
-            <label>Name:</label>
-            <input type="text" param="Location.Name" placeholder="House, Apartment, etc." />
-            <span></span>
-         </li>
-         <li>
-            <label>Address:</label>
-            <input type="text" param="Location.AddressLine" />
-            <span></span>
-         </li>
-         <li class="required">
-            <label>City:</label>
-            <input type="text" param="Location.Locality" required />
-            <span></span>
-         </li>
-         <li class="required">
-            <label>State:</label>
-            <input type="text" param="Location.AdminDistrict" required />
-            <span></span>
-         </li>
-         <li class="required">
-            <label>Country:</label>
-            <input type="text" param="Location.CountryRegion" required />
+            <label class="input_label">Location Search:</label>
+            <input class="input_param" type="text" placeholder="Search known locations to autocomplete." id="searchLocations" />
             <span></span>
          </li>
          <li>
-            <label>Postal Code:</label>
-            <input type="text" param="Location.PostalCode" />
+            <label class="input_label">Name:</label>
+            <input class="input_param" type="text" param="Location.Name" placeholder="House, Apartment, etc." />
+            <span></span>
+         </li>
+         <li>
+            <label class="input_label">Address:</label>
+            <input class="input_param" type="text" param="Location.AddressLine" />
+            <span></span>
+         </li>
+         <li class="required">
+            <label class="input_label">City:</label>
+            <input class="input_param" type="text" param="Location.Locality" required />
+            <span></span>
+         </li>
+         <li class="required">
+            <label class="input_label">State:</label>
+            <input class="input_param" type="text" param="Location.AdminDistrict" required />
+            <span></span>
+         </li>
+         <li class="required">
+            <label class="input_label">Country:</label>
+            <input class="input_param" type="text" param="Location.CountryRegion" required />
+            <span></span>
+         </li>
+         <li class="required">
+            <label class="input_label">Postal Code:</label>
+            <input class="input_param" type="text" param="Location.PostalCode" required />
             <span></span>
          </li>
       </ul>
@@ -108,37 +117,4 @@
 
 </div>
 
-<script>
-
-   var InputParams = document.getElementById("InputParams");
-   var signUpLabel = document.getElementById("signUpLabel");
-   var signUpButton = document.getElementById("signUpButton");
-
-   signUpButton.addEventListener("click", function () {
-      var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/account/createuser" });
-
-      function handleFailure(ev) {
-         console.log(oRequest, ev);
-         signUpLabel.value = "Failed!";
-         InputParams.class = "Failed";
-         U.setPageMessage('error', ev.message);
-         U.highlightRequiredInputs(true);
-      }
-
-      $.ajax(oRequest)
-         .fail(handleFailure)
-         .done(function (ev) {
-            if (ev.success) {
-               signUpButton.disabled = true;
-               console.log(oRequest, ev);
-               signUpLabel.value = "Success!";
-               InputParams.class = "Success";
-               U.setPageMessage('success', 'Success!  Go to the <a href="/Login">Login Page to Login!</a>');
-            } else {
-               handleFailure(ev);
-            }
-         });
-
-   });
-</script>
 

@@ -22,10 +22,10 @@ namespace UniEvents.Core.Managers {
       private readonly Factory Ctx;
 
       private Task _initTask;
-      private List<CachedEntry> _allEntries;
 
       private readonly ConcurrentDictionary<long, CachedEntry> _byId = new ConcurrentDictionary<long, CachedEntry>();
       private readonly ConcurrentDictionary<string, CachedEntry> _byName = new ConcurrentDictionary<string, CachedEntry>();
+      private readonly PartialKeySearchTrie<CachedEntry> QueryAutoComplete = new PartialKeySearchTrie<CachedEntry>();
 
       private readonly ConcurrentDictionary<long, DateTime> _idMisses = new ConcurrentDictionary<long, DateTime>();
       private readonly ConcurrentDictionary<string, DateTime> _nameMisses = new ConcurrentDictionary<string, DateTime>();
@@ -43,10 +43,12 @@ namespace UniEvents.Core.Managers {
                   var tag = new CachedEntry(new DBTag(reader));
                   _byId[tag.Item.TagID] = tag;
                   _byName[tag.NormName] = tag;
+                  QueryAutoComplete.Add(tag.Item.Name, tag);
+                  QueryAutoComplete.Add(tag.Item.Description, tag);
                }
             }
-            _allEntries = _byId.Values.ToList();
          }
+         QueryAutoComplete.Optimize();
       }
 
       public DBTag this[long id] {
@@ -97,92 +99,19 @@ namespace UniEvents.Core.Managers {
             var tag = new CachedEntry(dbtag);
             _byId[tag.Item.TagID] = tag;
             _byName[tag.NormName] = tag;
-            _allEntries.Add(tag);
+            QueryAutoComplete.Add(tag.Item.Name, tag);
+            QueryAutoComplete.Add(tag.Item.Description, tag);
             return tag;
          }
          return null;
       }
 
-      public IEnumerable<DBTag> SearchCached(string name, string description) {
-         string normName = name.ToAlphaNumericLower();
-         string normDesc = description.ToAlphaNumericLower();
-         bool bHasName = normName != null && normName.Length > 0;
-         bool bHasDesc = normName != null && normName.Length > 1;
-         Helpers.BlockUntilFinished(ref _initTask);
-
-         if (!bHasName && !bHasDesc) {
-            for (var i = 0; i < _allEntries.Count; i++) { yield return _allEntries[i].Item; }
-         } else {          
-            if (bHasName && _byName.TryGetValue(normName, out var outval)) {
-               yield return outval.Item;
-            } else {
-               List<DBTag> Ctier = ListCache<DBTag>.Take();
-               if (bHasName && bHasDesc) {
-                  List<DBTag> Btier = ListCache<DBTag>.Take();
-                  for (var i = 0; i < _allEntries.Count; i++) {
-                     var tag = _allEntries[i];
-                     int idxName = tag.NormName.IndexOf(normName, StringComparison.Ordinal);
-                     int idxDesc = tag.NormDesc?.IndexOf(normDesc, StringComparison.Ordinal) ?? -1;
-                     if (idxName == 0 && idxDesc >= 0) {
-                        yield return tag.Item;
-                     } else if (idxName >= 0 && idxDesc >= 0) {
-                        Btier.Add(tag.Item);
-                     } else if (idxName >= 0 || idxDesc >= 0) {
-                        Ctier.Add(tag.Item);
-                     }
-                  }
-                  for (var i = 0; i < Btier.Count; i++) { yield return Btier[i]; }
-                  ListCache<DBTag>.Return(ref Btier);
-               } else {
-                  string value = bHasName ? normName : normDesc;
-                  for (var i = 0; i < _allEntries.Count; i++) {
-                     var tag = _allEntries[i];
-                     int idx = (bHasName ? tag.NormName : tag.NormDesc).IndexOf(value, StringComparison.Ordinal);
-                     if (idx == 0) {        //Matches at the start
-                        yield return tag.Item;
-                     } else if (idx > 0) {  //Matches some where in the middle
-                        Ctier.Add(tag.Item);
-                     }
-                  }
-               }
-               for (var i = 0; i < Ctier.Count; i++) { yield return Ctier[i]; }
-               ListCache<DBTag>.Return(ref Ctier);
-            }
-         }
-      }
-
       public IEnumerable<DBTag> QueryCached(string query) {
-         string norm = query.ToAlphaNumericLower();
          Helpers.BlockUntilFinished(ref _initTask);
-
-         if (String.IsNullOrEmpty(norm)) {
-            for (var i = 0; i < _allEntries.Count; i++) { yield return _allEntries[i].Item; }
-         } else {         
-            if (_byName.TryGetValue(norm, out var outval)) {
-               yield return outval.Item;
-            } else {
-               List<DBTag> Ctier = ListCache<DBTag>.Take();
-               List<DBTag> Btier = ListCache<DBTag>.Take();
-               for (var i = 0; i < _allEntries.Count; i++) {
-                  var tag = _allEntries[i];
-                  int idxName = tag.NormName.IndexOf(norm, StringComparison.Ordinal);
-                  int idxDesc = tag.NormDesc?.IndexOf(norm, StringComparison.Ordinal) ??-1;
-                  if (idxName == 0 && idxDesc >= 0) {
-                     yield return tag.Item;
-                  } else if (idxName >= 0 && idxDesc >= 0) {
-                     Btier.Add(tag.Item);
-                  } else if (idxName >= 0 || idxDesc >= 0) {
-                     Ctier.Add(tag.Item);
-                  }
-               }
-               for (var i = 0; i < Btier.Count; i++) { yield return Btier[i]; }
-               ListCache<DBTag>.Return(ref Btier);
-               for (var i = 0; i < Ctier.Count; i++) { yield return Ctier[i]; }
-               ListCache<DBTag>.Return(ref Ctier);
-            }
+         foreach (var cached in QueryAutoComplete.FindMatches(query, 15)) {
+            yield return cached.Item;
          }
       }
-
 
 
       public DBTag Create(string name, string description) {
@@ -190,16 +119,24 @@ namespace UniEvents.Core.Managers {
       }
 
 
-
       private class CachedEntry {
          public DBTag Item;
          public string NormName;
-         public string NormDesc;
+
          public CachedEntry(DBTag tag) {
             Item = tag;
             NormName = tag.Name.ToAlphaNumericLower();
-            NormDesc = tag.Description.ToAlphaNumericLower();
          }
+
+         public override bool Equals(object x) => this.Equals((CachedEntry)x);
+         public bool Equals(CachedEntry other) {
+            if (other == null) { return false; }
+            if (this.Item.TagID != other.Item.TagID) { return false; }
+            return true;
+         }
+
+         public override int GetHashCode() => this.Item.TagID.GetHashCode();
+
       }
 
    }
