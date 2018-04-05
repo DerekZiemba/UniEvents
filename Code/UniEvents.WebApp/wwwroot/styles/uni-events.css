@@ -36,7 +36,7 @@ a { cursor: pointer; }
 
 .body-content li.required label:hover:before { content: "(required)"; color: red; font-weight: normal; }
 
-.body-content li label { text-align: right; margin-right: 10px; width: 160px; }
+.body-content li label { text-align: right; margin-right: 10px; width: 15rem; }
 
 .body-content li input { flex-grow: 1; }
 
@@ -71,6 +71,14 @@ a { cursor: pointer; }
 #CreateEventPage { padding-left: 15px; }
 
 #CreateEventPage #txtCaption { height: 2em; }
+
+#CreateEventPage .daterange { position: relative; }
+
+#CreateEventPage .daterange ul { margin-left: 15rem; }
+
+#CreateEventPage .daterange li { flex-direction: column; margin: 1em; }
+
+#CreateEventPage .daterange .daterange_label { width: 100%; text-align: center; text-decoration: underline; font-size: medium; }
 
 #SignUpPage { padding-left: 15px; }
 

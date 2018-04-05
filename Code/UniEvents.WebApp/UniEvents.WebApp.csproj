@@ -19,9 +19,13 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="wwwroot\css\**" />
     <Compile Remove="wwwroot\lib\flatpickr-4.4.2\**" />
+    <Content Remove="wwwroot\css\**" />
     <Content Remove="wwwroot\lib\flatpickr-4.4.2\**" />
+    <EmbeddedResource Remove="wwwroot\css\**" />
     <EmbeddedResource Remove="wwwroot\lib\flatpickr-4.4.2\**" />
+    <None Remove="wwwroot\css\**" />
     <None Remove="wwwroot\lib\flatpickr-4.4.2\**" />
   </ItemGroup>
   <ItemGroup>
@@ -42,7 +46,6 @@
     <ProjectReference Include="..\UniEvents.Core\UniEvents.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="wwwroot\css\" />
     <Folder Include="wwwroot\fonts\" />
     <Folder Include="wwwroot\icons\" />
   </ItemGroup>

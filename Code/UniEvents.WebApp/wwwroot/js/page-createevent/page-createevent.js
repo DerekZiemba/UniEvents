@@ -35,16 +35,49 @@
 
    U._locationAutoComplete = new U.LocationAutoComplete({ search: "#searchLocations" });
 
-   var datepickerOptions = {
-      minDate: "today",
+   flatpickr.setDefaults({
       enableTime: true,
       inline: true,
-      onReady: function (arg0, arg1, inst) {
-         inst.showTimeInput = true;
+      dateFormat: "Z",
+      onReady: function (dObj, dStr, fp, elem) {
+         fp.showTimeInput = true;
       }
-   }
-   U._startDatePicker = flatpickr('[param="DateStart"]', datepickerOptions);
-   U._endDatePicker = flatpickr('[param="DateEnd"]', datepickerOptions);
+   });
+
+   var startPicker = flatpickr('[param="DateStart"]', {
+      minDate: "today",
+      onChange: function (selectedDates, dateStr, fp) {
+         var startDate = new Date(startPicker.input.value);
+         var endDate = new Date(endPicker.input.value);
+         if (!endPicker.input.value || endDate < startDate) {
+            endPicker.setDate(startDate);
+         }
+         if (startPicker.input.value) {
+            endPicker.config.minDate = startDate;
+            endPicker.config.minTime = startDate;
+         }
+      }
+   });
+
+   var endPicker = flatpickr('[param="DateEnd"]', {
+      minDate: "today",
+      onChange: function (selectedDates, dateStr, fp) {
+         var startDate = new Date(startPicker.input.value);
+         var endDate = new Date(endPicker.input.value);
+         if (!startPicker.input.value) {
+            startPicker.setDate(endDate);
+         }
+         if (startPicker.input.value) {
+            startPicker.config.maxDate = endDate;
+            startPicker.config.maxTime = endDate;
+         }
+
+      }
+   });
+
+
+   U._startDatePicker = startPicker;
+   U._endDatePicker = endPicker;
 
 
    var autocompleteSettings = {

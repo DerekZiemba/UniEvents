@@ -4,8 +4,9 @@
 	{
 		"outputFileName": "wwwroot/bundles/uni-events.css",
 		"inputFiles": [
-			"wwwroot/scss/flatpickr.css",
-			"wwwroot/scss/uni-events.css"
+			"wwwroot/styles/flatpickr-dark-4.4.3.css",
+			"wwwroot/styles/flatpickr-custom.css",
+			"wwwroot/styles/uni-events.css"
 		]
 	},
 	{

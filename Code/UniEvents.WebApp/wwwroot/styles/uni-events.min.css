@@ -89,7 +89,7 @@ a
 {
  text-align: right;
  margin-right: 10px;
- width: 160px;
+ width: 15rem;
 }
 .body-content li input
 {
@@ -161,6 +161,26 @@ a
 #CreateEventPage #txtCaption
 {
  height: 2em;
+}
+#CreateEventPage .daterange
+{
+ position: relative;
+}
+#CreateEventPage .daterange ul
+{
+ margin-left: 15rem;
+}
+#CreateEventPage .daterange li
+{
+ flex-direction: column;
+ margin: 1em;
+}
+#CreateEventPage .daterange .daterange_label
+{
+ width: 100%;
+ text-align: center;
+ text-decoration: underline;
+ font-size: medium;
 }
 #SignUpPage
 {
