@@ -1,0 +1,16 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET XACT_ABORT ON  
+
+USE [$(dbUniHangouts)]
+GO
+CREATE OR ALTER PROCEDURE [dbo].[sp_Event_Details_GetOne] 
+   @EventID BIGINT
+AS
+SET NOCOUNT ON;
+
+SELECT * FROM dbo.EventDetails WHERE EventID = @EventID;
+
+GO

@@ -158,4 +158,7 @@
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Event_TagRemove.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Event_Details_GetOne.sql" />
+  </ItemGroup>
 </Project>

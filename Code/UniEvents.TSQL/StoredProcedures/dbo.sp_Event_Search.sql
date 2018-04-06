@@ -32,4 +32,5 @@ SELECT * FROM dbo.EventFeed AS feed
       AND (@bHasTitle = 0 OR feed.Title LIKE '%' + @Title + '%')
       AND (@bHasCaption = 0 OR feed.Caption LIKE '%' + @Caption + '%')
 
+
 GO
