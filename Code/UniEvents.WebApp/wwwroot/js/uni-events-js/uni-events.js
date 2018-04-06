@@ -2,9 +2,8 @@
 /// <reference path="ZMBA.js" />
 
 /*! UniEvents.js */
-(function (window, document, $, ZMBA, U) {
+(function (window, document, ZMBA, U) {
 
-   $.ajaxSetup({ cache: false });
 
    ZMBA.extendType(U, {
       rgxTrimUri: /^(\s|\?|\/|&)+|(\s|\?|\/|&)+$/,
@@ -210,16 +209,18 @@
 
    }, { override: false, merge: true });
 
-
-   $(document).ready(() => {
+ 
+   ZMBA.onDocumentReady(() => {        
       document.querySelectorAll("time").forEach(function (el) {
          if (!el.innerText) {
             el.innerText = (new Date(el.dateTime)).toLocaleString();
-         }      
+         }
       });
    });
 
-}(window, window.document, window.jQuery, window.ZMBA, window.U = window.U || {}));
+   $.ajaxSetup({ cache: false });
+   
+}(window, window.document, window.ZMBA, window.U = window.U || {}));
 
 
 
