@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -161,6 +162,24 @@ namespace UniEvents.Core.Managers {
          }
          return result;
       }
+
+      public async Task<StreetAddress> GetStreetAddressOrCreate(StreetAddress address) {
+         DBLocation existing;
+         using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(Ctx, Name:address.Name, AddressLine:address.AddressLine, Locality:address.Locality, AdminDistrict:address.AdminDistrict, PostalCode:address.PostalCode)) {
+            existing = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
+         }
+         if (existing != null) {
+            return new StreetAddress(existing);
+         } else {
+            DBLocation dbLocation = new DBLocation(address);
+            if (await DBLocation.SP_Locations_CreateOneAsync(Ctx, dbLocation).ConfigureAwait(false)) {
+               return new StreetAddress(dbLocation);
+            }           
+         }
+         return null;
+      }
+
+
 
       public IEnumerable<LocationNode> QueryCachedLocations(string query) {
          Helpers.BlockUntilFinished(ref _initTask);

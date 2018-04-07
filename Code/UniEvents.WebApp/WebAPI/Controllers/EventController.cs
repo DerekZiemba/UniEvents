@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -89,13 +90,33 @@ namespace UniEvents.WebAPI.Controllers {
 
          if (input.Location.Locality.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid City"); }
 
-
-         Int64 accountID = UserContext.AccountID;
-         return apiresult.Failure("TODO");
-
+        
          try {
+            StreetAddress address = input.Location;
+            DBLocation dbLocation;
+            using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(Factory, Name: address.Name, AddressLine: address.AddressLine, Locality: address.Locality, AdminDistrict: address.AdminDistrict, PostalCode: address.PostalCode)) {
+               dbLocation = cmd.ExecuteReader_GetOne<DBLocation>();
+            }
+            if (dbLocation != null) {
+               address = new StreetAddress(dbLocation);
+            } else {
+               dbLocation = new DBLocation(address);
+               if (DBLocation.SP_Locations_CreateOneAsync(Factory, dbLocation).ConfigureAwait(false).GetAwaiter().GetResult()) {
+                  address = new StreetAddress(dbLocation);
+               } else {
+                  return apiresult.Failure("Failed to Create Location");
+               }
+            }
 
-         } catch (Exception ex) { return apiresult.Failure(ex); }
+            DBEventFeedItem dbEventItem = DBEventFeedItem.SP_Event_CreateOrUpdate(Factory, eventType.EventTypeID, input.DateStart, input.DateEnd, UserContext.AccountID, address.LocationID.UnBox(), input.Title, input.Caption, input.Description);
+
+
+            return apiresult.Success(apiresult.Result);
+
+         } catch (Exception ex) {
+            return apiresult.Failure(ex);
+         }
+
 
       }
 

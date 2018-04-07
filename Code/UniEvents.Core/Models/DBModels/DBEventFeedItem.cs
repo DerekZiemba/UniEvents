@@ -53,11 +53,11 @@ namespace UniEvents.Models.DBModels {
       }
 
 
-      public static DBEventFeedItem SP_Event_Create(Factory ctx,
+      public static DBEventFeedItem SP_Event_CreateOrUpdate(Factory ctx,
          long EventTypeID, DateTime DateStart, DateTime DateEnd, long AccountID, long LocationID, string Title, string Caption, string Details) {
 
          using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_CreateOrUpdate]", conn) { CommandType = CommandType.StoredProcedure }) {
             SqlParameter @EventID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(EventID), null);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateStart), DateStart);

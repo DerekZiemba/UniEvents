@@ -20,12 +20,12 @@ namespace UniEvents.WebAPI.Controllers {
 
       [HttpGet, Route("webapi/locations/search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
       public ApiResult<List<StreetAddress>> Search(long? ParentLocationID = null,
-                                                               string Name = null,
-                                                               string AddressLine = null,
-                                                               string Locality = null,
-                                                               string AdminDistrict = null,
-                                                               string PostalCode = null,
-                                                               string Description = null) {
+                                                         string Name = null,
+                                                         string AddressLine = null,
+                                                         string Locality = null,
+                                                         string AdminDistrict = null,
+                                                         string PostalCode = null,
+                                                         string Description = null) {
 
          var apiresult = new ApiResult<List<StreetAddress>>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
