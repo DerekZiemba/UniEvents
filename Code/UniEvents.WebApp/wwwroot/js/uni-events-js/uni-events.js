@@ -68,7 +68,7 @@
             }          
          }
          function setParam(name, value, source, jsType, isCollection) {
-            if (ZMBA.IsNullOrWhitespace(value)) { return; }
+            if (ZMBA.isNullOrWhitespace(value)) { return; }
             if (source === "QueryString" || source === "Url") {
                querystring += name + "=" + encodeURIComponent(value) + "&";
             } else if (name.indexOf('.') === -1) {

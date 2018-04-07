@@ -8,9 +8,9 @@ using System.Linq;
 
 using UniEvents.WebApp;
 using UniEvents.Core;
+using UniEvents.Models;
 using UniEvents.Models.ApiModels;
-using ApiModels = UniEvents.Models.ApiModels;
-using DBModels = UniEvents.Models.DBModels;
+using UniEvents.Models.DBModels;
 using static ZMBA.Common;
 
 
@@ -39,10 +39,10 @@ namespace UniEvents.WebAPI.Controllers {
          return apiresult.Failure("TODO");
          try {
             //This is why we need to implement Managers with caching abilities or do the whole thing in SQL, because this will quickly cripple the server. 
-           var feedItems = DBModels.DBEventFeedItem.SP_Event_Search(WebAppContext.Factory, EventID, EventTypeID, AccountID, LocationID, DateFrom, DateTo, Title, Caption);
-            foreach(var item in feedItems) {
+           //var feedItems = DBModels.DBEventFeedItem.SP_Event_Search(WebAppContext.Factory, EventID, EventTypeID, AccountID, LocationID, DateFrom, DateTo, Title, Caption);
+           // foreach(var item in feedItems) {
 
-            }
+           // }
 
             return apiresult;
          } catch (Exception ex) { return apiresult.Failure(ex); }
@@ -50,30 +50,53 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpPost, Route("webapi/events/create")]
-      public ApiResult<EventInfo> EventCreate(EventCreatInput info) {
+      public ApiResult<EventInfo> EventCreate(EventInput input) {
          var apiresult = new ApiResult<EventInfo>();
+         if (input == null) { return apiresult.Failure("Bad Post. Input is null."); }
+         if (input.Location == null) { return apiresult.Failure("Location Invalid"); }
+         //TODO sanitize Title, Caption, and Description to be free of javascript
+         if (input.Title.CountAlphaNumeric() <= 5) { return apiresult.Failure("Title to short."); }
+         if (input.Caption.CountAlphaNumeric() <= 8) { return apiresult.Failure("Caption to short."); }       
+         if (input.DateStart.ToUniversalTime() < DateTime.UtcNow) { return apiresult.Failure("DateStart in the past."); }
+         if (input.DateEnd.ToUniversalTime() < input.DateStart.ToUniversalTime()) { return apiresult.Failure("DateEnd is before DateStart"); }
+         if (input.DateStart.AddDays(14).ToUniversalTime() < input.DateEnd.ToUniversalTime()) { return apiresult.Failure("Events cannot last longer than 2 weeks."); }
+
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
 
+         DBEventType eventType = Factory.EventTypeManager[input.EventTypeID];
+         if(eventType == null) { return apiresult.Failure("EventType does not exist."); }
+
+         if (input.TagIds == null || input.TagIds.Length == 0) { return apiresult.Failure("Include at least one EventTag."); }
+         DBTag[] eventTags = new DBTag[input.TagIds.Length];
+         for(int i = 0; i < input.TagIds.Length; i++) {
+            DBTag tag = Factory.TagManager[input.TagIds[i]];
+            if(tag == null) { return apiresult.Failure("Invalid TagID: " + input.TagIds[i].ToString()); }
+            eventTags[i] = tag;
+         }
+
+         LocationNode.CountryRegionNode oCountry = Factory.LocationManager.QueryCachedCountries(input.Location.CountryRegion).FirstOrDefault();
+         if (oCountry == null) { return apiresult.Failure("Invalid Country"); }
+
+         LocationNode.AdminDistrictNode oState = Factory.LocationManager.QueryCachedStates(input.Location.AdminDistrict).FirstOrDefault();
+         if (oState == null) { return apiresult.Failure("Invalid State"); }
+
+         if (input.Location.PostalCode.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid PostalCode"); }     
+         if (oCountry.Abbreviation == "USA") {
+            LocationNode.PostalCodeNode oZip = Factory.LocationManager.QueryCachedPostalCodes(input.Location.PostalCode).FirstOrDefault();
+            if (oZip == null) { return apiresult.Failure("Invalid PostalCode"); }
+         }
+
+         if (input.Location.Locality.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid City"); }
+
+
+         Int64 accountID = UserContext.AccountID;
          return apiresult.Failure("TODO");
 
          try {
 
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
-      }
-
-      public class EventCreatInput {
-         public Int64 EventID { get; set; }
-         public int EventTypeID { get; set; }
-         public DateTime DateStart { get; set; }
-         public DateTime DateEnd { get; set; }
-         public Int64 AccountID { get; set; }
-         public Int64 LocationID { get; set; }
-         public string Title { get; set; }
-         public string Caption { get; set; }
-
-         public Int64[] TagIds { get; set; }
       }
 
 

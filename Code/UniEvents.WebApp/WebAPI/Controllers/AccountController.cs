@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using UniEvents.WebApp;
 using UniEvents.Core;
+using UniEvents.Models;
 using UniEvents.Models.ApiModels;
 using UniEvents.Models.DBModels;
 using ZMBA;
@@ -179,46 +181,48 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpPost, Route("webapi/account/createuser/{password?}")]
-      public async Task<ApiResult<UserAccount>> CreateUser(UserAccount user, string password) {
+      public async Task<ApiResult<UserAccount>> CreateUser(UserAccount input, string password) {
          ApiResult<UserAccount> apiresult = new ApiResult<UserAccount>();
 
-         if (user == null) {
+         if (input == null) {
             return apiresult.Failure("Account Null.");
          }
          if (String.IsNullOrWhiteSpace(password)) {
             return apiresult.Failure("Invalid Password.");
          }
-         if (String.IsNullOrWhiteSpace(user.UserName)) {
+         if (String.IsNullOrWhiteSpace(input.UserName)) {
             return apiresult.Failure("Invalid UserName.");
          }
-         if (user.Location == null) {
+         if (input.Location == null) {
             return apiresult.Failure("Location Invalid.");
          }
-         if (String.IsNullOrWhiteSpace(user.Location.CountryRegion)) {
-            return apiresult.Failure("Invalid CountryRegion.");
+
+         LocationNode.CountryRegionNode oCountry = Factory.LocationManager.QueryCachedCountries(input.Location.CountryRegion).FirstOrDefault();
+         if (oCountry == null) { return apiresult.Failure("Invalid Country"); }
+
+         LocationNode.AdminDistrictNode oState = Factory.LocationManager.QueryCachedStates(input.Location.AdminDistrict).FirstOrDefault();
+         if (oState == null) { return apiresult.Failure("Invalid State"); }
+
+         if (input.Location.PostalCode.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid PostalCode"); }
+         if (oCountry.Abbreviation == "USA") {
+            LocationNode.PostalCodeNode oZip = Factory.LocationManager.QueryCachedPostalCodes(input.Location.PostalCode).FirstOrDefault();
+            if (oZip == null) { return apiresult.Failure("Invalid PostalCode"); }
          }
-         if (String.IsNullOrWhiteSpace(user.Location.AdminDistrict)) {
-            return apiresult.Failure("Invalid State.");
-         }
-         if (String.IsNullOrWhiteSpace(user.Location.Locality)) {
-            return apiresult.Failure("Invalid City");
-         }
-         if (String.IsNullOrWhiteSpace(user.Location.PostalCode)) {
-            return apiresult.Failure("Invalid PostalCode");
-         }
-         if (user.VerifiedContactEmail || user.VerifiedSchoolEmail) {
+
+         if (input.Location.Locality.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid City"); }
+         if (input.VerifiedContactEmail || input.VerifiedSchoolEmail) {
             return apiresult.Failure("Attempt to submit unverified Emails logged and detected."); //not really, but sounds scary.
          }
 
-         DBLocation dbLocation = new DBLocation(user.Location);
+         DBLocation dbLocation = new DBLocation(input.Location);
          DBAccount dbAccount = new DBAccount() {
-            UserName = user.UserName,
-            DisplayName = user.DisplayName,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            SchoolEmail = user.SchoolEmail,
-            ContactEmail = user.ContactEmail,
-            PhoneNumber = user.PhoneNumber
+            UserName = input.UserName,
+            DisplayName = input.DisplayName,
+            FirstName = input.FirstName,
+            LastName = input.LastName,
+            SchoolEmail = input.SchoolEmail,
+            ContactEmail = input.ContactEmail,
+            PhoneNumber = input.PhoneNumber
          };
 
          (dbAccount.PasswordHash, dbAccount.Salt) = HashUtils.HashPassword256(password);
@@ -240,7 +244,7 @@ namespace UniEvents.WebAPI.Controllers {
 
       }
 
-      [HttpPost, Route("webapi/account/getuserinfo/{username?}")]
+      [HttpGet, Route("webapi/account/getuserinfo/{username?}")]
       public async Task<ApiResult<UserAccount>> GetUserInfo(string username) {
          var apiresult = new ApiResult<UserAccount>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }

@@ -22,7 +22,22 @@ DECLARE @bHasTitle bit = IIF(LEN(@Title) >= 3, 1, 0),
          @bHasCaption bit = IIF(LEN(@Caption) >= 3, 1, 0);
 
 
-SELECT * FROM dbo.EventFeed AS feed
+SELECT 
+      feed.EventID,
+      feed.EventTypeID,
+      feed.AccountID,
+      feed.LocationID,
+      feed.DateStart,
+      feed.DateEnd,
+      feed.Title,
+      feed.Caption,
+      COUNT(DISTINCT CASE when rsvp.RSVPTypeId = 5 THEN rsvp.AccountID END) AS RSVP_Attending,
+      COUNT(DISTINCT CASE when rsvp.RSVPTypeId = 4 THEN rsvp.AccountID END) AS RSVP_Later,
+      COUNT(DISTINCT CASE WHEN rsvp.RSVPTypeId = 3 THEN rsvp.AccountID END) AS RSVP_StopBy,
+      COUNT(DISTINCT CASE WHEN rsvp.RSVPTypeId = 2 THEN rsvp.AccountID END) AS RSVP_Maybe,
+      COUNT(DISTINCT CASE WHEN rsvp.RSVPTypeId = 1 THEN rsvp.AccountID END) AS RSVP_No
+   FROM dbo.EventFeed AS feed
+   LEFT OUTER JOIN dbo.EventRSVPs AS rsvp ON feed.EventID = rsvp.EventID
    WHERE (@EventID IS NULL OR feed.EventID = @EventID)
       AND(@EventTypeID IS NULL OR feed.EventTypeID = @EventTypeID)
       AND(@AccountID IS NULL OR feed.AccountID = @AccountID)
@@ -31,6 +46,8 @@ SELECT * FROM dbo.EventFeed AS feed
       AND(@DateTo IS NULL OR feed.DateStart < @DateTo OR feed.DateEnd < @DateTo)
       AND (@bHasTitle = 0 OR feed.Title LIKE '%' + @Title + '%')
       AND (@bHasCaption = 0 OR feed.Caption LIKE '%' + @Caption + '%')
+   GROUP BY feed.EventID, feed.EventTypeID, feed.AccountID, feed.LocationID, feed.DateStart, feed.DateEnd, feed.Title, feed.Caption
+
 
 
 GO

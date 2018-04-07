@@ -6,7 +6,7 @@ using static ZMBA.Common;
 
 namespace UniEvents.Models.ApiModels {
 
-	public class UserAccount {
+   public class UserAccount {
 
       public string UserName { get; set; }
       public string DisplayName { get; set; }
@@ -36,5 +36,5 @@ namespace UniEvents.Models.ApiModels {
       }
 
 
-	}
+   }
 }

@@ -131,7 +131,7 @@ namespace ZMBA {
          return FindMatches<T>(query, maxCount);
       }
 
-      public IEnumerable<T> FindMatches<TResult>(string query, int maxCount) {
+      public IEnumerable<TResult> FindMatches<TResult>(string query, int maxCount) where TResult : T {
          List<string> lsWords = GetNormalizedWords(query);
          if (lsWords == null) { yield break; }
          if (lsWords.Count == 0) { ListCache<string>.Return(ref lsWords); yield break; }
@@ -187,7 +187,7 @@ namespace ZMBA {
 
          foreach (Matched match in ds.Dict.Values.OrderByDescending(x => x.Rank)) {
             if (--maxCount >= 0) {
-               yield return match.Value.Item;
+               yield return (TResult)match.Value.Item;
             } else {
                break;
             }

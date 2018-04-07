@@ -53,6 +53,14 @@ namespace ZMBA {
       [MethodImpl(AggressiveInlining)] public static bool EqAlphaNumIgCase(this string str, string other) => 0 == InvCmpInfo.Compare(str, other, VbCmp | CmpOp.IgnoreSymbols | CmpOp.IgnoreCase);
 
 
+      public static int CountAlphaNumeric(this string str) {
+         int count = 0;
+         if (!str.IsNullOrEmpty()) {
+            for (var i = 0; i < str.Length; i++) { if (Char.IsLetter(str[i]) || char.IsNumber(str[i])) { count++; } }
+         }
+         return count;
+      }
+
       public static string ToAlphaNumeric(this string str) {
          if (str.IsNullOrEmpty()) { return str; }
          var sb = StringBuilderCache.Take(str.Length);

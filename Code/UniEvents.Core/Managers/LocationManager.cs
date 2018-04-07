@@ -166,19 +166,19 @@ namespace UniEvents.Core.Managers {
          Helpers.BlockUntilFinished(ref _initTask);
          return QueryAutoComplete.FindMatches(query, 20);
       }
-      public IEnumerable<LocationNode> QueryCachedCountries(string query) {
+      public IEnumerable<LocationNode.CountryRegionNode> QueryCachedCountries(string query) {
          Helpers.BlockUntilFinished(ref _initTask);
          return QueryAutoComplete.FindMatches<LocationNode.CountryRegionNode>(query, 5);
       }
-      public IEnumerable<LocationNode> QueryCachedStates(string query) {
+      public IEnumerable<LocationNode.AdminDistrictNode> QueryCachedStates(string query) {
          Helpers.BlockUntilFinished(ref _initTask);
          return QueryAutoComplete.FindMatches<LocationNode.AdminDistrictNode>(query, 20);
       }
-      public IEnumerable<LocationNode> QueryCachedCities(string query) {
+      public IEnumerable<LocationNode.LocalityNode> QueryCachedCities(string query) {
          Helpers.BlockUntilFinished(ref _initTask);
          return QueryAutoComplete.FindMatches<LocationNode.LocalityNode>(query, 20);
       }
-      public IEnumerable<LocationNode> QueryCachedPostalCodes(string query) {
+      public IEnumerable<LocationNode.PostalCodeNode> QueryCachedPostalCodes(string query) {
          Helpers.BlockUntilFinished(ref _initTask);
          return QueryAutoComplete.FindMatches<LocationNode.PostalCodeNode>(query, 20);
       }

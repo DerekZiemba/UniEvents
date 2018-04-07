@@ -646,7 +646,7 @@
                 }
             }
             function setParam(name, value, source, jsType, isCollection) {
-                if (ZMBA.IsNullOrWhitespace(value)) {
+                if (ZMBA.isNullOrWhitespace(value)) {
                     return;
                 }
                 if (source === "QueryString" || source === "Url") {
