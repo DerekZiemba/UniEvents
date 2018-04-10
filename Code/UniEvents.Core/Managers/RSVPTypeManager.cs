@@ -38,8 +38,6 @@ namespace UniEvents.Core.Managers {
          this.Ctx = ctx;
          _initTask = Task.Run(Init);
       }
-
-
       private async Task<bool> Init() {
          using (var cmd = new SqlCommand("[dbo].[sp_RSVPTypes_Get]", new SqlConnection(Ctx.Config.dbUniHangoutsConfiguration)) { CommandType = CommandType.StoredProcedure }) {
             if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
@@ -65,10 +63,34 @@ namespace UniEvents.Core.Managers {
                   ls.Add(y);
                }
                _RSVPTypes = ls.AsReadOnly();
-            }           
+            }
          }
          return true;
       }
+
+      public RSVPType this[long id] {
+         get {
+            Helpers.BlockUntilFinished(ref _initTask);
+            return _RSVPTypes.FirstOrDefault(x => x.RSVPTypeID == id);
+         }
+      }
+
+      public RSVPType this[string name] {
+         get {
+            Helpers.BlockUntilFinished(ref _initTask);
+            return _RSVPTypes.FirstOrDefault(x => x.Name.EqAlphaNumIgCase(name));
+         }
+      }
+
+      public async Task AddOrUpdateRSVPToEvent(long AccountID, long EventID, long RSVPTypeId) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_RSVP_AddOrUpdate]", new SqlConnection(Ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(AccountID), AccountID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), EventID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(RSVPTypeId), RSVPTypeId);
+            await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
+         }
+      }
+
 
 
    }
