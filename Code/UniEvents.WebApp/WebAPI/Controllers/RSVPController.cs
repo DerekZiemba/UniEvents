@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using UniEvents.WebApp;
 using UniEvents.Core;
 using UniEvents.Models.ApiModels;
-using DBModels = UniEvents.Models.DBModels;
+using UniEvents.Models.DBModels;
+using ZMBA;
 
 
 namespace UniEvents.WebAPI.Controllers {
@@ -26,10 +27,29 @@ namespace UniEvents.WebAPI.Controllers {
          try {
             return apiresult.Success(Factory.RSVPTypeManager.RSVPTypes.ToArray());
          } catch (Exception ex) { return apiresult.Failure(ex); }
-   
+
       }
 
 
-      public RSVPController(IHttpContextAccessor accessor): base(accessor) { }
+      [HttpGet, Route("webapi/rsvp/toevent/{eventid?}/{rsvpTypeId?}/{rsvpName?}")]
+      public async Task<ApiResult> RsvpToEvent(long eventid, int? rsvpTypeId, string rsvpName) {
+         var apiresult = new ApiResult();
+         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
+         if (eventid <= 0) { return apiresult.Failure("Invalid Event"); }
+         if (rsvpTypeId.UnBox() <= 0 && string.IsNullOrWhiteSpace(rsvpName)) { return apiresult.Failure("Must specifify an rsvpTypeId or rsvpName"); }
+
+         RSVPType rsvp = rsvpTypeId.UnBox() > 0 ? Factory.RSVPTypeManager[rsvpTypeId.UnBox()] : Factory.RSVPTypeManager[rsvpName];
+         if(rsvp == null) {
+            return apiresult.Failure("RSVPType does not exists");
+         }
+         try {
+            await Factory.RSVPTypeManager.AddOrUpdateRSVPToEvent(UserContext.AccountID, eventid, rsvp.RSVPTypeID);
+            return apiresult.Success("Succes");
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+
+      }
+
+      public RSVPController(IHttpContextAccessor accessor) : base(accessor) { }
    }
 }
