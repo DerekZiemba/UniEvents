@@ -1,4 +1,5 @@
-﻿
+﻿@import "_mixins.scss"; 
+
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 
@@ -55,6 +56,17 @@ a {
 }
 
 
+.tag {
+   display: inline-block;
+   color: white;
+   background-color: #3399FF;
+   padding: 0rem 1em;
+   border-radius: 20px;
+   cursor: default;
+   margin: 0 2px;
+   font-size: smaller;
+}
+
 
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content {
@@ -102,7 +114,7 @@ a {
       label {
          text-align: right;
          margin-right: 10px;
-         width: 160px;
+         width: 15rem;
       }
 
       input {
@@ -189,8 +201,29 @@ a {
 
 #CreateEventPage {
    padding-left: 15px;
-   #txtCaption{
-      height:2em;
+
+   #txtCaption {
+      height: 2em;
+   }
+
+   .daterange {
+      position: relative;
+
+      ul {
+         margin-left: 15rem;
+      }
+
+      li {
+         flex-direction: column;
+         margin: 1em;
+      }
+
+      .daterange_label {
+         width: 100%;
+         text-align: center;
+         text-decoration: underline;
+         font-size: medium;
+      }
    }
 }
 

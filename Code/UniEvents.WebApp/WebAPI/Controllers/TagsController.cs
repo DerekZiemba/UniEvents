@@ -46,6 +46,19 @@ namespace UniEvents.WebAPI.Controllers {
 
       }
 
+      [HttpPost, Route("webapi/tags/add/{eventId?}/{tagId?}")]
+      public ApiResult TagAdd(long eventId, long tagId) {
+         var apiresult = new ApiResult();
+         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
+
+         try {           
+            WebAppContext.Factory.TagManager.LinkTagToEvent(eventId, tagId).ConfigureAwait(false).GetAwaiter().GetResult();
+            return apiresult.Success("Success");
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+
+      }
+
       public TagsController(IHttpContextAccessor accessor): base(accessor) { }
    }
 }

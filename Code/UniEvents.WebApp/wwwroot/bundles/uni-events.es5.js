@@ -1,60 +1,90 @@
 "use strict";
-(function (window, document, $, extensionsAndPolyfills, factory) {
-    var ZMBA = {
-        domainName: window.location.hostname.match(/(?:(\w{3,})(?=(?:\.[a-z]{2,4}){1,2}$))|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|(localhost)/igm)[0],
-        extendType: (function () {
-            function defMult(proto, name, prop, options, obj) { for (var i = 0, len = proto.length; i < len; i++) {
-                defOne(proto[i], name, prop, options, obj);
-            } }
-            ;
-            function defOne(proto, name, prop, options, obj) {
-                if (name in proto) {
-                    if (options.override) {
-                        Object.defineProperty(proto, name, prop);
-                    }
-                    else if (options.merge) {
-                        var target = proto[name];
-                        var src = obj[name];
-                        extendType(target, src, options);
-                    }
-                }
-                else {
+(function (window, document, extensionsAndPolyfills) {
+    var extendType = (function () {
+        function defMult(proto, name, prop, options, obj) { for (var i = 0, len = proto.length; i < len; i++) {
+            defOne(proto[i], name, prop, options, obj);
+        } }
+        ;
+        function defOne(proto, name, prop, options, obj) {
+            if (name in proto) {
+                if (options.override) {
                     Object.defineProperty(proto, name, prop);
                 }
-            }
-            ;
-            function extendType(proto, obj, options) {
-                if (!options) {
-                    options = { enumerable: false, configurable: undefined, writable: undefined, override: true, merge: false };
-                }
-                var define = proto instanceof Array ? defMult : defOne;
-                var descriptors = Object.getOwnPropertyDescriptors(obj);
-                for (var name in descriptors) {
-                    var opts = options.hasOwnProperty(name) ? Object.assign({}, options, options[name]) : options;
-                    var prop = descriptors[name];
-                    prop.enumerable = opts.enumerable ? true : false;
-                    if (opts.configurable === false) {
-                        prop.configurable = false;
-                    }
-                    else if (opts.configurable === true) {
-                        prop.configurable = true;
-                    }
-                    if ('value' in prop) {
-                        if (opts.writable === false) {
-                            prop.writable = false;
-                        }
-                        else if (opts.writable === true) {
-                            prop.writable = true;
-                        }
-                    }
-                    define(proto, name, prop, opts, obj);
+                else if (options.merge) {
+                    var target = proto[name];
+                    var src = obj[name];
+                    extendType(target, src, options);
                 }
             }
-            return extendType;
+            else {
+                Object.defineProperty(proto, name, prop);
+            }
+        }
+        ;
+        function extendType(proto, obj, options) {
+            if (!options) {
+                options = { enumerable: false, configurable: undefined, writable: undefined, override: true, merge: false };
+            }
+            var define = proto instanceof Array ? defMult : defOne;
+            var descriptors = Object.getOwnPropertyDescriptors(obj);
+            for (var name in descriptors) {
+                var opts = options.hasOwnProperty(name) ? Object.assign({}, options, options[name]) : options;
+                var prop = descriptors[name];
+                prop.enumerable = opts.enumerable ? true : false;
+                if (opts.configurable === false) {
+                    prop.configurable = false;
+                }
+                else if (opts.configurable === true) {
+                    prop.configurable = true;
+                }
+                if ('value' in prop) {
+                    if (opts.writable === false) {
+                        prop.writable = false;
+                    }
+                    else if (opts.writable === true) {
+                        prop.writable = true;
+                    }
+                }
+                define(proto, name, prop, opts, obj);
+            }
+        }
+        return extendType;
+    }());
+    extensionsAndPolyfills(window, document, extendType);
+    var ZMBA = window.ZMBA = {
+        domainName: window.location.hostname.match(/(?:(\w{3,})(?=(?:\.[a-z]{2,4}){1,2}$))|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|(localhost)/igm)[0],
+        extendType: extendType,
+        loadJSFile: (function () {
+            function append(src, cfg) {
+                if (typeof src == 'string') {
+                    cfg.id = cfg.id || src.SubstrAfterLast('/').ReplaceAll('.', '_');
+                    var elem = Element.From("<script id=\"" + cfg.id + "\" type=\"text/javascript\" " + (cfg.attribs || '') + "></script>");
+                    elem.onload = function (ev) {
+                        if (cfg.success) {
+                            cfg.success(ev);
+                        }
+                    };
+                    elem.onerror = function (ev) {
+                        elem.remove();
+                        console.warn("Failed to load resource.", cfg.id, ev);
+                        append(cfg.srcs.shift() || ev, cfg);
+                    };
+                    elem.src = src;
+                    document.head.appendChild(elem);
+                }
+                else {
+                    if (cfg.error) {
+                        cfg.error(src);
+                    }
+                }
+            }
+            return function (cfg) {
+                append(cfg.srcs.shift(), cfg);
+            };
         }()),
-        IsEmptyArray: function IsEmptyArray(arr, isNothing) {
+        isEmptyArray: function IsEmptyArray(arr, isNothing) {
             if (!isNothing) {
-                isNothing = ZMBA.IsNothing;
+                isNothing = ZMBA.isNothing;
             }
             for (var i = 0, len = arr && arr.length >>> 0; i < len; i++) {
                 if (!isNothing(arr[i])) {
@@ -63,20 +93,134 @@
             }
             return true;
         },
-        IsNothing: function IsNothing(el) { return el == null || typeof el === 'number' && isNaN(el); },
-        IsNullOrEmpty: function IsNullOrEmpty(str) { return ZMBA.IsNothing(str) || !str.length; },
-        IsNullOrWhitespace: (function () {
+        isNothing: function isNothing(el) { return el == null || typeof el === 'number' && isNaN(el); },
+        isNullOrEmpty: function isNullOrEmpty(str) { return ZMBA.isNothing(str) || !str.length; },
+        isNullOrWhitespace: (function () {
             var rgx = /^\s+$/;
-            return function IsNullOrWhitespace(str) {
-                return ZMBA.IsNullOrEmpty(str) || (typeof str === 'string' && str.match(rgx) !== null) || (str instanceof Array && ZMBA.IsEmptyArray(str, ZMBA.IsNullOrWhitespace));
+            return function isNullOrWhitespace(str) {
+                return ZMBA.isNullOrEmpty(str) || (typeof str === 'string' && str.match(rgx) !== null) || (str instanceof Array && ZMBA.isEmptyArray(str, ZMBA.isNullOrWhitespace));
             };
         }())
     };
-    extensionsAndPolyfills(window, document, ZMBA);
-    factory(window, document, $, ZMBA);
-    window.ZMBA = ZMBA;
-}(window, window.document, window.jQuery, function ExtensionsAndPolyfills(window, document, ZMBA) {
-    ZMBA.extendType(Object, {
+    (function CookieHelperModule() {
+        var _rgxVerifyKey = /^(?:expires|max\-age|path|domain|secure)$/i;
+        function CookieHelper(document) {
+            this.document = document;
+        }
+        CookieHelper.prototype = {
+            getCookie: function (sKey) {
+                if (!sKey) {
+                    return null;
+                }
+                var rgx = new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$");
+                return decodeURIComponent(this.document.cookie.replace(rgx, "$1")) || null;
+            },
+            getCookieObject: function (sKey) {
+                var str = this.getCookie(sKey);
+                return !str ? null : JSON.parse(str);
+            },
+            setCookie: function (sKey, sValue, expires, sPath, sDomain, bSecure) {
+                if (!sKey || _rgxVerifyKey.test(sKey)) {
+                    return false;
+                }
+                var sExpires = "";
+                if (expires) {
+                    switch (expires.constructor) {
+                        case Number:
+                            sExpires = expires === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + expires;
+                            break;
+                        case String:
+                            sExpires = "; expires=" + expires;
+                            break;
+                        case Date:
+                            sExpires = "; expires=" + expires.toUTCString();
+                            break;
+                    }
+                }
+                if (typeof sValue !== 'string') {
+                    sValue = JSON.stringify(sValue);
+                }
+                this.document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+                return true;
+            },
+            removeCookie: function (sKey, sPath, sDomain) {
+                if (!this.hasCookie(sKey)) {
+                    return false;
+                }
+                this.document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "");
+                return true;
+            },
+            hasCookie: function (sKey) {
+                if (!sKey || _rgxVerifyKey.test(sKey)) {
+                    return false;
+                }
+                return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(this.document.cookie);
+            },
+            get keys() {
+                var aKeys = this.document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
+                for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) {
+                    aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]);
+                }
+                return aKeys;
+            }
+        };
+        ZMBA.extendType(Document.prototype, {
+            get cookies() { return new CookieHelper(this); }
+        });
+    }());
+    (function PageReadyModule() {
+        function addCallback(cb) {
+            var i = 1, len = arguments.length, args = new Array(len - i + 1);
+            for (; i < len; i++) {
+                args[i - 1] = arguments[i];
+            }
+            this._isReady ? cb.apply(null, args) : this._callbacks.push({ cb: cb, args: args });
+        }
+        function ReadyListener(name) {
+            this._callbacks = [];
+            this._isReady = false;
+            this.name = name;
+            this.add = addCallback.bind(this);
+        }
+        ReadyListener.prototype = {
+            get isReady() { return this._isReady; },
+            set isReady(value) {
+                if (!this._isReady && value) {
+                    this._isReady = value;
+                    while (this._callbacks.length > 0) {
+                        var ob = this._callbacks.shift();
+                        try {
+                            ob.cb.apply(null, ob.args);
+                        }
+                        catch (ex) {
+                            console.error(ex, ob);
+                        }
+                    }
+                    console.log(this.name + ": " + performance.now() + "ms");
+                }
+            }
+        };
+        var documentReadyListener = new ReadyListener("documentReady");
+        var windowReadyListener = new ReadyListener("windowReady");
+        ZMBA.ReadyListener = ReadyListener;
+        ZMBA.onDocumentReady = documentReadyListener.add;
+        ZMBA.onWindowReady = windowReadyListener.add;
+        if (document.readyState === 'loaded') {
+            documentReadyListener.isReady = true;
+        }
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
+            documentReadyListener.isReady = true;
+            windowReadyListener.isReady = true;
+        }
+        if (!documentReadyListener.isReady) {
+            window.addEventListener("DOMContentLoaded", function () { return documentReadyListener.isReady = true; });
+        }
+        if (!windowReadyListener.isReady) {
+            window.addEventListener("load", function () { documentReadyListener.isReady = true; windowReadyListener.isReady = true; });
+        }
+    }());
+}(window, window.document, function ExtensionsAndPolyfills(window, document, extendType) {
+    extendType(Object, {
         assign: function assign(target) {
             var to = Object(target);
             for (var i = 1, len = arguments.length; i < len; i++) {
@@ -92,7 +236,7 @@
             return to;
         }
     }, { override: false });
-    ZMBA.extendType(String.prototype, {
+    extendType(String.prototype, {
         ReplaceAll: function ReplaceAll(sequence, value) {
             return this.split(sequence).join(value);
         },
@@ -184,7 +328,7 @@
             return this;
         }
     });
-    ZMBA.extendType(Date.prototype, {
+    extendType(Date.prototype, {
         AddSeconds: function (value) {
             this.setSeconds(this.getSeconds() + value);
             return this;
@@ -202,10 +346,10 @@
             return this;
         }
     });
-    ZMBA.extendType(Date, {
+    extendType(Date, {
         get Current() { return new Date(); }
     });
-    ZMBA.extendType(Element, {
+    extendType(Element, {
         From: (function () {
             var doc = window.document;
             var rgx = /(\S+)=(["'])(.*?)(?:\2)|(\w+)/g;
@@ -228,7 +372,7 @@
             };
         }())
     });
-    ZMBA.extendType(Element.prototype, {
+    extendType(Element.prototype, {
         remove: function remove() {
             if (this.parentNode) {
                 this.parentNode.removeChild(this);
@@ -250,7 +394,7 @@
             } while (el !== null && el.nodeType === 1);
         }
     }, { enumerable: true, override: false });
-    ZMBA.extendType([Element.prototype, Document.prototype, DocumentFragment.prototype], {
+    extendType([Element.prototype, Document.prototype, DocumentFragment.prototype], {
         append: function append() {
             var frag = document.createDocumentFragment();
             for (var i = 0, len = arguments.length; i < len; i++) {
@@ -260,7 +404,7 @@
             this.appendChild(frag);
         }
     }, { enumerable: true, override: false });
-    ZMBA.extendType(DOMTokenList.prototype, {
+    extendType(DOMTokenList.prototype, {
         ToggleMultiple: function ToggleMultiple() {
             var len = arguments.length - 1;
             var bHasForce = typeof arguments[len - 1] === 'boolean';
@@ -271,7 +415,7 @@
             return bResult;
         }
     });
-    ZMBA.extendType(RegExp.prototype, {
+    extendType(RegExp.prototype, {
         GetMatches: function GetMatches(str) {
             this.lastIndex = 0;
             var matches = [], match = null;
@@ -281,7 +425,7 @@
             return matches;
         },
     });
-    ZMBA.extendType(Array, {
+    extendType(Array, {
         isArray: function isArray(arg) { return Object.prototype.toString.call(arg) === '[object Array]'; },
         Every: function Every(arr, cb) {
             if (!arr) {
@@ -366,7 +510,7 @@
             return res;
         }
     }, { override: true, isArray: { override: false } });
-    ZMBA.extendType([NodeList.prototype, HTMLCollection.prototype, Array.prototype], {
+    extendType([NodeList.prototype, HTMLCollection.prototype, Array.prototype], {
         every: function (cb, thisArg) { return Array.Every(this, !thisArg ? cb : function (el, i, arr) { return cb.call(thisArg, el, i, arr); }); },
         forEach: function (cb, thisArg) { return Array.ForEach(this, !thisArg ? cb : function (el, i, arr) { return cb.call(thisArg, el, i, arr); }); },
         find: function (cb, thisArg) { return Array.Find(this, !thisArg ? cb : function (el, i, arr) { return cb.call(thisArg, el, i, arr); }); },
@@ -381,7 +525,7 @@
             this[0] = arguments[0];
         } return this.length > 0 ? this[0] : undefined; }
     }, { override: false });
-    ZMBA.extendType([NodeList.prototype, HTMLCollection.prototype], {
+    extendType([NodeList.prototype, HTMLCollection.prototype], {
         ToArray: function () {
             var len = this.length, args = new Array(len);
             for (var i = 0; i < len; i++) {
@@ -429,127 +573,8 @@
             }
         }
     });
-}, function ZMBAFactory(window, document, $, ZMBA) {
-    (function CookieHelperModule() {
-        var _rgxVerifyKey = /^(?:expires|max\-age|path|domain|secure)$/i;
-        function CookieHelper(document) {
-            this.document = document;
-        }
-        CookieHelper.prototype = {
-            getCookie: function (sKey) {
-                if (!sKey) {
-                    return null;
-                }
-                var rgx = new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$");
-                return decodeURIComponent(this.document.cookie.replace(rgx, "$1")) || null;
-            },
-            getCookieObject: function (sKey) {
-                var str = this.getCookie(sKey);
-                return !str ? null : JSON.parse(str);
-            },
-            setCookie: function (sKey, sValue, expires, sPath, sDomain, bSecure) {
-                if (!sKey || _rgxVerifyKey.test(sKey)) {
-                    return false;
-                }
-                var sExpires = "";
-                if (expires) {
-                    switch (expires.constructor) {
-                        case Number:
-                            sExpires = expires === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + expires;
-                            break;
-                        case String:
-                            sExpires = "; expires=" + expires;
-                            break;
-                        case Date:
-                            sExpires = "; expires=" + expires.toUTCString();
-                            break;
-                    }
-                }
-                if (typeof sValue !== 'string') {
-                    sValue = JSON.stringify(sValue);
-                }
-                this.document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
-                return true;
-            },
-            removeCookie: function (sKey, sPath, sDomain) {
-                if (!this.hasCookie(sKey)) {
-                    return false;
-                }
-                this.document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "");
-                return true;
-            },
-            hasCookie: function (sKey) {
-                if (!sKey || _rgxVerifyKey.test(sKey)) {
-                    return false;
-                }
-                return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(this.document.cookie);
-            },
-            get keys() {
-                var aKeys = this.document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
-                for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) {
-                    aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]);
-                }
-                return aKeys;
-            }
-        };
-        ZMBA.extendType(Document.prototype, {
-            get cookies() { return new CookieHelper(this); }
-        });
-    }());
-    (function PageReadyModule() {
-        function addCallback(cb) {
-            var i = 1, len = arguments.length, args = new Array(len - i + 1);
-            for (; i < len; i++) {
-                args[i - 1] = arguments[i];
-            }
-            this._isReady ? cb.apply(null, args) : this._callbacks.push({ cb: cb, args: args });
-        }
-        function ReadyListener(name) {
-            console.time(name);
-            this._callbacks = [];
-            this._isReady = false;
-            this.name = name;
-            this.add = addCallback.bind(this);
-        }
-        ZMBA.extendType(ReadyListener.prototype, {
-            get isReady() { return this._isReady; },
-            set isReady(value) {
-                if (!this._isReady && value) {
-                    this._isReady = value;
-                    while (this._callbacks.length > 0) {
-                        var ob = this._callbacks.shift();
-                        try {
-                            ob.cb.apply(null, ob.args);
-                        }
-                        catch (ex) {
-                            console.error(ex, ob);
-                        }
-                    }
-                    console.timeEnd(this.name);
-                }
-            }
-        });
-        var documentReadyListener = new ReadyListener("documentReady");
-        var windowReadyListener = new ReadyListener("windowReady");
-        if (document.readyState === 'loaded') {
-            documentReadyListener.isReady = true;
-        }
-        if (document.readyState === 'interactive' || document.readyState === 'complete') {
-            documentReadyListener.isReady = true;
-            windowReadyListener.isReady = true;
-        }
-        if (!documentReadyListener.isReady) {
-            window.addEventListener("DOMContentLoaded", function () { return documentReadyListener.isReady = true; });
-        }
-        if (!windowReadyListener.isReady) {
-            window.addEventListener("load", function () { documentReadyListener.isReady = true; windowReadyListener.isReady = true; });
-        }
-        ZMBA.onDocumentReady = documentReadyListener.add;
-        ZMBA.onWindowReady = windowReadyListener.add;
-    }());
 }));
-(function (window, document, $, ZMBA, U) {
-    $.ajaxSetup({ cache: false });
+(function (window, document, ZMBA, U) {
     ZMBA.extendType(U, {
         rgxTrimUri: /^(\s|\?|\/|&)+|(\s|\?|\/|&)+$/,
         UserAccount: (function () {
@@ -621,7 +646,7 @@
                 }
             }
             function setParam(name, value, source, jsType, isCollection) {
-                if (ZMBA.IsNullOrWhitespace(value)) {
+                if (ZMBA.isNullOrWhitespace(value)) {
                     return;
                 }
                 if (source === "QueryString" || source === "Url") {
@@ -763,11 +788,12 @@
             return LocAutoComplete;
         }())
     }, { override: false, merge: true });
-    $(document).ready(function () {
+    ZMBA.onDocumentReady(function () {
         document.querySelectorAll("time").forEach(function (el) {
             if (!el.innerText) {
                 el.innerText = (new Date(el.dateTime)).toLocaleString();
             }
         });
     });
-}(window, window.document, window.jQuery, window.ZMBA, window.U = window.U || {}));
+    $.ajaxSetup({ cache: false });
+}(window, window.document, window.ZMBA, window.U = window.U || {}));

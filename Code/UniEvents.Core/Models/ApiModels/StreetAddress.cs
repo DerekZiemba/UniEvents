@@ -11,7 +11,9 @@ namespace UniEvents.Models.ApiModels {
       public long? LocationID { get; set; }
       public string Name { get; set; }
       public string AddressLine { get; set; }
+      /// <summary>City </summary>
       public string Locality { get; set; }
+      /// <summary>State </summary>
       public string AdminDistrict { get; set; }
       public string PostalCode { get; set; }
       public string CountryRegion { get; set; }
