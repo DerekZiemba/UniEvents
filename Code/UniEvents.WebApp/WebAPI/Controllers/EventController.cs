@@ -32,11 +32,7 @@ namespace UniEvents.WebAPI.Controllers {
          string Title = null,
          string Caption = null) {
 
-
          var apiresult = new ApiResult<List<EventInfo>>();
-         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
-         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
-
          try {
             return apiresult.Success(await Factory.EventFeedManager.EventSearch());
          } catch (Exception ex) { return apiresult.Failure(ex); }
