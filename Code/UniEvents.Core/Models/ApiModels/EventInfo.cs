@@ -13,7 +13,7 @@ namespace UniEvents.Models.ApiModels {
       public string Caption { get; set; }
 
 
-      public int EventTypeID { get; set; }
+      public long EventTypeID { get; set; }
       public DBModels.DBEventType EventType { get; set; }
 
       public Int64 LocationID { get; set; }
@@ -23,7 +23,7 @@ namespace UniEvents.Models.ApiModels {
       public Int64 AccountID { get; set; }
       public UserAccount UserAccount { get; set; }
 
-      public List<DBModels.DBTag> Tags { get; set; } = new List<DBModels.DBTag>();
+      public DBModels.DBTag[] Tags { get; set; }
 
 
       public EventInfo() { }

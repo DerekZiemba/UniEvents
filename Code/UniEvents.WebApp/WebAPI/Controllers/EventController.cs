@@ -109,9 +109,22 @@ namespace UniEvents.WebAPI.Controllers {
             }
 
             DBEventFeedItem dbEventItem = DBEventFeedItem.SP_Event_CreateOrUpdate(Factory, eventType.EventTypeID, input.DateStart, input.DateEnd, UserContext.AccountID, address.LocationID.UnBox(), input.Title, input.Caption, input.Description);
+            EventInfo info = new EventInfo(){
+               EventID = dbEventItem.EventID,
+               DateStart = dbEventItem.DateStart,
+               DateEnd = dbEventItem.DateEnd,
+               Title=dbEventItem.Title,
+               Caption = dbEventItem.Title,
+               EventTypeID = dbEventItem.EventTypeID,
+               EventType = eventType,
+               LocationID = dbEventItem.LocationID,
+               Location = address,
+               AccountID = dbEventItem.AccountID,
+               UserAccount = UserContext.UserAccount,
+               Tags = eventTags
+            };
 
-
-            return apiresult.Success(apiresult.Result);
+            return apiresult.Success(info);
 
          } catch (Exception ex) {
             return apiresult.Failure(ex);

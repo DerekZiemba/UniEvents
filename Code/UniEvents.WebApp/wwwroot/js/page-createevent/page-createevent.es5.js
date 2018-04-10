@@ -59,7 +59,9 @@
     var EventCreationLabel = document.getElementById("EventCreationLabel");
     var EventCreationButton = document.getElementById("EventCreationButton");
     EventCreationButton.addEventListener("click", function () {
-        var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/TODO " });
+        var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("[param]"), { type: "POST", url: "webapi/events/create " });
+        oRequest.data.EventTypeID = U._autoEventType.selection.data.eventTypeID;
+        oRequest.data.TagIds = [U._autoTags.selection.data.tagID];
         function handleFailure(ev) {
             console.log(oRequest, ev);
             EventCreationLabel.value = "Failed!";
@@ -71,9 +73,7 @@
             .fail(handleFailure)
             .done(function (ev) {
             if (ev.success) {
-                signUpButton.disabled = true;
                 console.log(oRequest, ev);
-                signUpLabel.value = "Success!";
                 InputParams.class = "Success";
                 U.setPageMessage('success', 'Success!  Go to the <a href="/Index">Event feed to see events </a>');
             }

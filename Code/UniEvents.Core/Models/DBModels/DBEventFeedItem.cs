@@ -43,7 +43,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBEventFeedItem(IDataReader reader) {
          EventID = reader.GetInt64(nameof(EventID));
-         EventTypeID = reader.GetInt32(nameof(EventTypeID));
+         EventTypeID = reader.GetInt64(nameof(EventTypeID));
          DateStart = reader.GetDateTime(nameof(DateStart));
          DateEnd = reader.GetDateTime(nameof(DateEnd));
          AccountID = reader.GetInt64(nameof(AccountID));
@@ -71,7 +71,7 @@ namespace UniEvents.Models.DBModels {
             int rowsAffected = cmd.ExecuteProcedure();
 
             DBEventFeedItem result = new DBEventFeedItem(){
-               EventID = (Int32)@EventID.Value,
+               EventID = (Int64)@EventID.Value,
                EventTypeID = EventTypeID,
                DateStart = DateStart,
                DateEnd = DateEnd,
