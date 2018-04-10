@@ -108,8 +108,7 @@ namespace UniEvents.WebAPI.Controllers {
                EventType = eventType,
                LocationID = dbEventItem.LocationID,
                LocationName = address.Name,
-               AddressLine = address.AddressLine,
-               AddressLine2 = Helpers.FormatAddress(null, null, address.Locality, address.AdminDistrict, address.PostalCode, address.CountryRegion),
+               AddressLine = Helpers.FormatAddress(null, address.AddressLine, address.Locality, address.AdminDistrict, address.PostalCode, address.CountryRegion),
                AccountID = dbEventItem.AccountID,
                Host = String.IsNullOrWhiteSpace(UserContext.UserDisplayName) ? UserContext.UserName : UserContext.UserDisplayName,
                Tags = eventTags

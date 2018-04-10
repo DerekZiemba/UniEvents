@@ -49,8 +49,7 @@ namespace UniEvents.Core.Managers {
                   info.Host = String.IsNullOrWhiteSpace(item.UserDisplayName) ? item.UserName : item.UserDisplayName;
 
                   info.LocationName = item.LocationName;
-                  info.AddressLine = item.AddressLine;
-                  info.AddressLine2 = Helpers.FormatAddress(null, null, item.Locality, item.AdminDistrict, item.PostalCode, item.CountryRegion);
+                  info.AddressLine = Helpers.FormatAddress(null, item.AddressLine, item.Locality, item.AdminDistrict, item.PostalCode, item.CountryRegion, ", ");
 
                   info.EventType = Ctx.EventTypeManager[item.EventTypeID];
                   info.Tags = item.TagIds?.Select(x => Ctx.TagManager[x]).Where(x => x != null).ToArray();

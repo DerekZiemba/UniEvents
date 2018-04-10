@@ -23,7 +23,6 @@ namespace UniEvents.Models.ApiModels {
 
       public string LocationName { get; set; }
       public string AddressLine { get; set; }
-      public string AddressLine2 { get; set; }
 
       public Int64 AccountID { get; set; }
       public string Host { get; set; }

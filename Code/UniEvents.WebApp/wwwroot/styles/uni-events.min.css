@@ -43,6 +43,17 @@ a
  display: block;
  border-bottom: 1px solid #000;
 }
+.tag
+{
+ display: inline-block;
+ color: #fff;
+ background-color: #39f;
+ padding: 0 1em;
+ border-radius: 20px;
+ cursor: default;
+ margin: 0 2px;
+ font-size: smaller;
+}
 .body-content
 {
  padding: 50px 5px 20px 5px;

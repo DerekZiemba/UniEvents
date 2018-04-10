@@ -872,6 +872,8 @@ a { cursor: pointer; }
 
 .autocomplete-group strong { display: block; border-bottom: 1px solid #000; }
 
+.tag { display: inline-block; color: white; background-color: #3399FF; padding: 0rem 1em; border-radius: 20px; cursor: default; margin: 0 2px; font-size: smaller; }
+
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content { padding: 50px 5px 20px 5px; }
 

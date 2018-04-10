@@ -3,9 +3,6 @@
     factory(window, document, $, U, ZMBA);
     var feed = new U.EventFeed("EventFeed");
     feed.requestEvents();
-    document.getElementById("TenMoreButton").addEventListener("click", function () {
-        feed.loadMoreEvents(10);
-    });
 }(window, window.document, window.jQuery, window.U, window.ZMBA, function Factory(window, document, $, U, ZMBA) {
     function GetTarget(el) {
         return el && (el.getElementsByClassName('ef_value')[0] || el);
@@ -57,7 +54,7 @@
     }());
     var FeedItem = (function () {
         var divTemplate = document.getElementById('Template_FeedItem');
-        FeedItem.dataFields = ["title", "caption", "host", "location", "address", "street", "rsvp_attending", "time_start", "time_end"];
+        FeedItem.dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "time_start", "time_end"];
         FeedItem.dataFields.forEach(function (key) {
             Object.defineProperty(FeedItem.prototype, "el_" + key, { get: function () { return GetTarget(this.el.getElementsByClassName(key)[0]); } });
         });
@@ -68,32 +65,31 @@
             }
             this.modal.toggle(true);
         }
-        function FeedItem(elOrData) {
-            if (elOrData instanceof HTMLElement) {
-                this.el = elOrData;
-                this.data = {};
-                this.data.id = this.el.id;
-                this.data.startTime = this.el_time_start.dateTime;
-                this.data.endTime = this.el_time_end.dateTime;
-                for (var i = 0, len = FeedItem.dataFields.length; i < len; i++) {
-                    var key = FeedItem.dataFields[i];
-                    this.data[key] = this["el_" + key].innerText;
-                }
+        function FeedItem(data) {
+            this.el = divTemplate.cloneNode(true);
+            this.data = data;
+            this.el.id = this.data.id;
+            for (var i = 0, len = FeedItem.dataFields.length; i < len; i++) {
+                var key = FeedItem.dataFields[i];
+                this["el_" + key].innerText = data[key];
             }
-            else {
-                this.el = divTemplate.cloneNode(true);
-                this.data = elOrData;
-                this.el.id = this.data.id;
-                for (var i = 0, len = FeedItem.dataFields.length; i < len; i++) {
-                    var key = FeedItem.dataFields[i];
-                    this["el_" + key].innerText = this.data[key];
-                }
-                this.el_time_start.dateTime = this.data.time_start;
-                this.el_time_end.dateTime = this.data.time_end;
-                this.el_time_start.innerText = (new Date(this.data.time_start)).toLocaleString();
-                this.el_time_end.innerText = (new Date(this.data.time_end)).toLocaleString();
-            }
+            this.el_time_start.dateTime = data.time_start;
+            this.el_time_end.dateTime = data.time_end;
+            this.el_time_start.innerText = (new Date(data.time_start)).toLocaleString();
+            this.el_time_end.innerText = (new Date(data.time_end)).toLocaleString();
             this.modal = null;
+            this.el_event_type = this.el.querySelector('.event_type');
+            if (data.event_type) {
+                this.el_event_type.appendChild(Element.From("<span title=\"" + data.event_type.description + "\">" + data.event_type.name + "</span>"));
+            }
+            this.el_tags = this.el.querySelector('.tags');
+            if (data.tags) {
+                for (var i = 0, len = data.tags.length; i < len; i++) {
+                    var tag = data.tags[i];
+                    var eltag = Element.From("<span class='tag' title=\"" + tag.description + "\">" + tag.name + "</span>");
+                    this.el_tags.appendChild(eltag);
+                }
+            }
             this.handleClick = _handleClick.bind(this);
             this.enableListeners();
         }
@@ -148,37 +144,15 @@
                         caption: event.caption,
                         host: event.host,
                         location: event.locationName,
-                        street: event.addressLine,
-                        address: event.addressLine2,
+                        address: event.addressLine,
                         time_start: event.dateStart,
                         time_end: event.dateEnd,
                         rsvp_attending: event.rsvp_attending,
-                        rsvp_later: event.rsvp_later,
-                        rsvp_stopby: event.rsvp_stopby,
+                        rsvp_stopby: event.rsvp_stopby + event.rsvp_later,
                         rsvp_maybe: event.rsvp_maybe,
-                        rsvp_no: event.rsvp_no
-                    });
-                    var li = document.createElement('li');
-                    li.appendChild(item.el);
-                    ul.appendChild(li);
-                    this.feedItems.push(item);
-                }
-                this.el.appendChild(ul);
-            },
-            loadMoreEvents: function (count) {
-                var ul = document.createElement('ul');
-                for (var i = 0; i < count; i++) {
-                    var item = new FeedItem({
-                        id: "efi_" + this.feedItems.length,
-                        title: "Newly added event",
-                        caption: "Added through loadMoreEvents",
-                        description: "My parents are going out",
-                        host: "You are",
-                        location: "wherever u want bby",
-                        address: "u kno where",
-                        time_start: new Date(),
-                        time_end: (new Date()).AddHours(1),
-                        rsvp_attending: "u + me"
+                        rsvp_no: event.rsvp_no,
+                        event_type: event.eventType,
+                        tags: event.tags
                     });
                     var li = document.createElement('li');
                     li.appendChild(item.el);
