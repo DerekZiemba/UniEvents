@@ -12,15 +12,5 @@
 	{
 		"outputFileName": "wwwroot/bundles/uni-events.es5.min.js",
 		"inputFiles": [ "wwwroot/bundles/uni-events.es5.js" ] //minify
-	},
-	{
-		"outputFileName": "wwwroot/bundles/uni-events-all.es5.min.js",
-		"inputFiles": [
-			"wwwroot/lib/jquery/dist/jquery.js",
-			"wwwroot/lib/bootstrap/dist/js/bootstrap.js",
-			"wwwroot/lib/jquery.plugins/jquery.autocomplete.js",
-			"wwwroot/lib/jquery.plugins/flatpickr-4.4.3.js",
-			"wwwroot/bundles/uni-events.es5.js"
-		]
 	}
 ]
