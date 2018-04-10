@@ -5,7 +5,7 @@ GO
 USE [$(dbUniHangouts)]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_Account_GetOne]
-	@AccountID BIGINT,
+   @AccountID BIGINT,
    @UserName VARCHAR(20) = NULL
 AS
 SET NOCOUNT ON;

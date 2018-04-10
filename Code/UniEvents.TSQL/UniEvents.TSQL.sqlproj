@@ -161,4 +161,7 @@
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Event_Details_GetOne.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Event_GetOne.sql" />
+  </ItemGroup>
 </Project>

@@ -35,9 +35,20 @@ SELECT
       COUNT(DISTINCT CASE when rsvp.RSVPTypeId = 4 THEN rsvp.AccountID END) AS RSVP_Later,
       COUNT(DISTINCT CASE WHEN rsvp.RSVPTypeId = 3 THEN rsvp.AccountID END) AS RSVP_StopBy,
       COUNT(DISTINCT CASE WHEN rsvp.RSVPTypeId = 2 THEN rsvp.AccountID END) AS RSVP_Maybe,
-      COUNT(DISTINCT CASE WHEN rsvp.RSVPTypeId = 1 THEN rsvp.AccountID END) AS RSVP_No
+      COUNT(DISTINCT CASE WHEN rsvp.RSVPTypeId = 1 THEN rsvp.AccountID END) AS RSVP_No,
+      STUFF((SELECT ', ' + CONVERT(VARCHAR(20), TagID) FROM dbo.EventTagMap WHERE EventID = feed.EventID FOR XML PATH('')), 1, 1, '') AS TagIds,
+      acc.DisplayName as UserDisplayName,
+      acc.UserName,
+      loc.[Name] as LocationName,
+      loc.AddressLine,
+      loc.Locality,
+      loc.PostalCode,
+      loc.AdminDistrict,
+      loc.CountryRegion
    FROM dbo.EventFeed AS feed
    LEFT OUTER JOIN dbo.EventRSVPs AS rsvp ON feed.EventID = rsvp.EventID
+   LEFT OUTER JOIN dbo.Accounts AS acc ON feed.AccountID = acc.AccountID
+   LEFT OUTER JOIN dbo.Locations AS loc ON feed.LocationID = loc.LocationID
    WHERE (@EventID IS NULL OR feed.EventID = @EventID)
       AND(@EventTypeID IS NULL OR feed.EventTypeID = @EventTypeID)
       AND(@AccountID IS NULL OR feed.AccountID = @AccountID)
@@ -46,8 +57,9 @@ SELECT
       AND(@DateTo IS NULL OR feed.DateStart < @DateTo OR feed.DateEnd < @DateTo)
       AND (@bHasTitle = 0 OR feed.Title LIKE '%' + @Title + '%')
       AND (@bHasCaption = 0 OR feed.Caption LIKE '%' + @Caption + '%')
-   GROUP BY feed.EventID, feed.EventTypeID, feed.AccountID, feed.LocationID, feed.DateStart, feed.DateEnd, feed.Title, feed.Caption
-
+   GROUP BY feed.EventID, feed.EventTypeID, feed.AccountID, feed.LocationID, feed.DateStart, feed.DateEnd, feed.Title, feed.Caption, 
+      acc.DisplayName, acc.UserName,
+      loc.CountryRegion, loc.AdminDistrict, loc.PostalCode, loc.Locality, loc.[Name], loc.AddressLine
 
 
 GO

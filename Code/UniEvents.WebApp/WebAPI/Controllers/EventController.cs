@@ -23,7 +23,7 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpGet, Route("webapi/events/search/{EventID?}/{EventTypeID?}/{AccountID?}/{LocationID?}/{DateFrom?}/{DateTo?}/{Title?}/{Caption?}/")]
-      public async Task<ApiResult<EventInfo[]>> EventSearch(long? EventID = null,
+      public async Task<ApiResult<List<EventInfo>>> EventSearch(long? EventID = null,
          long? EventTypeID = null,
          long? AccountID = null,
          long? LocationID = null,
@@ -33,19 +33,12 @@ namespace UniEvents.WebAPI.Controllers {
          string Caption = null) {
 
 
-         var apiresult = new ApiResult<EventInfo[]>();
+         var apiresult = new ApiResult<List<EventInfo>>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
 
-         return apiresult.Failure("TODO");
          try {
-            //This is why we need to implement Managers with caching abilities or do the whole thing in SQL, because this will quickly cripple the server. 
-           //var feedItems = DBModels.DBEventFeedItem.SP_Event_Search(WebAppContext.Factory, EventID, EventTypeID, AccountID, LocationID, DateFrom, DateTo, Title, Caption);
-           // foreach(var item in feedItems) {
-
-           // }
-
-            return apiresult;
+            return apiresult.Success(await Factory.EventFeedManager.EventSearch());
          } catch (Exception ex) { return apiresult.Failure(ex); }
       }
 
@@ -118,11 +111,18 @@ namespace UniEvents.WebAPI.Controllers {
                EventTypeID = dbEventItem.EventTypeID,
                EventType = eventType,
                LocationID = dbEventItem.LocationID,
-               Location = address,
+               LocationName = address.Name,
+               AddressLine = address.AddressLine,
+               AddressLine2 = Helpers.FormatAddress(null, null, address.Locality, address.AdminDistrict, address.PostalCode, address.CountryRegion),
                AccountID = dbEventItem.AccountID,
-               UserAccount = UserContext.UserAccount,
+               Host = String.IsNullOrWhiteSpace(UserContext.UserDisplayName) ? UserContext.UserName : UserContext.UserDisplayName,
                Tags = eventTags
             };
+
+            for (int i = 0; i < eventTags.Length; i++) {
+               DBTag tag = eventTags[i];
+               Factory.TagManager.LinkTagToEvent(info.EventID, tag.TagID);
+            }
 
             return apiresult.Success(info);
 

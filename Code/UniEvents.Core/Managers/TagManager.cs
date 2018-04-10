@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -116,6 +117,14 @@ namespace UniEvents.Core.Managers {
 
       public DBTag Create(string name, string description) {
          return AddTag(DBTag.SP_Create(Ctx, name, description))?.Item;
+      }
+
+      public async Task LinkTagToEvent(long EventID, long TagID) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_TagAdd]", new SqlConnection(Ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), EventID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
+            await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
+         }
       }
 
 

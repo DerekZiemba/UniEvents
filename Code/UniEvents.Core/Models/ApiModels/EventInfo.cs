@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
+using UniEvents.Models.DBModels;
+
 
 namespace UniEvents.Models.ApiModels {
    public class EventInfo {
@@ -17,16 +20,25 @@ namespace UniEvents.Models.ApiModels {
       public DBModels.DBEventType EventType { get; set; }
 
       public Int64 LocationID { get; set; }
-      public StreetAddress Location { get; set; }
 
+      public string LocationName { get; set; }
+      public string AddressLine { get; set; }
+      public string AddressLine2 { get; set; }
 
       public Int64 AccountID { get; set; }
-      public UserAccount UserAccount { get; set; }
+      public string Host { get; set; }
 
       public DBModels.DBTag[] Tags { get; set; }
 
+      [JsonProperty(PropertyName = "rsvp_attending")] public long RSVP_Attending { get; set; }
+      [JsonProperty(PropertyName = "rsvp_later")] public long RSVP_Later { get; set; }
+      [JsonProperty(PropertyName = "rsvp_stopby")] public long RSVP_StopBy { get; set; }
+      [JsonProperty(PropertyName = "rsvp_maybe")] public long RSVP_Maybe { get; set; }
+      [JsonProperty(PropertyName = "rsvp_no")] public long RSVP_No { get; set; }
+
 
       public EventInfo() { }
+
 
 
    }

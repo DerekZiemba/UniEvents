@@ -38,6 +38,23 @@ namespace UniEvents.Models.DBModels {
       [DBCol("Caption", SqlDbType.NVarChar, 160, false)]
       public string Caption { get; set; }
 
+      public long[] TagIds { get; set; }
+
+      public int RSVP_Attending { get; set; }
+      public int RSVP_Later { get; set; }
+      public int RSVP_StopBy { get; set; }
+      public int RSVP_Maybe { get; set; }
+      public int RSVP_No { get; set; }
+
+      public string UserDisplayName { get; set; }
+      public string UserName { get; set; }
+
+      public string LocationName { get; set; }
+      public string AddressLine { get; set; }
+      public string Locality { get; set; }
+      public string PostalCode { get; set; }
+      public string AdminDistrict { get; set; }
+      public string CountryRegion { get; set; }
 
       public DBEventFeedItem() { }
 
@@ -50,6 +67,20 @@ namespace UniEvents.Models.DBModels {
          LocationID = reader.GetInt64(nameof(LocationID));
          Title = reader.GetString(nameof(Title));
          Caption = reader.GetString(nameof(Caption));
+         RSVP_Attending = reader.GetInt32(nameof(RSVP_Attending));
+         RSVP_Later = reader.GetInt32(nameof(RSVP_Later));
+         RSVP_StopBy = reader.GetInt32(nameof(RSVP_StopBy));
+         RSVP_Maybe = reader.GetInt32(nameof(RSVP_Maybe));
+         RSVP_No = reader.GetInt32(nameof(RSVP_No));
+         TagIds = reader.GetString(nameof(TagIds))?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+         UserDisplayName = reader.GetString(nameof(UserDisplayName));
+         UserName = reader.GetString(nameof(UserName));
+         LocationName = reader.GetString(nameof(LocationName));
+         AddressLine = reader.GetString(nameof(AddressLine));
+         Locality = reader.GetString(nameof(Locality));
+         PostalCode = reader.GetString(nameof(PostalCode));
+         AdminDistrict = reader.GetString(nameof(AdminDistrict));
+         CountryRegion = reader.GetString(nameof(CountryRegion));
       }
 
 
@@ -87,31 +118,6 @@ namespace UniEvents.Models.DBModels {
          return null;
       }
 
-
-      public static IEnumerable<DBEventFeedItem> SP_Event_Search(Factory ctx,
-         long? EventID = null,
-         long? EventTypeID = null,
-         long? AccountID = null,
-         long? LocationID = null,
-         DateTime? DateFrom = null, 
-         DateTime? DateTo = null, 
-         string Title = null,
-         string Caption = null) {
-
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), null);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(AccountID), AccountID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(LocationID), LocationID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateFrom), DateFrom);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateTo), DateTo);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Title), Title);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Caption), Caption);
-
-            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBEventFeedItem(item); }
-         }
-      }
    }
 
 }
