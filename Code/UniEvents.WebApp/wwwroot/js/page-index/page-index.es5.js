@@ -68,7 +68,7 @@
         function FeedItem(data) {
             this.el = divTemplate.cloneNode(true);
             this.data = data;
-            this.el.id = this.data.id;
+            this.el.id = "efi_" + this.data.id;
             for (var i = 0, len = FeedItem.dataFields.length; i < len; i++) {
                 var key = FeedItem.dataFields[i];
                 this["el_" + key].innerText = data[key];
@@ -139,7 +139,7 @@
                 for (var i = 0; i < events.length; i++) {
                     var event = events[i];
                     var item = new FeedItem({
-                        id: "efi_" + event.eventID,
+                        id: event.eventID,
                         title: event.title,
                         caption: event.caption,
                         host: event.host,
