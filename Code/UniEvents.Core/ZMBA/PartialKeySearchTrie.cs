@@ -18,6 +18,152 @@ namespace ZMBA {
       public int Count { get; private set; }
       public int NodeCount { get; private set; }
 
+      public void Optimize() {
+         Stack<CharNode> stack = StackCache<CharNode>.Take();
+         stack.Push(RootNode);
+         while (stack.Count > 0) {
+            var current = stack.Pop();
+            if (current.Children != null) {
+               current.Children = new Dictionary<char, CharNode>(current.Children);
+               foreach (var kvp in current.Children) { stack.Push(kvp.Value); }
+            }
+            if (current.Items != null) {
+               current.Items.TrimExcess();
+            }
+         }
+         StackCache<CharNode>.Return(ref stack);
+      }
+
+      public void AddExact(string key, T value) {
+         var str = Normalize(key);
+         if (str.Length == 0) { return; }
+         CharNode current = RootNode;
+         for (int idx = 0; idx < str.Length; idx++) {
+            char ch = str[idx];
+            if(current.Children == null) { current.Children = new Dictionary<char, CharNode>(); }
+            current = current.Children.TryGetValue(ch, out CharNode next) ? next : AddNodeChild(current, ch);
+         }
+         AddNodeItem(current, str, value);
+      }
+
+      public void Add(string key, T value) {
+         List<string> words = GetNormalizedWords(key);
+         if(words == null || words.Count == 0) { return; }
+         for(var i=0; i<words.Count; i++) {
+            string word = words[i];
+            CharNode current = RootNode;
+            for (int idx = 0; idx < word.Length; idx++) {
+               char ch = word[idx];
+               if (current.Children == null) { current.Children = new Dictionary<char, CharNode>(); }
+               current = current.Children.TryGetValue(ch, out CharNode next) ? next : AddNodeChild(current, ch);
+            }
+            AddNodeItem(current, word, value);
+         }
+         ListCache<string>.Return(ref words);
+      }
+
+      private CharNode AddNodeChild(CharNode target, char ch) {
+         if (target.Children == null) {
+            target.Children = new Dictionary<char, CharNode>();
+         }
+         CharNode child = new CharNode(ch);
+         target.Children.Add(ch, child);
+         NodeCount++;
+         return child;
+      }
+
+      private void AddNodeItem(CharNode target, string key, T item) {
+         NodeItem kvp = new NodeItem(key, item);
+         if (target.Items == null) {
+            target.Items = new HashSet<NodeItem>(new NodeItem.Comparer()) { kvp };
+         } else {
+            if (target.Items.Contains(kvp)) { return; }
+            target.Items.Add(kvp);
+         }
+         Count++;
+      }
+
+
+
+      public IEnumerable<T> FindMatches(string query, int maxCount)=> FindMatches<T>(query, maxCount);
+
+      public IEnumerable<TSelect> FindMatches<TSelect>(string query, int maxCount) where TSelect : T {
+         List<string> lsWords = GetNormalizedWords(query);
+         Dictionary<NodeItem, Matched> matchLookup = new Dictionary<NodeItem, Matched>( Math.Min(Count, 64), NodeItem.NodeCmp);
+         HashSet<NodeItem> unique =  new HashSet<NodeItem>(NodeItem.NodeCmp);
+         Stack<CharNode> stack = StackCache<CharNode>.Take();
+
+         matchLookup.Clear();
+         unique.Clear();
+
+         if (lsWords == null || lsWords.Count == 0) {            
+            stack.Push(RootNode);
+            TraverseNodes<TSelect>(stack, unique, matchLookup, null, maxCount);
+            unique.Clear();
+         } else {         
+            for (int i = 0; i < lsWords.Count; i++) {              
+               stack.Push(GetBestMatchChildNode(RootNode, lsWords[i]));
+               TraverseNodes<TSelect>(stack, unique, matchLookup, lsWords[i], -1);
+               unique.Clear();
+            }            
+         }
+
+         if (lsWords != null) { ListCache<string>.Return(ref lsWords); }
+         StackCache<CharNode>.Return(ref stack);     
+
+         foreach (Matched match in matchLookup.Values.OrderByDescending(GetMatchRank)) {
+            if ((maxCount--) >= 0) {
+               yield return (TSelect)match.Value.Item;
+            } else {
+               matchLookup.Clear();             
+               yield break;
+            }
+         }
+      }
+
+
+      #region "Helper Methods"
+
+      private static int GetMatchRank(Matched match) => match.Rank;
+
+      private static CharNode GetBestMatchChildNode(CharNode current, string word) {
+         for (int idx = 0; idx < word.Length; idx++) {
+            if (current.Children.TryGetValue(word[idx], out CharNode next)) { current = next; } else { break; }
+         }
+         return current;
+      }
+
+      private static void TraverseNodes<TSelect>(Stack<CharNode> stack, HashSet<NodeItem> unique, Dictionary<NodeItem, Matched> matchLookup, string word, int maxCount) {              
+         while (stack.Count > 0) {
+            CharNode current = stack.Pop();
+            if (current.Items != null) {
+               foreach (NodeItem item in current.Items) {
+                  if (item.Item is TSelect) {
+                     bool bExact = StringComparer.OrdinalIgnoreCase.Equals(item.Key, word);
+                     Matched match;
+                     if (unique.Add(item)) {
+                        if (!matchLookup.TryGetValue(item, out match)) {
+                           match = new Matched() { Value = item };
+                           maxCount--;
+                        }
+                        match.Rank += bExact ? 2 : 1;
+                        match.bExact = bExact;
+                        matchLookup[item] = match;                  
+                     } else if (bExact && matchLookup.TryGetValue(item, out match) && !match.bExact) {
+                        match.Rank++;
+                        match.bExact = true;
+                        matchLookup[item] = match;
+                     }                  
+                  }
+                  if (maxCount == 0) { return; }
+               }
+            }
+            if (current.Children != null) {
+               foreach (var child in current.Children) { stack.Push(child.Value); }
+            }
+         }
+      }
+
 
       private static string Normalize(string input) {
          if (String.IsNullOrWhiteSpace(input)) { return ""; }
@@ -50,7 +196,7 @@ namespace ZMBA {
                   break;
             }
          }
-         while (sb.Length > 0 && (sb[sb.Length - 1] == ' ' || sb[sb.Length - 1] == '-') ) {
+         while (sb.Length > 0 && (sb[sb.Length - 1] == ' ' || sb[sb.Length - 1] == '-')) {
             sb.Length = sb.Length - 1;
          }
 
@@ -98,200 +244,10 @@ namespace ZMBA {
       }
 
 
-      public void AddExact(string key, T value) {
-         var str = Normalize(key);
-         if (str.Length == 0) { return; }
-         CharNode current = RootNode;
-         for (int idx = 0; idx < str.Length; idx++) {
-            char ch = str[idx];
-            if(current.Children == null) { current.Children = new Dictionary<char, CharNode>(); }
-            current = current.Children.TryGetValue(ch, out CharNode next) ? next : AddNodeChild(current, ch);
-         }
-         AddNodeItem(current, str, value);
-      }
-
-      public void Add(string key, T value) {
-         List<string> words = GetNormalizedWords(key);
-         if(words == null || words.Count == 0) { return; }
-         for(var i=0; i<words.Count; i++) {
-            string word = words[i];
-            CharNode current = RootNode;
-            for (int idx = 0; idx < word.Length; idx++) {
-               char ch = word[idx];
-               if (current.Children == null) { current.Children = new Dictionary<char, CharNode>(); }
-               current = current.Children.TryGetValue(ch, out CharNode next) ? next : AddNodeChild(current, ch);
-            }
-            AddNodeItem(current, word, value);
-         }
-         ListCache<string>.Return(ref words);
-      }
-
-
-      public IEnumerable<T> FindMatches(string query, int maxCount) {
-         return FindMatches<T>(query, maxCount);
-      }
-
-      public IEnumerable<TResult> FindMatches<TResult>(string query, int maxCount) where TResult : T {
-         List<string> lsWords = GetNormalizedWords(query);
-         if (lsWords == null) { yield break; }
-         if (lsWords.Count == 0) { ListCache<string>.Return(ref lsWords); yield break; }
-
-         DataStructuresCache ds = DataStructuresCache.Take();
-         Stack<CharNode> stack = StackCache<CharNode>.Take();
-
-         for (int i = 0; i < lsWords.Count; i++) {
-            string word = lsWords[i];
-            CharNode current = RootNode;
-
-            for (int idx = 0; idx < word.Length; idx++) {
-               if (current.Children.TryGetValue(word[idx], out CharNode next)) {
-                  current = next;
-               } else {
-                  break;
-               }
-            }
-
-            ds.HS.Clear();
-            stack.Push(current);
-            while (stack.Count > 0) {
-               current = stack.Pop();
-               if (current.Items != null) {
-                  foreach (NodeItem item in current.Items) {
-                     if(item.Item is TResult) {
-                        bool bExact = StringComparer.OrdinalIgnoreCase.Equals(item.Key, word);
-                        Matched match;
-                        if (ds.HS.Add(item)) {
-                           if (!ds.Dict.TryGetValue(item, out match)) {
-                              match = new Matched() { Value = item };
-                           }
-                           match.Rank += bExact ? 2 : 1;
-                           match.bExact = bExact;
-                           ds.Dict[item] = match;
-                        } else if (bExact && ds.Dict.TryGetValue(item, out match) && !match.bExact) {
-                           match.Rank++;
-                           match.bExact = true;
-                           ds.Dict[item] = match;
-                        }
-                     }
-                  }
-               }
-               if (current.Children != null) {
-                  foreach (var child in current.Children) { stack.Push(child.Value); }
-               }
-            }
-
-         }
-
-         ListCache<string>.Return(ref lsWords);
-         StackCache<CharNode>.Return(ref stack);
-
-         foreach (Matched match in ds.Dict.Values.OrderByDescending(x => x.Rank)) {
-            if (--maxCount >= 0) {
-               yield return (TResult)match.Value.Item;
-            } else {
-               break;
-            }
-         }
-
-         DataStructuresCache.Return(ref ds);
-      }
-
-
-
-      public void Optimize() {
-         Stack<CharNode> stack = StackCache<CharNode>.Take();
-         stack.Push(RootNode);
-         while (stack.Count > 0) {
-            var current = stack.Pop();
-            if (current.Children != null) {
-               current.Children = new Dictionary<char, CharNode>(current.Children);
-               foreach(var kvp in current.Children) { stack.Push(kvp.Value); }
-            }
-            if (current.Items != null) {
-               current.Items.TrimExcess();
-            }
-         }
-         StackCache<CharNode>.Return(ref stack);
-      }
-
-      private CharNode AddNodeChild(CharNode target, char ch) {
-         if (target.Children == null) {
-            target.Children = new Dictionary<char, CharNode>();
-         }
-         CharNode child = new CharNode(ch);
-         target.Children.Add(ch, child);
-         NodeCount++;
-         return child;
-      }
-
-      private void AddNodeItem(CharNode target, string key, T item) {
-         NodeItem kvp = new NodeItem(key, item);
-         if (target.Items == null) {
-            target.Items = new HashSet<NodeItem>(new NodeItem.Comparer()) { kvp };
-         } else {
-            if (target.Items.Contains(kvp)) { return; }
-            target.Items.Add(kvp);
-         }
-         Count++;
-      }
-
+      #endregion
 
 
       #region "Helper Classes"
-
-      private class DataStructuresCache {
-         public HashSet<NodeItem> HS = new HashSet<NodeItem>(new NodeItem.Comparer());
-         public Dictionary<NodeItem, Matched> Dict = new Dictionary<NodeItem, Matched>(32, new NodeItem.Comparer());
-
-         private int Count => Math.Max(HS.Count, Dict.Count);
-         private void Clear() {
-            HS.Clear();
-            Dict.Clear();
-         }
-
-         [ThreadStatic] private static DataStructuresCache _localA;
-         private static DataStructuresCache _globalA;
-         private static DataStructuresCache _globalB;
-         private static DataStructuresCache _globalC;
-
-         public static DataStructuresCache Take() {
-            DataStructuresCache value = null;
-            value = _localA;
-            if (value != null) { _localA = null; return value; }
-            value = _globalA;
-            if (value != null && Interlocked.CompareExchange(ref _globalA, null, value) == value) { return value; }
-            value = _globalB;
-            if (value != null && Interlocked.CompareExchange(ref _globalB, null, value) == value) { return value; }
-            value = _globalC;
-            if (value != null && Interlocked.CompareExchange(ref _globalC, null, value) == value) { return value; }
-            return new DataStructuresCache();
-         }
-         public static void Return(ref DataStructuresCache item) {
-            var value = item; //Get copy to reference
-            item = null; //Set reference to null to ensure it's not used after it's returned. 
-ReturnStart:
-            if (_globalA == null) {
-               if (value.Count > 0) { value.Clear(); goto ReturnStart; }//In case _global was set during clear operation
-               Interlocked.CompareExchange(ref _globalA, value, null);
-               return;
-            }
-            if (_globalB == null) {
-               if (value.Count > 0) { value.Clear(); goto ReturnStart; }//In case _global was set during clear operation
-               Interlocked.CompareExchange(ref _globalB, value, null);
-               return;
-            }
-            if (_globalC == null) {
-               if (value.Count > 0) { value.Clear(); goto ReturnStart; }//In case _global was set during clear operation
-               Interlocked.CompareExchange(ref _globalC, value, null);
-               return;
-            }
-            if (_localA == null) {
-               if (value.Count > 0) { value.Clear(); goto ReturnStart; }//In case one of the _globals became free during the clear operation
-               _localA = value;
-               return;
-            }
-         }
-      }
 
       private struct Matched {
          public int Rank;
@@ -300,6 +256,7 @@ ReturnStart:
       }
 
       private struct NodeItem {
+         public static Comparer NodeCmp = new Comparer();
          public string Key;
          public T Item;
 

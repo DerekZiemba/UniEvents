@@ -23,7 +23,7 @@ namespace UniEvents.WebAPI.Controllers {
       public ApiResult<IEnumerable<Models.LocationNode>> Locations(string query) {
          var apiresult = new ApiResult<IEnumerable<Models.LocationNode>>();
          try {
-            apiresult.Success(Factory.LocationManager.QueryCachedLocations(query));
+            apiresult.Success(Factory.LocationManager.QueryCachedLocations(query?.Trim()));
             return apiresult;
          } catch (Exception ex) {
             return apiresult.Failure(ex);
@@ -34,7 +34,7 @@ namespace UniEvents.WebAPI.Controllers {
       public ApiResult<IEnumerable<Models.LocationNode>> Countries(string query) {
          var apiresult = new ApiResult<IEnumerable<Models.LocationNode>>();
          try {
-            apiresult.Success(Factory.LocationManager.QueryCachedCountries(query));
+            apiresult.Success(Factory.LocationManager.QueryCachedCountries(query?.Trim()));
             return apiresult;
          } catch (Exception ex) {
             return apiresult.Failure(ex);
@@ -45,7 +45,7 @@ namespace UniEvents.WebAPI.Controllers {
       public ApiResult<IEnumerable<Models.LocationNode>> States(string query) {
          var apiresult = new ApiResult<IEnumerable<Models.LocationNode>>();
          try {
-            apiresult.Success(Factory.LocationManager.QueryCachedStates(query));
+            apiresult.Success(Factory.LocationManager.QueryCachedStates(query?.Trim()));
             return apiresult;
          } catch (Exception ex) {
             return apiresult.Failure(ex);
@@ -56,7 +56,7 @@ namespace UniEvents.WebAPI.Controllers {
       public ApiResult<IEnumerable<Models.LocationNode>> Cities(string query) {
          var apiresult = new ApiResult<IEnumerable<Models.LocationNode>>();
          try {
-            apiresult.Success(Factory.LocationManager.QueryCachedCities(query));
+            apiresult.Success(Factory.LocationManager.QueryCachedCities(query?.Trim()));
             return apiresult;
          } catch (Exception ex) {
             return apiresult.Failure(ex);
@@ -67,7 +67,7 @@ namespace UniEvents.WebAPI.Controllers {
       public ApiResult<IEnumerable<Models.LocationNode>> PostalCodes(string query) {
          var apiresult = new ApiResult<IEnumerable<Models.LocationNode>>();
          try {
-            apiresult.Success(Factory.LocationManager.QueryCachedPostalCodes(query));
+            apiresult.Success(Factory.LocationManager.QueryCachedPostalCodes(query?.Trim()));
             return apiresult;
          } catch (Exception ex) {
             return apiresult.Failure(ex);
@@ -80,7 +80,7 @@ namespace UniEvents.WebAPI.Controllers {
       public ApiResult<IEnumerable<DBTag>> Tags(string query) {
          var apiresult = new ApiResult<IEnumerable<DBTag>>();
          try {
-            return apiresult.Success(Factory.TagManager.QueryCached(query));
+            return apiresult.Success(Factory.TagManager.QueryCached(query?.Trim()));
          } catch (Exception ex) { return apiresult.Failure(ex); }
       }
 
@@ -89,7 +89,7 @@ namespace UniEvents.WebAPI.Controllers {
       public ApiResult<IEnumerable<DBEventType>> EventTypes(string query) {
          var apiresult = new ApiResult<IEnumerable<DBEventType>>();
          try {
-            return apiresult.Success(Factory.EventTypeManager.QueryCached(query));
+            return apiresult.Success(Factory.EventTypeManager.QueryCached(query?.Trim()));
          } catch (Exception ex) { return apiresult.Failure(ex); }
       }
 

@@ -57,11 +57,11 @@ namespace UniEvents.WebAPI.Controllers {
          DBEventType eventType = Factory.EventTypeManager[input.EventTypeID];
          if(eventType == null) { return apiresult.Failure("EventType does not exist."); }
 
-         if (input.TagIds == null || input.TagIds.Length == 0) { return apiresult.Failure("Include at least one EventTag."); }
-         DBTag[] eventTags = new DBTag[input.TagIds.Length];
-         for(int i = 0; i < input.TagIds.Length; i++) {
-            DBTag tag = Factory.TagManager[input.TagIds[i]];
-            if(tag == null) { return apiresult.Failure("Invalid TagID: " + input.TagIds[i].ToString()); }
+         if (input.Tags == null || input.Tags.Length == 0) { return apiresult.Failure("Include at least one EventTag."); }
+         DBTag[] eventTags = new DBTag[input.Tags.Length];
+         for(int i = 0; i < input.Tags.Length; i++) {
+            DBTag tag = Factory.TagManager[input.Tags[i]];
+            if(tag == null) { return apiresult.Failure("Invalid Tag: " + input.Tags[i].ToString()); }
             eventTags[i] = tag;
          }
 

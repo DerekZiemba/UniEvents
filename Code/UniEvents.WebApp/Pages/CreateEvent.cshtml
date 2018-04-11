@@ -5,7 +5,7 @@
 }
 
 @section Scripts {
-   <script src="~/bundles/jquery.plugins.es5.js" asp-append-version="true"></script>
+   <script src="~/bundles/jquery.plugins.es5.min.js" asp-append-version="true"></script>
    <script src="~/js/page-createevent/page-createevent.es5.js" asp-append-version="true"></script>
 }
 
@@ -21,15 +21,15 @@
             <input class="input_param" type="text" param="Title" required />
             <span></span>
          </li>
-         <li>
+         <li class="input_param_with_btn required">
             <label class="input_label">Event Type:</label>
             <input id="eventType" class="input_param" type="text" param="EventTypeID"/>
-            <span></span>
+            <span><input type="button" id="btnCreateEventType" value="Create New" /></span>
          </li>
-         <li>
+         <li class="input_param_with_btn required">
             <label class="input_label">Event Tags:</label>
-            <input id="eventTags" class="input_param" type="text" param="TagIds"/>
-            <span></span>
+            <div class="input_param event_tags_input" type="text" param="Tags"></div>
+            <span><input type="button" id="btnCreateTag" value="Create New" /></span>
          </li>
          <li class="required daterange">
             <ul>
