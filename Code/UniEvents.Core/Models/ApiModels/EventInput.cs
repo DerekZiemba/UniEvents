@@ -12,7 +12,7 @@ namespace UniEvents.Models.ApiModels {
       public string Description { get; set; }
 
       public Int64 EventTypeID { get; set; }
-      public Int64[] TagIds { get; set; }
+      public string[] Tags { get; set; }
       public DateTime DateStart { get; set; }
       public DateTime DateEnd { get; set; }
       

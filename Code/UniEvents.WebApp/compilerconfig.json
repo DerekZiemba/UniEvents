@@ -2,9 +2,5 @@
 	{
 		"outputFile": "wwwroot/styles/uni-events.css",
 		"inputFile": "wwwroot/styles/uni-events.scss"
-	},
-		{
-		"outputFile": "wwwroot/styles/flatpickr-custom.css",
-		"inputFile": "wwwroot/styles/flatpickr-custom.scss"
 	}
 ]

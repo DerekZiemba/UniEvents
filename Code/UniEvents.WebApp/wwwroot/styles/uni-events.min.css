@@ -1,19 +1,4 @@
-﻿@media(max-width: 1200px)
-{
- .container
- {
-  width: 100%;
- }
-}
-.highlightRequiredInputs input:required
-{
- border: 1px solid #f00;
-}
-a
-{
- cursor: pointer;
-}
-.autocomplete-suggestions
+﻿.autocomplete-suggestions
 {
  border: 1px solid #999;
  background: #fff;
@@ -43,16 +28,163 @@ a
  display: block;
  border-bottom: 1px solid #000;
 }
-.tag
+.flatpickr-day.today:hover:before
 {
+ content: "Today";
+ background-color: #6495ed;
+ color: #fff;
+ padding: 0 1em;
+ border-radius: 20px;
  display: inline-block;
+ position: fixed;
+ line-height: 2;
+ -o-transform: translate(-5em,-1em);
+ -moz-transform: translate(-5em,-1em);
+ -ms-transform: translate(-5em,-1em);
+ -webkit-transform: translate(-5em,-1em);
+ transform: translate(-5em,-1em);
+}
+.dayContainer
+{
+ padding-top: 2em;
+}
+.flatpickr-weekdays
+{
+ position: absolute;
+}
+.tag_base, .taggle_list .taggle, .tag
+{
  color: #fff;
  background-color: #39f;
  padding: 0 1em;
  border-radius: 20px;
- cursor: default;
  margin: 0 2px;
+}
+.taggle_list
+{
+ float: left;
+ padding: 0;
+ margin: 0;
+ width: 100%;
+ height: 24px;
+ max-height: 24px;
+}
+.taggle_list li
+{
+ float: left;
+ display: inline-block;
+ white-space: nowrap;
+ font-weight: 500;
+ margin-bottom: 0;
+}
+.taggle_list .taggle
+{
+ position: relative;
+ cursor: pointer;
+ transition: all .3s;
+ margin-top: 2px;
+ -o-animation-duration: 1s;
+ -moz-animation-duration: 1s;
+ -ms-animation-duration: 1s;
+ -webkit-animation-duration: 1s;
+ animation-duration: 1s;
+ -o-animation-fill-mode: both;
+ -moz-animation-fill-mode: both;
+ -ms-animation-fill-mode: both;
+ -webkit-animation-fill-mode: both;
+ animation-fill-mode: both;
+}
+.taggle_list .taggle:hover
+{
+ padding-right: 1.5em;
+ background-color: #39a5ff;
+ transition: all .3s;
+}
+.taggle_list .taggle:hover .taggle_text
+{
+ margin-left: -.5em;
+ transition: all .3s;
+}
+.taggle_list .taggle:hover>.close
+{
+ display: block;
+}
+.taggle_list .taggle .close
+{
+ position: absolute;
+ top: .5rem;
+ right: 3px;
+ text-decoration: none;
+ padding: 0;
+ line-height: .5;
+ display: none;
+ border: 0;
+ background: none;
+ color: #903;
+}
+.taggle_list .taggle_hot
+{
+ background: #cac8c4;
+}
+.taggle_input
+{
+ border: none;
+ outline: none;
+ font-weight: 300;
+ padding-left: 0;
+ float: left;
+ background: none;
+ width: 100%;
+ max-width: 100%;
+}
+.taggle_placeholder
+{
+ position: absolute;
+ color: #ccc;
+ top: 12px;
+ left: 8px;
+ transition: opacity,.25s;
+ -o-user-select: none;
+ -moz-user-select: none;
+ -ms-user-select: none;
+ -webkit-user-select: none;
+ user-select: none;
+}
+.taggle_sizer
+{
+ padding: 0;
+ margin: 0;
+ position: absolute;
+ top: -500px;
+ z-index: -1;
+ visibility: hidden;
+}
+.tag
+{
  font-size: smaller;
+ display: inline-block;
+ cursor: default;
+}
+@media(max-width: 1200px)
+{
+ .container
+ {
+  width: 100%;
+ }
+}
+.highlightRequiredInputs input:required
+{
+ border: 1px solid #f00;
+}
+a
+{
+ cursor: pointer;
+}
+.textarea
+{
+ width: 100%;
+ height: 300px;
+ border: 1px solid #f00;
 }
 .body-content
 {
@@ -192,6 +324,33 @@ a
  text-align: center;
  text-decoration: underline;
  font-size: medium;
+}
+#CreateEventPage #eventTags
+{
+ border: solid;
+ border-width: 1px;
+}
+#CreateEventPage #eventTags li
+{
+ margin-bottom: 0;
+}
+#CreateEventPage li.input_param_with_btn .input_param
+{
+ width: 59rem;
+}
+#CreateEventPage li.input_param_with_btn input[type=button]
+{
+ margin-left: 1rem;
+}
+#CreateEventPage .event_tags_input
+{
+ border: solid;
+ border-width: 1px;
+ border-color: #aaa;
+}
+#CreateEventPage .event_tags_input li
+{
+ margin-bottom: 0;
 }
 #SignUpPage
 {

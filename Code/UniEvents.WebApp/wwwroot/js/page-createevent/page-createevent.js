@@ -12,18 +12,40 @@
       showNoSuggestionNotice: true,
       paramName: 'query',
       transformResult: (response) => { return { suggestions: response.result.map(x => { return { value: x.name, data: x } }) } },
-      formatResult: (suggestion) => suggestion.data.name + (suggestion.data.description && " - " + suggestion.data.description)
+      formatResult: (suggestion) => suggestion.data.name + ((suggestion.data.description && " - " + suggestion.data.description) || '')
    }
 
    U._autoEventType = $("#eventType").autocomplete(Object.assign({}, autocompleteSettings, {
-      serviceUrl: 'webapi/autocomplete/eventtypes'
+      serviceUrl: 'webapi/autocomplete/eventtypes',
+      minChars: 0
    })).autocomplete();
 
-   U._autoTags = $("#eventTags").autocomplete(Object.assign({}, autocompleteSettings, {
+
+   var eventTags = U._eventTags = new Taggle(document.querySelector('.event_tags_input'), {
+      allowDuplicates: false,
+      submitKeys: [],
+      onBeforeTagAdd: function (ev, tag) {
+         var x = 0;
+      },
+      onTagAdd: function (ev, tag) {
+         var x = 0;
+      },
+      tagFormatter(el) {
+         var x = 0;
+      }
+   });
+   var tagsInput = eventTags.getInput();
+
+   U._autoTags = $(tagsInput).autocomplete(Object.assign({}, autocompleteSettings, {
       serviceUrl: 'webapi/autocomplete/tags',
+      minChars: 0,
+      onSelect: function (data) {
+         eventTags.add(data);
+      }
    })).autocomplete();
 
 
+ 
 
    flatpickr.setDefaults({
       enableTime: true,
@@ -74,9 +96,14 @@
 
    EventCreationButton.addEventListener("click", function () {
       var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("[param]"), { type: "POST", url: "webapi/events/create " });
-
+      if (!U._autoEventType.selection) {
+         U.setPageMessage('error', 'Select an event type');
+         U.highlightRequiredInputs(true);
+         return;
+      }
       oRequest.data.EventTypeID = U._autoEventType.selection.data.eventTypeID;
-      oRequest.data.TagIds = [ U._autoTags.selection.data.tagID ];
+
+      oRequest.data.Tags = U._eventTags.getTagValues();
 
       function handleFailure(ev) {
          console.log(oRequest, ev);
