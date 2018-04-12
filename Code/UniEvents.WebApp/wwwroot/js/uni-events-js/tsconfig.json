@@ -4,7 +4,7 @@
 		"target": "es5",
 		"lib": [ "dom", "es5" ],
 		"removeComments": true,
-		"pretty": true,
+		"pretty": false,
 		"alwaysStrict": true,
 		"outFile": "../../bundles/uni-events.es5.js" //compile down to ES5 for browser compatibility
 
@@ -17,7 +17,12 @@
 		"exclude": [ "node" ] // Specific libs to not fetch .d.ts files for
 	},
 
-	"files": ["ZMBA.js", "uni-events.js"] // list of explicit files to include in the project context. Highest priority.
+	"files": [
+				"../../lib/jquery-autocomplete/jquery.autocomplete.js",
+				"../../lib/flatpickr/flatpickr.js",
+				"../../lib/taggle/taggle.js",
+				"ZMBA.js", 
+				"uni-events.js" ] // list of explicit files to include in the project context. Highest priority.
 
 	//"include": [], // list of folders or glob patterns to include in the project context.
 

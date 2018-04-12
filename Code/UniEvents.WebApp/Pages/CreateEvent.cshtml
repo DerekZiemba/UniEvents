@@ -5,15 +5,61 @@
 }
 
 @section Scripts {
-   <script src="~/bundles/jquery.plugins.es5.min.js" asp-append-version="true"></script>
    <script src="~/js/page-createevent/page-createevent.es5.js" asp-append-version="true"></script>
 }
 
 <h2>Create Event</h2>
 
 <div id="CreateEventPage">
-   <div id="InputParams" class="vert_list">
 
+   <div id="modalCreateEventType" class="modal">
+      <div class="modal-content">
+         <div class="modal-header">
+            <span class="close">&times;</span>
+            <h2>Create a new Event Type</h2>
+         </div>
+         <div class="modal-body">
+            <div class="input_params vert_list">
+               <ul class="input_ul">
+                  <li class="required">
+                     <label class="input_label">UserName:</label>
+                     <input class="input_param" type="text" param="UserName" required />
+                     <span></span>
+                  </li>
+                  <li class="required">
+                     <label class="input_label">Password:</label>
+                     <input class="input_param" type="text" param="password" source="QueryString" required />
+                     <span></span>
+                  </li>
+               </ul>
+
+            </div>
+            <p>Some text in the Modal Body</p>
+            <p>Some other text...</p>
+         </div>
+         <div class="modal-footer">
+            <h3>Modal Footer</h3>
+         </div>
+      </div>
+   </div>
+
+   <div id="modalCreateTag" class="modal">
+      <div class="modal-content">
+         <div class="modal-header">
+            <span class="close">&times;</span>
+            <h2>Modal Header</h2>
+         </div>
+         <div class="modal-body">
+            <p>Some text in the Modal Body</p>
+            <p>Some other text...</p>
+         </div>
+         <div class="modal-footer">
+            <h3>Modal Footer</h3>
+         </div>
+      </div>
+   </div>
+
+   <div id="InputParams" class="vert_list">
       <h4>Event Info </h4>
       <ul class="input_ul">
          <li class="required">
@@ -23,7 +69,7 @@
          </li>
          <li class="input_param_with_btn required">
             <label class="input_label">Event Type:</label>
-            <input id="eventType" class="input_param" type="text" param="EventTypeID"/>
+            <input id="eventType" class="input_param" type="text" param="EventTypeID" />
             <span><input type="button" id="btnCreateEventType" value="Create New" /></span>
          </li>
          <li class="input_param_with_btn required">

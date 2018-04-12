@@ -127,6 +127,41 @@
 
    });
 
+   U.modalCreateEventType = (function () {
+      var modal = document.getElementById('modalCreateEventType');
+      var btnOpen = document.getElementById('btnCreateEventType');
+      var btnClose = modal.querySelector('.close');
+
+      function open() {
+         btnOpen.enable = false;
+         modal.style.display = "block";
+      }
+      function close() {
+         btnOpen.enable = true;
+         modal.style.display = "none";
+      }
+
+
+      btnOpen.addEventListener('click', open);
+      btnClose.addEventListener('click', close);
+
+      window.addEventListener('click', function (ev) {
+         if (ev.target === modal) {
+            close();
+         }
+      });
+
+      return { modal, btnOpen, btnClose, open, close };
+   }());
+
+
+
+
+
+ 
+
+
+
 
 }());
 
