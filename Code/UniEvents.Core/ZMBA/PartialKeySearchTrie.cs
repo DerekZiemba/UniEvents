@@ -87,35 +87,36 @@ namespace ZMBA {
 
       public IEnumerable<T> FindMatches(string query, int maxCount)=> FindMatches<T>(query, maxCount);
 
-      public IEnumerable<TSelect> FindMatches<TSelect>(string query, int maxCount) where TSelect : T {
+      public IEnumerable<TSelect> FindMatches<TSelect>(string query, int maxCount) where TSelect : T => FindMatches<TSelect>(query, maxCount, null);
+
+      public IEnumerable<TSelect> FindMatches<TSelect>(string query, int maxCount, Func<string, string, TSelect, int> evalQuality) where TSelect : T {
+         if (evalQuality == null) { evalQuality = DefaultQualityEvaluator; }
+
          List<string> lsWords = GetNormalizedWords(query);
          Dictionary<NodeItem, Matched> matchLookup = new Dictionary<NodeItem, Matched>( Math.Min(Count, 64), NodeItem.NodeCmp);
          HashSet<NodeItem> unique =  new HashSet<NodeItem>(NodeItem.NodeCmp);
          Stack<CharNode> stack = StackCache<CharNode>.Take();
 
-         matchLookup.Clear();
-         unique.Clear();
-
-         if (lsWords == null || lsWords.Count == 0) {            
+         if (lsWords == null || lsWords.Count == 0) {
             stack.Push(RootNode);
-            TraverseNodes<TSelect>(stack, unique, matchLookup, null, maxCount);
+            TraverseNodes<TSelect>(stack, unique, matchLookup, null, maxCount, evalQuality);
             unique.Clear();
-         } else {         
-            for (int i = 0; i < lsWords.Count; i++) {              
+         } else {
+            for (int i = 0; i < lsWords.Count; i++) {
                stack.Push(GetBestMatchChildNode(RootNode, lsWords[i]));
-               TraverseNodes<TSelect>(stack, unique, matchLookup, lsWords[i], -1);
+               TraverseNodes<TSelect>(stack, unique, matchLookup, lsWords[i], -1, evalQuality);
                unique.Clear();
-            }            
+            }
          }
 
          if (lsWords != null) { ListCache<string>.Return(ref lsWords); }
-         StackCache<CharNode>.Return(ref stack);     
+         StackCache<CharNode>.Return(ref stack);
 
          foreach (Matched match in matchLookup.Values.OrderByDescending(GetMatchRank)) {
             if ((maxCount--) >= 0) {
                yield return (TSelect)match.Value.Item;
             } else {
-               matchLookup.Clear();             
+               matchLookup.Clear();
                yield break;
             }
          }
@@ -126,34 +127,59 @@ namespace ZMBA {
 
       private static int GetMatchRank(Matched match) => match.Rank;
 
+      private static int DefaultQualityEvaluator<TSelect>(string key, string term, TSelect item) {
+         if (term == null) { return 1; }
+         int len = Math.Min(key.Length, term.Length);
+         if (StringComparer.Ordinal.Equals(key, term)) {
+            return 5;
+         }
+         int count = 0;      
+         for (int i = 0; i < len; i++) {
+            if(key[i] == term[i]) {
+               count++;              
+            } else {
+               break;
+            }
+         }
+         return 1 + (count / 5);
+      }
+
       private static CharNode GetBestMatchChildNode(CharNode current, string word) {
          for (int idx = 0; idx < word.Length; idx++) {
-            if (current.Children.TryGetValue(word[idx], out CharNode next)) { current = next; } else { break; }
+            if (current.Children != null && current.Children.TryGetValue(word[idx], out CharNode next)) { current = next; } else { break; }
          }
          return current;
       }
 
-      private static void TraverseNodes<TSelect>(Stack<CharNode> stack, HashSet<NodeItem> unique, Dictionary<NodeItem, Matched> matchLookup, string word, int maxCount) {              
+      private static void TraverseNodes<TSelect>(Stack<CharNode> stack, 
+                                                   HashSet<NodeItem> unique, 
+                                                   Dictionary<NodeItem, Matched> matchLookup,
+                                                   string word, 
+                                                   int maxCount, 
+                                                   Func<string, string, TSelect, int> evalQuality) where TSelect : T {
+
          while (stack.Count > 0) {
             CharNode current = stack.Pop();
             if (current.Items != null) {
                foreach (NodeItem item in current.Items) {
                   if (item.Item is TSelect) {
-                     bool bExact = StringComparer.OrdinalIgnoreCase.Equals(item.Key, word);
-                     Matched match;
-                     if (unique.Add(item)) {
-                        if (!matchLookup.TryGetValue(item, out match)) {
-                           match = new Matched() { Value = item };
-                           maxCount--;
+                     int quality = evalQuality(item.Key, word, (TSelect)item.Item);
+                     if(quality > 0) {
+                        Matched match;
+                        bool exists = matchLookup.TryGetValue(item, out match);
+
+                        if (unique.Add(item)) {
+                           if (!exists) {
+                              match.Value = item;
+                              maxCount--;
+                           }
+                           match.Rank += quality;
+                           matchLookup[item] = match;
+                        } else if (exists && match.Rank < quality) {
+                           match.Rank = quality;
+                           matchLookup[item] = match;
                         }
-                        match.Rank += bExact ? 2 : 1;
-                        match.bExact = bExact;
-                        matchLookup[item] = match;                  
-                     } else if (bExact && matchLookup.TryGetValue(item, out match) && !match.bExact) {
-                        match.Rank++;
-                        match.bExact = true;
-                        matchLookup[item] = match;
-                     }                  
+                     }                 
                   }
                   if (maxCount == 0) { return; }
                }
@@ -207,40 +233,63 @@ namespace ZMBA {
          if (String.IsNullOrWhiteSpace(input)) { return null; }
 
          string str = input.Normalize(NormalizationForm.FormD);
-         List<string> ls = ListCache<string>.Take();
-         StringBuilder sb = StringBuilderCache.Take();
+         StringBuilder sbWord = StringBuilderCache.Take();
+         List<string> words = ListCache<string>.Take();
+         List<string> terms = ListCache<string>.Take();
          char ch;
          for (var i = 0; i < str.Length; i++) {
             ch = str[i];
             UnicodeCategory cat = CharUnicodeInfo.GetUnicodeCategory(ch);
             switch (cat) {
                case UnicodeCategory.TitlecaseLetter:
-               case UnicodeCategory.UppercaseLetter: sb.Append(char.ToLower(ch)); break;
-               case UnicodeCategory.LowercaseLetter: sb.Append(ch); break;
-               case UnicodeCategory.DecimalDigitNumber: sb.Append(ch); break;
+               case UnicodeCategory.UppercaseLetter: sbWord.Append(char.ToLower(ch)); break;
+               case UnicodeCategory.LowercaseLetter: sbWord.Append(ch); break;
+               case UnicodeCategory.DecimalDigitNumber: sbWord.Append(ch); break;
                case UnicodeCategory.DashPunctuation:
                case UnicodeCategory.ConnectorPunctuation:
-                  if (sb.Length > 0 && sb[sb.Length - 1] != '-') {
-                     sb.Append('-');
+                  if (sbWord.Length > 0 && sbWord[sbWord.Length - 1] != '-') {
+                     sbWord.Append('-');
                   }
                   break;
                case UnicodeCategory.SpaceSeparator:
+                  if (sbWord.Length > 0) {
+                     words.Add(sbWord.ToString());
+                     sbWord.Clear();
+                  }
+                  break;
                case UnicodeCategory.LineSeparator:
                case UnicodeCategory.ParagraphSeparator:
                case UnicodeCategory.OtherPunctuation:
-                  if (sb.Length > 0) {
-                     ls.Add(sb.ToString());
-                     sb.Clear();
+                  if (sbWord.Length > 0) {
+                     words.Add(sbWord.ToString());
+                     WordsToTerms();
                   }
                   break;
             }
          }
-         if (sb.Length > 0) {
-            ls.Add(sb.ToString());
+         if (sbWord.Length > 0) {
+            words.Add(sbWord.ToString());          
          }
+         WordsToTerms();
 
-         StringBuilderCache.Return(ref sb);
-         return ls;
+         StringBuilderCache.Return(ref sbWord);
+         ListCache<string>.Return(ref words);
+
+         return terms;
+
+         void WordsToTerms() {
+            int n = terms.Count;
+            sbWord.Clear();
+            for (var i = 0; i < words.Count; i++) {
+               if (i > 0) { sbWord.Append(" "); }
+               sbWord.Append(words[i]);
+               if (i > 0) { terms.Add(sbWord.ToString()); }             
+            }
+            sbWord.Clear();
+            terms.Reverse(n, terms.Count - n);
+            for (var i = 0; i < words.Count; i++) { terms.Add(words[i]); }
+            words.Clear(); 
+         }
       }
 
 
@@ -251,7 +300,6 @@ namespace ZMBA {
 
       private struct Matched {
          public int Rank;
-         public bool bExact;
          public NodeItem Value;
       }
 

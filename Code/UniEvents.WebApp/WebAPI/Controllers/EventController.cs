@@ -81,22 +81,7 @@ namespace UniEvents.WebAPI.Controllers {
 
         
          try {
-            StreetAddress address = input.Location;
-            DBLocation dbLocation;
-            using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(Factory, Name: address.Name, AddressLine: address.AddressLine, Locality: address.Locality, AdminDistrict: address.AdminDistrict, PostalCode: address.PostalCode)) {
-               dbLocation = cmd.ExecuteReader_GetOne<DBLocation>();
-            }
-            if (dbLocation != null) {
-               address = new StreetAddress(dbLocation);
-            } else {
-               dbLocation = new DBLocation(address);
-               if (DBLocation.SP_Locations_CreateOneAsync(Factory, dbLocation).ConfigureAwait(false).GetAwaiter().GetResult()) {
-                  address = new StreetAddress(dbLocation);
-               } else {
-                  return apiresult.Failure("Failed to Create Location");
-               }
-            }
-
+            StreetAddress address = new StreetAddress(Factory.LocationManager.GetOrCreateDBLocation(input.Location));
             DBEventFeedItem dbEventItem = DBEventFeedItem.SP_Event_CreateOrUpdate(Factory, eventType.EventTypeID, input.DateStart, input.DateEnd, UserContext.AccountID, address.LocationID.UnBox(), input.Title, input.Caption, input.Description);
             EventInfo info = new EventInfo(){
                EventID = dbEventItem.EventID,

@@ -23,6 +23,7 @@ namespace UniEvents.Models {
       public Dictionary<String, LocationNode> Children;
 
       public string Key { get; internal set; }
+      public long ID { get; set; }
 
       string IValue<string>.Value => Formatted;
       

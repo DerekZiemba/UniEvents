@@ -214,7 +214,6 @@ namespace UniEvents.WebAPI.Controllers {
             return apiresult.Failure("Attempt to submit unverified Emails logged and detected."); //not really, but sounds scary.
          }
 
-         DBLocation dbLocation = new DBLocation(input.Location);
          DBAccount dbAccount = new DBAccount() {
             UserName = input.UserName,
             DisplayName = input.DisplayName,
@@ -227,9 +226,7 @@ namespace UniEvents.WebAPI.Controllers {
 
          (dbAccount.PasswordHash, dbAccount.Salt) = HashUtils.HashPassword256(password);
          try {
-            if (!await DBLocation.SP_Locations_CreateOneAsync(WebAppContext.Factory, dbLocation).ConfigureAwait(false)) {
-               return apiresult.Failure("Failed to create location.");
-            }
+            DBLocation dbLocation = Factory.LocationManager.CreateDBLocation(input.Location);
 
             dbAccount.LocationID = dbLocation.LocationID;
             if (!await DBAccount.SP_Account_CreateAsync(WebAppContext.Factory, dbAccount).ConfigureAwait(false)) {

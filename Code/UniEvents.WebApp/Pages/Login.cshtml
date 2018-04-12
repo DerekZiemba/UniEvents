@@ -32,19 +32,26 @@
    });
 
    function handleLogin() {
-      U.UserAccount.TryLogin(document.querySelector("input[param=UserName]").value, document.querySelector("input[param=Password]").value,
-         function onSuccess(ev) {
-            console.log(ev);
-            U.setPageMessage('success', "Welcome " + ev.result.userName);
-            window.setTimeout(function () { 
-               location.pathname = "";//Go to Homepage
-            }, 1000);
-         },
-         function onError(ev) {
-            console.log(ev);
+      var oRequest = U.buildAjaxRequestFromInputs(document.querySelectorAll("input[param]"), { type: "GET", url: `webapi/account/login` });
+      function handleError(ev) {
+            console.log(ev, oRequest);
             U.setPageMessage('error', ev.message);
             U.highlightRequiredInputs(true);
+      }
+
+      $.ajax(oRequest)
+         .fail(handleError)
+         .done(function (ev) {
+            if (ev.success) {
+               U.setPageMessage('success', "Welcome " + ev.result.userName);
+               window.setTimeout(function () {
+                  location.pathname = "";//Go to Homepage
+               }, 1000);
+            } else {
+               handleError(ev);
+            }
          });
+
    }
 
 </script>

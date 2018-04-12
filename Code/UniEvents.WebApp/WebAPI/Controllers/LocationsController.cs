@@ -18,27 +18,16 @@ namespace UniEvents.WebAPI.Controllers {
    [ApiExplorerSettings(IgnoreApi = false, GroupName = nameof(LocationsController))]
    public class LocationsController : WebAPIController {
 
-      [HttpGet, Route("webapi/locations/search/{ParentLocationID?}/{Name?}/{AddressLine?}/{Locality?}/{AdminDistrict?}/{PostalCode?}/{Description?}")]
-      public ApiResult<List<StreetAddress>> Search(long? ParentLocationID = null,
-                                                         string Name = null,
-                                                         string AddressLine = null,
-                                                         string Locality = null,
-                                                         string AdminDistrict = null,
-                                                         string PostalCode = null,
-                                                         string Description = null) {
+      [HttpGet, Route("webapi/locations/search")]
+      public ApiResult<List<StreetAddress>> Search(StreetAddress address) {
 
          var apiresult = new ApiResult<List<StreetAddress>>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
-
-         apiresult.Result = new List<StreetAddress>();
+       
          try {
-            using(SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(WebAppContext.Factory, ParentLocationID, Name, AddressLine, Locality, AdminDistrict, PostalCode, Description)) {
-               foreach (var item in cmd.ExecuteReader_GetManyRecords()) {
-                  apiresult.Result.Add(new StreetAddress(new DBLocation(item)));
-               }
-            }
-            return apiresult.Success(apiresult.Result);
+            var ls = Factory.LocationManager.SearchDBLocations(address);
+            return apiresult.Success(ls.Select(x => new StreetAddress(x)).ToList());
 
          } catch (Exception ex) {
             return apiresult.Failure(ex);
@@ -48,11 +37,14 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpPost, Route("webapi/locations/create")]
-      public async Task<ApiResult<StreetAddress>> Create(StreetAddress address) {
+      public ApiResult<StreetAddress> Create(StreetAddress address) {
          var apiresult = new ApiResult<StreetAddress>();
          if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
          if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
-         return await Factory.LocationManager.CreateLocation(address);         
+
+         try {
+            return apiresult.Success(new StreetAddress(Factory.LocationManager.CreateDBLocation(address)));
+         } catch(Exception ex) { return apiresult.Failure(ex); }   
       }
 
 

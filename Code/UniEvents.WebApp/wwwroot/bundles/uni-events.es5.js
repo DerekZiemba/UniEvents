@@ -2153,54 +2153,10 @@
         }
     });
 }));
-(function (window, document, ZMBA, U) {
+(function (window, document, $, ZMBA, U) {
+    $.ajaxSetup({ cache: false });
     ZMBA.extendType(U, {
-        rgxTrimUri: /^(\s|\?|\/|&)+|(\s|\?|\/|&)+$/,
-        UserAccount: (function () {
-            return {
-                LoginCookie: document.cookies.getCookieObject("userlogin"),
-                get userName() { return this.LoginCookie && this.LoginCookie.userName; },
-                get apiKey() { return this.LoginCookie && this.LoginCookie.apiKey; },
-                TryLogin: function (username, password, onSuccess, onFailure) {
-                    function handleFailure(ev) { if (onFailure) {
-                        onFailure(ev);
-                    } }
-                    $.ajax({ type: "GET", url: "webapi/account/login?UserName=" + encodeURIComponent(username) + "&Password=" + encodeURIComponent(password) })
-                        .fail(handleFailure)
-                        .done(function (ev) {
-                        if (ev.success) {
-                            this.LoginCookie = ev.result;
-                            if (onSuccess) {
-                                onSuccess(ev);
-                            }
-                        }
-                        else {
-                            handleFailure(ev);
-                        }
-                    });
-                },
-                TryLogout: function (onSuccess, onFailure) {
-                    function handleFailure(ev) { if (onFailure) {
-                        onFailure(ev);
-                    } }
-                    $.ajax({ type: "GET", url: "webapi/account/logout?username=" + encodeURIComponent(this.userName) + "&apikeyorpassword=" + encodeURIComponent(this.apiKey) })
-                        .fail(handleFailure)
-                        .done(function (ev) {
-                        if (ev.success) {
-                            if (onSuccess) {
-                                onSuccess(ev);
-                            }
-                        }
-                        else {
-                            handleFailure(ev);
-                        }
-                    })
-                        .always(function (ev) {
-                        this.LoginCookie = null;
-                    });
-                }
-            };
-        }()),
+        loginCookie: document.cookies.getCookieObject("userlogin"),
         getRouteMetadata: function (route, cb) {
             $.ajax({
                 cache: false,
@@ -2215,6 +2171,7 @@
         },
         buildAjaxRequestFromInputs: (function () {
             var rgxCSVSplit = /\s*,\s*/;
+            var rgxTrimUri = /^(\s|\?|\/|&)+|(\s|\?|\/|&)+$/;
             var request, querystring, path;
             function setTargetValue(target, name, value, jsType, isCollection) {
                 if (isCollection) {
@@ -2275,7 +2232,7 @@
                         setParam(name_1, input.value, input.source, input.jsType, input.isCollection);
                     }
                 }
-                request.url = (path + querystring).replace(U.rgxTrimUri, '');
+                request.url = (path + querystring).replace(rgxTrimUri, '');
                 return request;
             };
         }()),
@@ -2415,5 +2372,4 @@
             }
         });
     });
-    $.ajaxSetup({ cache: false });
-}(window, window.document, window.ZMBA, window.U = window.U || {}));
+}(window, window.document, window.jQuery, window.ZMBA, window.U = window.U || {}));
