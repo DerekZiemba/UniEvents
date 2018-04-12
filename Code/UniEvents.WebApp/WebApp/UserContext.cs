@@ -108,12 +108,10 @@ namespace UniEvents.WebApp {
                ctx.Cookie.VerifyDate = DateTime.UtcNow; //Rolling date
 
                if (ctx.LocationID > 0) {
-                  using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_GetOne(WebAppContext.Factory, ctx.LocationID)) {
-                     DBLocation dbLoc = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
-                     if (dbLoc != null) {
-                        ctx.ParentLocationID = dbLoc.ParentLocationID.UnBox();
-                        ctx.UserAccount.Location = new StreetAddress(dbLoc);
-                     }
+                  DBLocation dbLoc = WebAppContext.Factory.LocationManager.GetDBLocationByID(ctx.LocationID);
+                  if (dbLoc != null) {
+                     ctx.ParentLocationID = dbLoc.ParentLocationID.UnBox();
+                     ctx.UserAccount.Location = new StreetAddress(dbLoc);
                   }
                }
             }

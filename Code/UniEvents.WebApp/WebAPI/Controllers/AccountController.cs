@@ -45,10 +45,13 @@ namespace UniEvents.WebAPI.Controllers {
 
          apiresult.Success(new UserLoginCookie() { UserName = username, APIKey = dbLogin.APIKey, VerifyDate = dbLogin.LoginDate });
 
-         var ctx = await UserContext.InitContextFromCookie(this.HttpContext, apiresult.Result).ConfigureAwait(false);
-         if (ctx == null) {
-            return apiresult.Failure("Failed to set login cookie for unknown reason.");
-         }
+         try {
+            var ctx = await UserContext.InitContextFromCookie(this.HttpContext, apiresult.Result).ConfigureAwait(false);
+            if (ctx == null) {
+               return apiresult.Failure("Failed to set login cookie for unknown reason.");
+            }
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+
          return apiresult;
       }
 

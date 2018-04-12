@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -25,10 +26,11 @@ namespace UniEvents.Core.Managers {
       private Factory Ctx;
 
       private Task _initTask;
+      private ConcurrentDictionary<long, DBLocation> _dbLocationCache = new ConcurrentDictionary<long, DBLocation>();
 
       private Dictionary<string, AbbreviationEntry> DirectionAbbreviations;
       private Dictionary<string, AbbreviationEntry> AddressLineAbbreviations;
-
+    
       private PartialKeySearchTrie<LocationNode> QueryAutoComplete = new PartialKeySearchTrie<LocationNode>();
 
       internal LocationManager(Factory ctx) {
@@ -231,6 +233,20 @@ namespace UniEvents.Core.Managers {
          } else {
             return CreateDBLocation(address);
          }
+      }
+
+      public DBLocation GetDBLocationByID(long LocationID) {
+         DBLocation location = _dbLocationCache.GetValueOrDefault(LocationID);
+         if(location == null || location.RetrievedOn > DateTime.UtcNow.AddHours(-1)) {
+            using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_GetOne]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+               cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@LocationID), LocationID);
+               location = cmd.ExecuteReader_GetOne<DBLocation>();
+            }
+            if(location != null) {
+               _dbLocationCache[LocationID] = location;
+            }
+         }
+         return location;
       }
 
 

@@ -50,7 +50,7 @@ namespace UniEvents.WebApp {
             if(_UserContext == null && _userctxLock != null) {
                lock (_userctxLock) {
                   if (_UserContext != null) { return _UserContext; }
-                  _UserContext = UserContext.InitContext(HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
+                  _UserContext = UserContext.InitContext(this.HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
                   Interlocked.Exchange(ref _userctxLock, null);
                }
             }
@@ -76,7 +76,7 @@ namespace UniEvents.WebApp {
             if (_UserContext == null && _userctxLock != null) {
                lock (_userctxLock) {
                   if (_UserContext != null) { return _UserContext; }
-                  _UserContext = UserContext.InitContext(HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
+                  _UserContext = UserContext.InitContext(this.HttpContext).ConfigureAwait(false).GetAwaiter().GetResult();
                   Interlocked.Exchange(ref _userctxLock, null);
                }
             }

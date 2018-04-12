@@ -101,7 +101,9 @@ namespace UniEvents.WebAPI.Controllers {
 
             for (int i = 0; i < eventTags.Length; i++) {
                DBTag tag = eventTags[i];
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                Factory.TagManager.LinkTagToEvent(info.EventID, tag.TagID);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             }
 
             return apiresult.Success(info);
