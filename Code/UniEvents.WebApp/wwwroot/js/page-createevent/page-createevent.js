@@ -21,16 +21,35 @@
 
    U.eventTags = new Taggle(document.querySelector('.event_tags_input'), {
       allowDuplicates: false,
-      submitKeys: []
+      submitKeys: [],
+      tagFormatter: function (elem) {
+         var el = elem.firstElementChild;
+         var tagtext = el.innerText;
+         var data = U.eventTags.cache[tagtext];
+         if (data) {
+            el.title = data.data.description;
+         }
+         return elem;
+      }
    });
 
-   $(U.eventTags.getInput()).autocomplete(Object.assign({}, autocompleteSettings, {
+   U.eventTags.cache = {};
+
+   U.eventTags.autocomplete = $(U.eventTags.getInput()).autocomplete(Object.assign({}, autocompleteSettings, {
       serviceUrl: 'webapi/autocomplete/tags',
       minChars: 0,
       onSelect: function (data) {
          U.eventTags.add(data);
+      },
+      transformResult: function (response) {
+         var data = autocompleteSettings.transformResult(response);
+         for (var i = 0, len = data.suggestions.length; i < len; i++) {
+            U.eventTags.cache[data.suggestions[i].value.toLowerCase()] = data.suggestions[i];
+         }
+         return data;
       }
-   }));
+   })).autocomplete();
+
 }());
 
 
