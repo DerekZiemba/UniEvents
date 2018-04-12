@@ -8,8 +8,8 @@ USE [$(dbUniHangouts)]
 GO
 CREATE OR ALTER PROCEDURE [dbo].[sp_EventTypes_Create]
 	@EventTypeID Int = NULL OUTPUT,
-	@Name VARCHAR(50) = NULL,
-	@Description NVARCHAR(400) = NULL
+	@Name VARCHAR(50),
+	@Description NVARCHAR(400)
 AS
 SET NOCOUNT ON;
 
