@@ -4,16 +4,12 @@
 	{
 		"outputFileName": "wwwroot/bundles/uni-events.css",
 		"inputFiles": [
-			"wwwroot/styles/flatpickr-dark-4.4.3.css",
+			"wwwroot/lib/flatpickr/flatpickr-dark.css",
 			"wwwroot/styles/uni-events.css"
 		]
 	},
 	{
 		"outputFileName": "wwwroot/bundles/uni-events.es5.min.js",
 		"inputFiles": [ "wwwroot/bundles/uni-events.es5.js" ] //minify
-	},
-	{
-		"outputFileName": "wwwroot/bundles/jquery.plugins.es5.min.js",
-		"inputFiles": [ "wwwroot/bundles/jquery.plugins.es5.js" ] //minify
 	}
 ]

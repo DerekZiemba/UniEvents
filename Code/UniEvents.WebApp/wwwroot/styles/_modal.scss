@@ -1,0 +1,80 @@
+﻿@import "_mixins.scss";
+
+@-webkit-keyframes animatetop {
+   from {
+      top: -300px;
+      opacity: 0
+   }
+
+   to {
+      /*top: 0;*/
+      opacity: 1
+   }
+}
+
+@keyframes animatetop {
+   from {
+      top: -300px;
+      opacity: 0
+   }
+
+   to {
+      /*top: 0;*/
+      opacity: 1
+   }
+}
+
+
+.modal {
+   display: none;
+   left: 0;
+   top: 0;
+   width: 100%; /* Full width */
+   height: 100%; /* Full height */
+   overflow: auto; /* Enable scroll if needed */
+   background-color: rgb(0,0,0); /* Fallback color */
+   background-color: rgba(0,0,0,0.4);
+
+   .modal-header, .modal-footer {
+      padding: 2px 16px;
+      background-color: rgba(63,68,88,0.98);
+      color: white;
+      text-align: center;
+
+      h2 {
+         margin-top: .5rem;
+         margin-bottom: .5rem;
+      }
+   }
+
+
+   .modal-content {
+      top: 10%;
+      position: relative;
+      background-color: #fefefe;
+      margin: auto;
+      padding: 0;
+      border: 1px solid #888;
+      width: 80%;
+      box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+      @include vendor-property(animation-name, animatetop);
+      @include vendor-property(animation-duration, 0.4s);
+   }
+
+   .modal-body {
+   }
+
+   .close {
+      color: #aaa;
+      float: right;
+      font-size: 44px;
+      font-weight: bold;
+   }
+
+   .close:hover,
+   .close:focus {
+      color: red;
+      text-decoration: none;
+      cursor: pointer;
+   }
+}

@@ -1,0 +1,100 @@
+﻿@import "_mixins.scss";
+
+@media screen and (max-width: 767px) {
+}
+
+@media (max-width: 1200px) {
+   .container {
+      width: 100%;
+   }
+}
+
+@-webkit-keyframes fadeOut {
+   0% {
+      opacity: 1;
+   }
+
+   100% {
+      opacity: 0;
+   }
+}
+
+@keyframes fadeOut {
+   0% {
+      opacity: 1;
+   }
+
+   100% {
+      opacity: 0;
+   }
+}
+
+
+.required-highlight {
+   border: 1px solid red;
+
+   .required label, label.required, &.required label {
+      color: red;
+   }
+
+   .required input, input.required {
+      border: 1px solid red;
+   }
+
+}
+
+body.required-highlight {
+   input:required {
+      border: 1px solid red;
+   }
+}
+
+
+.required {
+   label:before {
+      content: " *";
+      color: red;
+   }
+
+   label:hover:before {
+      content: "(required)";
+      color: red;
+      font-weight: normal;
+   }
+}
+
+
+
+a {
+   cursor: pointer;
+}
+
+
+.HTMLTemplates {
+   display: none;
+}
+
+
+[name=notification_message] {
+   font-weight: bold;
+   text-align: center;
+   font-size: larger;
+   margin-top: 10px;
+
+   &.error {
+      color: red;
+   }
+
+   &.alert {
+      color: sandybrown;
+   }
+
+   &.info {
+      color: navy;
+   }
+
+   &.success {
+      color: green;
+   }
+}
+
