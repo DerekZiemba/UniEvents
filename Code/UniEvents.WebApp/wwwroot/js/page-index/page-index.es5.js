@@ -137,7 +137,7 @@
                 };
                 $.ajax(oRequest)
                     .done(function () {
-                    setTimeout(function () { self.loading_spinner.style.opacity = '0'; }, 2000);
+                    setTimeout(function () { self.loading_spinner.style.opacity = '0'; }, 1900);
                     self.loading_spinner.classList.add('fadeOut');
                 });
             },

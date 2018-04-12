@@ -1030,8 +1030,9 @@ a
 }
 #IndexPage .loading_spinner
 {
- height: 150px;
- transform: translateY(50%);
+ bottom: 80px;
+ position: relative;
+ width: 100%;
 }
 #IndexPage .fadeOut
 {
