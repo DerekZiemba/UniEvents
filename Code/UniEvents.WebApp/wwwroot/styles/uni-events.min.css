@@ -1030,8 +1030,8 @@ a
 }
 #IndexPage .loading_spinner
 {
- height: 150px;
- transform: translateY(50%);
+ transform: translateY(-20px);
+ height: 50px;
 }
 #IndexPage .fadeOut
 {
@@ -1045,6 +1045,10 @@ a
  -ms-animation-duration: 2s;
  -webkit-animation-duration: 2s;
  animation-duration: 2s;
+}
+#IndexPage .modal_eventdetails .modal-body
+{
+ height: 60vh;
 }
 #AccountPage #allLoginsTableContainer
 {

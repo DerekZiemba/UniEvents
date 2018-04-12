@@ -326,9 +326,11 @@ a { cursor: pointer; }
 
 #IndexPage .ef_right { float: right; }
 
-#IndexPage .loading_spinner { height: 150px; transform: translateY(50%); }
+#IndexPage .loading_spinner { transform: translateY(-20px); height: 50px; }
 
 #IndexPage .fadeOut { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 2s; -moz-animation-duration: 2s; -ms-animation-duration: 2s; -webkit-animation-duration: 2s; animation-duration: 2s; }
+
+#IndexPage .modal_eventdetails .modal-body { height: 60vh; }
 
 #AccountPage #allLoginsTableContainer { overflow-x: auto; }
 

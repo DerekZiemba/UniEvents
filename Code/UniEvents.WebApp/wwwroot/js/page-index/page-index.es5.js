@@ -27,6 +27,7 @@
         function EventModal(feedItem) {
             this.feedItem = feedItem;
             this.el = divTemplate.cloneNode(true);
+            this.el.id = '';
             this.handleWindowClick = _handleWindowClick.bind(this);
             this.handleModalClick = _handleModalClick.bind(this);
             this.handleCloseClick = _handleCloseClick.bind(this);
@@ -137,7 +138,7 @@
                 };
                 $.ajax(oRequest)
                     .done(function () {
-                    setTimeout(function () { self.loading_spinner.style.opacity = '0'; }, 2000);
+                    setTimeout(function () { self.loading_spinner.style.opacity = '0'; }, 1900);
                     self.loading_spinner.classList.add('fadeOut');
                 });
             },
