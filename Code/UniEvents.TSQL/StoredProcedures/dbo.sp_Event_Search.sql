@@ -60,6 +60,7 @@ SELECT
    GROUP BY feed.EventID, feed.EventTypeID, feed.AccountID, feed.LocationID, feed.DateStart, feed.DateEnd, feed.Title, feed.Caption, 
       acc.DisplayName, acc.UserName,
       loc.CountryRegion, loc.AdminDistrict, loc.PostalCode, loc.Locality, loc.[Name], loc.AddressLine
+   ORDER BY feed.DateStart;
 
 
 GO
