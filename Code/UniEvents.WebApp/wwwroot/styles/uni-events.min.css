@@ -1046,6 +1046,10 @@ a
  -webkit-animation-duration: 2s;
  animation-duration: 2s;
 }
+#IndexPage .modal_eventdetails .modal-body
+{
+ height: 60vh;
+}
 #AccountPage #allLoginsTableContainer
 {
  overflow-x: auto;

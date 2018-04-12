@@ -40,6 +40,7 @@
          function EventModal(feedItem) {
             this.feedItem = feedItem;
             this.el = divTemplate.cloneNode(true);
+            this.el.id = '';
 
             this.handleWindowClick = _handleWindowClick.bind(this);
             this.handleModalClick = _handleModalClick.bind(this);

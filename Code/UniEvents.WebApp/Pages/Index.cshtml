@@ -11,29 +11,46 @@
 
 <div class="HTMLTemplates">
    <div id="Template_EventDetailsModal" class="modal modal_eventdetails">
-      <div class="modal_content">
-         <div class="title"></div>
-         <div class="caption"></div>
-         <div class="details">
-            <div class="ef_left">
-               <div class="host"></div>
-               <div class="location"></div>
-               <div class="address"></div>
-            </div>
-            <div class="ef_right">
-               <div class="times">
-                  <div class="time_start"><time></time></div>
-                  <div class="time_end"><time></time></div>
+
+      <div class="modal-content">
+         <div class="modal-header">
+            <span class="close">&times;</span>
+            <h2>Event Information</h2>
+         </div>
+         <div class="modal-body">
+            <div name="notification_message"></div>
+            <div class="ef_item">
+               <div class="title"><span class="ef_value"></span></div>
+               <div class="caption"><span class="ef_value"></span></div>
+               <div class="ef_details">
+                  <div class="ef_left">
+                     <div class="host"><label>Host:</label><span class="ef_value"></span></div>
+                     <div class="location"><label>Location:</label><span class="ef_value"></span></div>
+                     <div class="address"><label>Address:</label><span class="ef_value"></span></div>
+                     <div class="event_type"><label>EventType:</label><span class="ef_value"></span></div>
+                     <div class="tags"><label>Tags:</label><span class="ef_value"></span></div>
+                  </div>
+                  <div class="ef_right">
+                     <div class="times">
+                        <div class="time_start"><label>Start Time:</label><time class="ef_value"></time></div>
+                        <div class="time_end"><label>End Time:</label><time class="ef_value"></time></div>
+                     </div>
+                     <div class="rsvp">
+                        <div class="rsvp_attending"><label>Attending:</label><span class="ef_value"></span></div>
+                        <div class="rsvp_stopby"><label>Will Stop By:</label><span class="ef_value"></span></div>
+                        <div class="rsvp_maybe"><label>Maybe Attend:</label><span class="ef_value"></span></div>
+                     </div>
+                  </div>
                </div>
-               <div class="rsvp">
-                  <span class="rsvp_attending"></span>
-               </div>
+               <p class="description"></p>
+               
             </div>
          </div>
-         <p class="description"></p>
-         <span class="btn close">Cancel</span>
-         <button class="btn join_event">Join Event</button>
+         <div class="modal-footer">
+            <button class="btn join_event">Join Event</button>
+         </div>
       </div>
+
    </div>
 
    <div id="Template_FeedItem" class="ef_item_container">
@@ -67,8 +84,7 @@
 <div id="IndexPage">
    <h2>Event Feed</h2>
 
-   <!-- The hidden pop up event description page -->
-   <div id="EventModalContent" class="modal">
+   <div id="EventModalContent">
    </div>
 
    @if (Model.UserContext != null && Model.UserContext.IsVerifiedLogin) {
