@@ -322,9 +322,8 @@
    }
 
    .loading_spinner {
-      bottom:80px;
-      position:relative;
-      width:100%;
+      transform: translateY(-20px);
+      height:50px;
    }
 
    .fadeOut {
