@@ -9,6 +9,26 @@
    }
 }
 
+@-webkit-keyframes fadeOut {
+   0% {
+      opacity: 1;
+   }
+
+   100% {
+      opacity: 0;
+   }
+}
+
+@keyframes fadeOut {
+   0% {
+      opacity: 1;
+   }
+
+   100% {
+      opacity: 0;
+   }
+}
+
 
 .required-highlight {
    border: 1px solid red;
@@ -77,3 +97,4 @@ a {
       color: green;
    }
 }
+

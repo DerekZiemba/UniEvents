@@ -102,6 +102,7 @@
     }());
     var EventFeed = (function () {
         function EventFeed(id) {
+            this.loading_spinner = document.querySelector('.loading_spinner');
             this.el = document.getElementById(id);
             this.ul = this.el.querySelector('ul');
             this.feedItems = [];
@@ -112,6 +113,8 @@
         }
         ZMBA.extendType(EventFeed.prototype, {
             requestEvents: function (dateFrom, dateTo) {
+                this.loading_spinner.style.opacity = '1';
+                this.loading_spinner.classList.remove('fadeOut');
                 var self = this;
                 function handleFailure(ev) {
                     console.log(ev);
@@ -132,7 +135,11 @@
                     error: handleFailure,
                     success: handleSuccess
                 };
-                $.ajax(oRequest);
+                $.ajax(oRequest)
+                    .done(function () {
+                    setTimeout(function () { self.loading_spinner.style.opacity = '0'; }, 2000);
+                    self.loading_spinner.classList.add('fadeOut');
+                });
             },
             addEvents: function (events) {
                 var ul = document.createElement('ul');
