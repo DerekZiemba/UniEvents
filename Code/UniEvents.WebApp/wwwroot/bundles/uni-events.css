@@ -846,7 +846,17 @@ span.flatpickr-weekday {
 
 @media (max-width: 1200px) { .container { width: 100%; } }
 
-.highlightRequiredInputs input:required { border: 1px solid red; }
+.required-highlight { border: 1px solid red; }
+
+.required-highlight .required label, .required-highlight label.required, .required-highlight.required label { color: red; }
+
+.required-highlight .required input, .required-highlight input.required { border: 1px solid red; }
+
+body.required-highlight input:required { border: 1px solid red; }
+
+.required label:before { content: " *"; color: red; }
+
+.required label:hover:before { content: "(required)"; color: red; font-weight: normal; }
 
 a { cursor: pointer; }
 
@@ -989,7 +999,7 @@ a { cursor: pointer; }
 
 #CreateEventPage li.input_param_with_btn .input_param { width: 59rem; }
 
-#CreateEventPage li.input_param_with_btn input[type=button] { margin-left: 1rem; }
+#CreateEventPage li.input_param_with_btn button { margin-left: 1rem; }
 
 #CreateEventPage .event_tags_input { border: solid; border-width: 1px; border-color: #aaa; }
 

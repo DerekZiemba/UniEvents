@@ -129,7 +129,7 @@
          }
       }()),
       highlightRequiredInputs: function (bool) {
-         document.body.classList.toggle('highlightRequiredInputs', bool);
+         document.body.classList.toggle('required-highlight', bool);
       },
 
       LocationAutoComplete: (function () {

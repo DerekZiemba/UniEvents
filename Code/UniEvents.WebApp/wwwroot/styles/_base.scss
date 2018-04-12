@@ -10,11 +10,40 @@
 }
 
 
-.highlightRequiredInputs {
+.required-highlight {
+   border: 1px solid red;
+
+   .required label, label.required, &.required label {
+      color: red;
+   }
+
+   .required input, input.required {
+      border: 1px solid red;
+   }
+
+}
+
+body.required-highlight {
    input:required {
       border: 1px solid red;
    }
 }
+
+
+.required {
+   label:before {
+      content: " *";
+      color: red;
+   }
+
+   label:hover:before {
+      content: "(required)";
+      color: red;
+      font-weight: normal;
+   }
+}
+
+
 
 a {
    cursor: pointer;

@@ -5,9 +5,32 @@
   width: 100%;
  }
 }
-.highlightRequiredInputs input:required
+.required-highlight
 {
  border: 1px solid #f00;
+}
+.required-highlight .required label, .required-highlight label.required, .required-highlight.required label
+{
+ color: #f00;
+}
+.required-highlight .required input, .required-highlight input.required
+{
+ border: 1px solid #f00;
+}
+body.required-highlight input:required
+{
+ border: 1px solid #f00;
+}
+.required label:before
+{
+ content: " *";
+ color: #f00;
+}
+.required label:hover:before
+{
+ content: "(required)";
+ color: #f00;
+ font-weight: normal;
 }
 a
 {
@@ -430,7 +453,7 @@ a
 {
  width: 59rem;
 }
-#CreateEventPage li.input_param_with_btn input[type=button]
+#CreateEventPage li.input_param_with_btn button
 {
  margin-left: 1rem;
 }
