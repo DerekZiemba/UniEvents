@@ -109,24 +109,51 @@
 }());
 (function wireupModals() {
     U.modalCreateEventType = (function () {
-        var modal = document.getElementById('modalCreateEventType');
-        var btnOpen = document.getElementById('btnCreateEventType');
-        var btnClose = modal.querySelector('.close');
-        function open() {
-            btnOpen.enable = false;
-            modal.style.display = "block";
-        }
-        function close() {
-            btnOpen.enable = true;
-            modal.style.display = "none";
-        }
-        btnOpen.addEventListener('click', open);
-        btnClose.addEventListener('click', close);
-        window.addEventListener('click', function (ev) {
-            if (ev.target === modal) {
-                close();
+        var modal = new U.Modal('#modalCreateEventType', '#btnCreateEventType');
+        modal.footer.addEventListener('click', function () {
+            var oRequest = U.buildAjaxRequestFromInputs(modal.body.querySelectorAll("[param]"), { type: "POST", url: "webapi/eventtypes/create" });
+            function handleFailure(ev) {
+                console.log(oRequest, ev);
+                U.setNotification(modal.elem, 'error', ev.message);
             }
+            $.ajax(oRequest)
+                .fail(handleFailure)
+                .done(function (ev) {
+                if (ev.success) {
+                    U.setNotification(modal.elem, 'success', 'Success! EventType Created!');
+                    U.eventType.cachedResponse = {};
+                    U.eventType.suggestions = [{ value: ev.result.name, data: ev.result }];
+                    U.eventType.select(0);
+                    window.setTimeout(modal.close, 2000);
+                }
+                else {
+                    handleFailure(ev);
+                }
+            });
         });
-        return { modal: modal, btnOpen: btnOpen, btnClose: btnClose, open: open, close: close };
+        return modal;
+    }());
+    U.modalCreateTag = (function () {
+        var modal = new U.Modal('#modalCreateTag', '#btnCreateTag');
+        modal.footer.addEventListener('click', function () {
+            var oRequest = U.buildAjaxRequestFromInputs(modal.body.querySelectorAll("[param]"), { type: "POST", url: "webapi/tags/create" });
+            function handleFailure(ev) {
+                console.log(oRequest, ev);
+                U.setNotification(modal.elem, 'error', ev.message);
+            }
+            $.ajax(oRequest)
+                .fail(handleFailure)
+                .done(function (ev) {
+                if (ev.success) {
+                    U.setNotification(modal.elem, 'success', 'Success! EventType Created!');
+                    U.eventTags.add(ev.result.name);
+                    window.setTimeout(modal.close, 2000);
+                }
+                else {
+                    handleFailure(ev);
+                }
+            });
+        });
+        return modal;
     }());
 }());

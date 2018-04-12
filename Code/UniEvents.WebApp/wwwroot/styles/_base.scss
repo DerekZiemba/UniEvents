@@ -53,3 +53,27 @@ a {
 .HTMLTemplates {
    display: none;
 }
+
+
+[name=notification_message] {
+   font-weight: bold;
+   text-align: center;
+   font-size: larger;
+   margin-top: 10px;
+
+   &.error {
+      color: red;
+   }
+
+   &.alert {
+      color: sandybrown;
+   }
+
+   &.info {
+      color: navy;
+   }
+
+   &.success {
+      color: green;
+   }
+}

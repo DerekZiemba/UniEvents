@@ -115,19 +115,26 @@
             return request;
          }
       }()),
-      setPageMessage: (function () {
+      setPageMessage: function (type, message, timeout) {
+         U.setNotification(document.getElementById('divPageMessage'), type, message, timeout);
+      },
+      setNotification: (function () {
          const classmap = { 0: 'success', 1: 'info', 2: 'alert', 3: 'error' };
-         return function (type, message, timeout) {
-            var div = document.getElementById('divPageMessage');
-            div.className = classmap[type] || type;
-            div.innerHTML = "";
+         return function (elem, type, message, timeout) {
+            if (elem.name !== 'notification_message') {
+               var sel = '[name=notification_message]';
+               elem = elem.querySelector(sel) || elem.closest(sel) || elem;
+            }
+            elem.className = classmap[type] || type;
+            elem.innerHTML = "";
             if (message instanceof Node) {
-               div.appendChild(message);
+               elem.appendChild(message);
             } else {
-               div.innerHTML = message;
+               elem.innerHTML = message;
             }
          }
       }()),
+
       highlightRequiredInputs: function (bool) {
          document.body.classList.toggle('required-highlight', bool);
       },
@@ -205,6 +212,50 @@
          }
 
          return LocAutoComplete;
+      }()),
+
+      Modal: (function () {
+         function open(ev) {
+            this.btnOpen.enable = false;
+            this.elem.style.display = 'block';
+            var bounds = document.getElementsByClassName('body-content')[0].firstElementChild.getBoundingClientRect();
+            this.content.style.top = '60px';
+            this.content.style.width = (bounds.width * .8) + 'px';           
+         }
+         function close(ev) {
+            if (ev) {
+               if (ev.target == this.elem || ev.target == this.btnClose) {
+                  this.close();
+               }
+               return;
+            }
+            this.btnOpen.enable = true;
+            this.elem.style.display = 'none';
+         }
+
+         function Modal(elem, btnOpen) {
+            this.elem = $(elem)[0];
+            this.btnOpen = $(btnOpen)[0];
+            this.btnClose = this.elem.querySelector('.close');
+            this.content = this.elem.querySelector('.modal-content');
+            this.header = this.content.querySelector('.modal-header');
+            this.body = this.content.querySelector('.modal-body');
+            this.footer = this.content.querySelector('.modal-footer');
+
+            this.open = open.bind(this);
+            this.close = close.bind(this);
+
+            this.btnOpen.addEventListener('click', this.open);
+            this.btnClose.addEventListener('click', this.close);
+            window.addEventListener('click', this.close);
+         }
+
+         Modal.prototype = {
+
+         }
+
+         return Modal;
+
       }())
 
    }, { override: false, merge: true });

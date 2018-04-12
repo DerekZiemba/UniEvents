@@ -16,29 +16,25 @@
       <div class="modal-content">
          <div class="modal-header">
             <span class="close">&times;</span>
-            <h2>Create a new Event Type</h2>
+            <h2>Create new Event Type</h2>
          </div>
          <div class="modal-body">
+            <div name="notification_message"></div>
             <div class="input_params vert_list">
                <ul class="input_ul">
                   <li class="required">
-                     <label class="input_label">UserName:</label>
-                     <input class="input_param" type="text" param="UserName" required />
-                     <span></span>
+                     <label class="input_label">Event Name:</label>
+                     <input class="input_param" type="text" param="name" required />
                   </li>
                   <li class="required">
-                     <label class="input_label">Password:</label>
-                     <input class="input_param" type="text" param="password" source="QueryString" required />
-                     <span></span>
+                     <label class="input_label">Description:</label>
+                     <input class="input_param" type="text" param="description" required />
                   </li>
                </ul>
-
             </div>
-            <p>Some text in the Modal Body</p>
-            <p>Some other text...</p>
          </div>
          <div class="modal-footer">
-            <h3>Modal Footer</h3>
+            <h3>Create</h3>
          </div>
       </div>
    </div>
@@ -47,14 +43,24 @@
       <div class="modal-content">
          <div class="modal-header">
             <span class="close">&times;</span>
-            <h2>Modal Header</h2>
+            <h2>Create new Event Tag</h2>
          </div>
          <div class="modal-body">
-            <p>Some text in the Modal Body</p>
-            <p>Some other text...</p>
+            <div class="input_params vert_list">
+               <ul class="input_ul">
+                  <li class="required">
+                     <label class="input_label">Event Tag:</label>
+                     <input class="input_param" type="text" param="name" required />
+                  </li>
+                  <li class="required">
+                     <label class="input_label">Description:</label>
+                     <input class="input_param" type="text" param="description" required/>
+                  </li>
+               </ul>
+            </div>
          </div>
          <div class="modal-footer">
-            <h3>Modal Footer</h3>
+            <h3>Create</h3>
          </div>
       </div>
    </div>

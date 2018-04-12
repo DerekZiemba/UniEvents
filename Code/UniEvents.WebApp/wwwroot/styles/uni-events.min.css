@@ -40,6 +40,29 @@ a
 {
  display: none;
 }
+[name=notification_message]
+{
+ font-weight: bold;
+ text-align: center;
+ font-size: larger;
+ margin-top: 10px;
+}
+[name=notification_message].error
+{
+ color: #f00;
+}
+[name=notification_message].alert
+{
+ color: #f4a460;
+}
+[name=notification_message].info
+{
+ color: #000080;
+}
+[name=notification_message].success
+{
+ color: #008000;
+}
 @-webkit-keyframes animatetop
 {
  from
@@ -49,7 +72,6 @@ a
  }
  to
  {
-  top: 0;
   opacity: 1;
  }
 }
@@ -62,15 +84,12 @@ a
  }
  to
  {
-  top: 0;
   opacity: 1;
  }
 }
 .modal
 {
  display: none;
- position: fixed;
- z-index: 1;
  left: 0;
  top: 0;
  width: 100%;
@@ -79,18 +98,21 @@ a
  background-color: #000;
  background-color: rgba(0,0,0,.4);
 }
-.modal .modal-header
+.modal .modal-header, .modal .modal-footer
 {
  padding: 2px 16px;
  background-color: rgba(63,68,88,.98);
  color: #fff;
+ text-align: center;
 }
-.modal .modal-body
+.modal .modal-header h2, .modal .modal-footer h2
 {
- padding: 2px 16px;
+ margin-top: .5rem;
+ margin-bottom: .5rem;
 }
 .modal .modal-content
 {
+ top: 10%;
  position: relative;
  background-color: #fefefe;
  margin: auto;
@@ -113,20 +135,14 @@ a
 {
  color: #aaa;
  float: right;
- font-size: 28px;
+ font-size: 44px;
  font-weight: bold;
 }
 .modal .close:hover, .modal .close:focus
 {
- color: #000;
+ color: #f00;
  text-decoration: none;
  cursor: pointer;
-}
-.modal .modal-footer
-{
- padding: 2px 16px;
- background-color: rgba(63,68,88,.98);
- color: #fff;
 }
 .autocomplete-suggestions
 {
@@ -362,29 +378,6 @@ a
  margin-top: 10px;
  margin-bottom: 10px;
 }
-.body-content #divPageMessage
-{
- font-weight: bold;
- text-align: center;
- font-size: larger;
- margin-top: 10px;
-}
-.body-content #divPageMessage.error
-{
- color: #f00;
-}
-.body-content #divPageMessage.alert
-{
- color: #f4a460;
-}
-.body-content #divPageMessage.info
-{
- color: #000080;
-}
-.body-content #divPageMessage.success
-{
- color: #008000;
-}
 #InputParams.Success input, .input_params.Success input
 {
  box-shadow: inset 1px 1px 10px 1px lightgreen,1px 1px 10px 1px lightgreen;
@@ -466,6 +459,23 @@ a
 #CreateEventPage .event_tags_input li
 {
  margin-bottom: 0;
+}
+#CreateEventPage #modalCreateEventType input[param=description], #CreateEventPage #modalCreateTag input[param=description]
+{
+ width: 70rem;
+}
+#CreateEventPage #modalCreateEventType .modal-footer, #CreateEventPage #modalCreateTag .modal-footer
+{
+ cursor: pointer;
+ -o-user-select: none;
+ -moz-user-select: none;
+ -ms-user-select: none;
+ -webkit-user-select: none;
+ user-select: none;
+}
+#CreateEventPage #modalCreateEventType .modal-footer:hover, #CreateEventPage #modalCreateTag .modal-footer:hover
+{
+ opacity: .75;
 }
 #SignUpPage
 {

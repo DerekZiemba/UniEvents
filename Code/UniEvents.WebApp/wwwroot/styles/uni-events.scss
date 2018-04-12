@@ -77,28 +77,6 @@
       margin-bottom: 10px;
    }
 
-   #divPageMessage {
-      font-weight: bold;
-      text-align: center;
-      font-size: larger;
-      margin-top: 10px;
-
-      &.error {
-         color: red;
-      }
-
-      &.alert {
-         color: sandybrown;
-      }
-
-      &.info {
-         color: navy;
-      }
-
-      &.success {
-         color: green;
-      }
-   }
 }
 
 #InputParams, .input_params {
@@ -187,8 +165,8 @@
          width: 59rem;
       }
 
-      button{
-         margin-left:1rem;
+      button {
+         margin-left: 1rem;
       }
    }
 
@@ -199,6 +177,22 @@
 
       li {
          margin-bottom: 0px;
+      }
+   }
+
+   #modalCreateEventType, #modalCreateTag {
+      input[param=description] {
+         width: 70rem;
+      }
+
+      .modal-footer {
+         cursor: pointer;
+         @include vendor-property(user-select, none);
+
+         &:hover {
+            opacity: .75;
+            /*background-color: rgba(63,68,88,0.5);*/
+         }
       }
    }
 }

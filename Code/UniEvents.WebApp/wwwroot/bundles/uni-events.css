@@ -862,29 +862,37 @@ a { cursor: pointer; }
 
 .HTMLTemplates { display: none; }
 
+[name=notification_message] { font-weight: bold; text-align: center; font-size: larger; margin-top: 10px; }
+
+[name=notification_message].error { color: red; }
+
+[name=notification_message].alert { color: sandybrown; }
+
+[name=notification_message].info { color: navy; }
+
+[name=notification_message].success { color: green; }
+
 @-webkit-keyframes animatetop { from { top: -300px;
 		opacity: 0; }
-	to { top: 0;
+	to { /*top: 0;*/
 		opacity: 1; } }
 
 @keyframes animatetop { from { top: -300px;
 		opacity: 0; }
-	to { top: 0;
+	to { /*top: 0;*/
 		opacity: 1; } }
 
-.modal { display: none; position: fixed; /* Stay in place */ z-index: 1; /* Sit on top */ left: 0; top: 0; width: 100%; /* Full width */ height: 100%; /* Full height */ overflow: auto; /* Enable scroll if needed */ background-color: black; /* Fallback color */ background-color: rgba(0, 0, 0, 0.4); /* The Close Button */ }
+.modal { display: none; left: 0; top: 0; width: 100%; /* Full width */ height: 100%; /* Full height */ overflow: auto; /* Enable scroll if needed */ background-color: black; /* Fallback color */ background-color: rgba(0, 0, 0, 0.4); }
 
-.modal .modal-header { padding: 2px 16px; background-color: rgba(63, 68, 88, 0.98); color: white; }
+.modal .modal-header, .modal .modal-footer { padding: 2px 16px; background-color: rgba(63, 68, 88, 0.98); color: white; text-align: center; }
 
-.modal .modal-body { padding: 2px 16px; }
+.modal .modal-header h2, .modal .modal-footer h2 { margin-top: .5rem; margin-bottom: .5rem; }
 
-.modal .modal-content { position: relative; background-color: #fefefe; margin: auto; padding: 0; border: 1px solid #888; width: 80%; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); -o-animation-name: animatetop; -moz-animation-name: animatetop; -ms-animation-name: animatetop; -webkit-animation-name: animatetop; animation-name: animatetop; -o-animation-duration: 0.4s; -moz-animation-duration: 0.4s; -ms-animation-duration: 0.4s; -webkit-animation-duration: 0.4s; animation-duration: 0.4s; }
+.modal .modal-content { top: 10%; position: relative; background-color: #fefefe; margin: auto; padding: 0; border: 1px solid #888; width: 80%; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); -o-animation-name: animatetop; -moz-animation-name: animatetop; -ms-animation-name: animatetop; -webkit-animation-name: animatetop; animation-name: animatetop; -o-animation-duration: 0.4s; -moz-animation-duration: 0.4s; -ms-animation-duration: 0.4s; -webkit-animation-duration: 0.4s; animation-duration: 0.4s; }
 
-.modal .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+.modal .close { color: #aaa; float: right; font-size: 44px; font-weight: bold; }
 
-.modal .close:hover, .modal .close:focus { color: black; text-decoration: none; cursor: pointer; }
-
-.modal .modal-footer { padding: 2px 16px; background-color: rgba(63, 68, 88, 0.98); color: white; }
+.modal .close:hover, .modal .close:focus { color: red; text-decoration: none; cursor: pointer; }
 
 .autocomplete-suggestions { border: 1px solid #999; background: #FFF; overflow: auto; }
 
@@ -957,16 +965,6 @@ a { cursor: pointer; }
 
 .body-content h1, .body-content h2, .body-content h3 { margin-top: 10px; margin-bottom: 10px; }
 
-.body-content #divPageMessage { font-weight: bold; text-align: center; font-size: larger; margin-top: 10px; }
-
-.body-content #divPageMessage.error { color: red; }
-
-.body-content #divPageMessage.alert { color: sandybrown; }
-
-.body-content #divPageMessage.info { color: navy; }
-
-.body-content #divPageMessage.success { color: green; }
-
 #InputParams.Success input, .input_params.Success input { box-shadow: inset 1px 1px 10px 1px lightgreen, 1px 1px 10px 1px lightgreen; border: 1px solid lightgreen; }
 
 #InputParams.Error input, .input_params.Error input { box-shadow: inset 1px 1px 10px 1px, 1px 1px 10px 1px red; border: 1px solid red; }
@@ -1004,6 +1002,12 @@ a { cursor: pointer; }
 #CreateEventPage .event_tags_input { border: solid; border-width: 1px; border-color: #aaa; }
 
 #CreateEventPage .event_tags_input li { margin-bottom: 0px; }
+
+#CreateEventPage #modalCreateEventType input[param=description], #CreateEventPage #modalCreateTag input[param=description] { width: 70rem; }
+
+#CreateEventPage #modalCreateEventType .modal-footer, #CreateEventPage #modalCreateTag .modal-footer { cursor: pointer; -o-user-select: none; -moz-user-select: none; -ms-user-select: none; -webkit-user-select: none; user-select: none; }
+
+#CreateEventPage #modalCreateEventType .modal-footer:hover, #CreateEventPage #modalCreateTag .modal-footer:hover { opacity: .75; /*background-color: rgba(63,68,88,0.5);*/ }
 
 #SignUpPage { padding-left: 15px; }
 
