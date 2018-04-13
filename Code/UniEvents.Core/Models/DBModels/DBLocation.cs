@@ -76,59 +76,10 @@ namespace UniEvents.Models.DBModels {
          Description = reader.GetString(nameof(Description));
       }
 
-      public static async Task<bool> SP_Locations_CreateOneAsync(Factory ctx, DBLocation model) {
-         if(model == null) { throw new ArgumentNullException("DBLocation_Null"); }
-         if (String.IsNullOrWhiteSpace(model.CountryRegion)) { throw new ArgumentNullException("CountryRegion cannot be empty"); }
-         if (model.Latitude6x.HasValue ^ model.Longitude6x.HasValue) { throw new ArgumentException("Latitude and Longitude must both be null or both have a value."); }
-         if (Math.Abs(model.Latitude) > 90) { throw new OverflowException("Latitude_Invalid"); }
-         if (Math.Abs(model.Longitude) > 180) { throw new OverflowException("Longitude_Invalid"); }
-
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_CreateOne]", conn) { CommandType = CommandType.StoredProcedure }) {
-            SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(@LocationID), null);
-            SqlParameter @ParentLocationID = cmd.AddParam(ParameterDirection.InputOutput, SqlDbType.BigInt, nameof(@ParentLocationID), model.ParentLocationID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), model.@Name);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), model.@AddressLine);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), model.@Locality);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), model.@AdminDistrict);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), model.@PostalCode);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@CountryRegion), model.CountryRegion);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), model.@Description);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Latitude6x), model.@Latitude6x);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(@Longitude6x), model.@Longitude6x);
-
-            int rowsAffected = await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
-
-            model.LocationID = (long)@LocationID.Value;
-            model.ParentLocationID = (long?)ParentLocationID.Value;
-            return model.LocationID > 0;
-         }
-      }
-
 
       public static SqlCommand GetSqlCommandForSP_Locations_GetOne(Factory ctx, long LocationID) {
          SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_GetOne]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
          cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(DBLocation.@LocationID), LocationID);
-         return cmd;
-      }
-
-      public static SqlCommand GetSqlCommandForSP_Locations_Search(Factory ctx,
-                                                                  long? @ParentLocationID = null,
-                                                                  string @Name = null,
-                                                                  string @AddressLine = null,
-                                                                  string @Locality = null,
-                                                                  string @AdminDistrict = null,
-                                                                  string @PostalCode = null,
-                                                                  string @Description = null) {
-
-         SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", new SqlConnection(ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure };
-         cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@ParentLocationID), @ParentLocationID);
-         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Name), @Name);
-         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AddressLine), @AddressLine);
-         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Locality), @Locality);
-         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@AdminDistrict), @AdminDistrict);
-         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PostalCode), @PostalCode);
-         cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Description), @Description);
          return cmd;
       }
 

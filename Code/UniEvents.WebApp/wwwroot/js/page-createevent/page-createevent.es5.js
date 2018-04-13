@@ -131,13 +131,13 @@
             var oRequest = U.buildAjaxRequestFromInputs(modal.body.querySelectorAll("[param]"), { type: "POST", url: "webapi/eventtypes/create" });
             function handleFailure(ev) {
                 console.log(oRequest, ev);
-                U.setNotification(modal.elem, 'error', ev.message);
+                U.setNotification(modal.el, 'error', ev.message);
             }
             $.ajax(oRequest)
                 .fail(handleFailure)
                 .done(function (ev) {
                 if (ev.success) {
-                    U.setNotification(modal.elem, 'success', 'Success! EventType Created!');
+                    U.setNotification(modal.el, 'success', 'Success! EventType Created!');
                     U.eventType.cachedResponse = {};
                     U.eventType.suggestions = [{ value: ev.result.name, data: ev.result }];
                     U.eventType.select(0);
@@ -156,13 +156,13 @@
             var oRequest = U.buildAjaxRequestFromInputs(modal.body.querySelectorAll("[param]"), { type: "POST", url: "webapi/tags/create" });
             function handleFailure(ev) {
                 console.log(oRequest, ev);
-                U.setNotification(modal.elem, 'error', ev.message);
+                U.setNotification(modal.el, 'error', ev.message);
             }
             $.ajax(oRequest)
                 .fail(handleFailure)
                 .done(function (ev) {
                 if (ev.success) {
-                    U.setNotification(modal.elem, 'success', 'Success! Tag Created!');
+                    U.setNotification(modal.el, 'success', 'Success! Tag Created!');
                     U.eventTags.add(ev.result.name);
                     window.setTimeout(modal.close, 2000);
                 }

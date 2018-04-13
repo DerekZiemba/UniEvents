@@ -45,10 +45,13 @@ namespace UniEvents.WebAPI.Controllers {
 
          apiresult.Success(new UserLoginCookie() { UserName = username, APIKey = dbLogin.APIKey, VerifyDate = dbLogin.LoginDate });
 
-         var ctx = await UserContext.InitContextFromCookie(this.HttpContext, apiresult.Result).ConfigureAwait(false);
-         if (ctx == null) {
-            return apiresult.Failure("Failed to set login cookie for unknown reason.");
-         }
+         try {
+            var ctx = await UserContext.InitContextFromCookie(this.HttpContext, apiresult.Result).ConfigureAwait(false);
+            if (ctx == null) {
+               return apiresult.Failure("Failed to set login cookie for unknown reason.");
+            }
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+
          return apiresult;
       }
 
@@ -214,7 +217,6 @@ namespace UniEvents.WebAPI.Controllers {
             return apiresult.Failure("Attempt to submit unverified Emails logged and detected."); //not really, but sounds scary.
          }
 
-         DBLocation dbLocation = new DBLocation(input.Location);
          DBAccount dbAccount = new DBAccount() {
             UserName = input.UserName,
             DisplayName = input.DisplayName,
@@ -227,9 +229,7 @@ namespace UniEvents.WebAPI.Controllers {
 
          (dbAccount.PasswordHash, dbAccount.Salt) = HashUtils.HashPassword256(password);
          try {
-            if (!await DBLocation.SP_Locations_CreateOneAsync(WebAppContext.Factory, dbLocation).ConfigureAwait(false)) {
-               return apiresult.Failure("Failed to create location.");
-            }
+            DBLocation dbLocation = Factory.LocationManager.CreateDBLocation(input.Location);
 
             dbAccount.LocationID = dbLocation.LocationID;
             if (!await DBAccount.SP_Account_CreateAsync(WebAppContext.Factory, dbAccount).ConfigureAwait(false)) {

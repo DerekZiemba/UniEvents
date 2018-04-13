@@ -34,7 +34,7 @@ namespace UniEvents.WebAPI.Controllers {
 
          var apiresult = new ApiResult<List<EventInfo>>();
          try {
-            return apiresult.Success(await Factory.EventFeedManager.EventSearch());
+            return apiresult.Success(await Factory.EventManager.EventSearch());
          } catch (Exception ex) { return apiresult.Failure(ex); }
       }
 
@@ -81,22 +81,7 @@ namespace UniEvents.WebAPI.Controllers {
 
         
          try {
-            StreetAddress address = input.Location;
-            DBLocation dbLocation;
-            using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(Factory, Name: address.Name, AddressLine: address.AddressLine, Locality: address.Locality, AdminDistrict: address.AdminDistrict, PostalCode: address.PostalCode)) {
-               dbLocation = cmd.ExecuteReader_GetOne<DBLocation>();
-            }
-            if (dbLocation != null) {
-               address = new StreetAddress(dbLocation);
-            } else {
-               dbLocation = new DBLocation(address);
-               if (DBLocation.SP_Locations_CreateOneAsync(Factory, dbLocation).ConfigureAwait(false).GetAwaiter().GetResult()) {
-                  address = new StreetAddress(dbLocation);
-               } else {
-                  return apiresult.Failure("Failed to Create Location");
-               }
-            }
-
+            StreetAddress address = new StreetAddress(Factory.LocationManager.GetOrCreateDBLocation(input.Location));
             DBEventFeedItem dbEventItem = DBEventFeedItem.SP_Event_CreateOrUpdate(Factory, eventType.EventTypeID, input.DateStart, input.DateEnd, UserContext.AccountID, address.LocationID.UnBox(), input.Title, input.Caption, input.Description);
             EventInfo info = new EventInfo(){
                EventID = dbEventItem.EventID,
@@ -116,7 +101,9 @@ namespace UniEvents.WebAPI.Controllers {
 
             for (int i = 0; i < eventTags.Length; i++) {
                DBTag tag = eventTags[i];
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                Factory.TagManager.LinkTagToEvent(info.EventID, tag.TagID);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             }
 
             return apiresult.Success(info);
@@ -128,6 +115,14 @@ namespace UniEvents.WebAPI.Controllers {
 
       }
 
+
+      [HttpGet, Route("webapi/events/getdescription/{id?}")]
+      public ApiResult<string> GetEventDescription(long id) {
+         var apiresult = new ApiResult<string>();
+         try {
+            return apiresult.Success("", Factory.EventManager.GetEventDescription(id));
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+      }
 
       public EventController(IHttpContextAccessor accessor): base(accessor) { }
    }

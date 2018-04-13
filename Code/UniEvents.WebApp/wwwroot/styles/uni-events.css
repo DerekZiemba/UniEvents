@@ -332,6 +332,8 @@ a { cursor: pointer; }
 
 #IndexPage .modal_eventdetails .modal-body { height: 60vh; }
 
+#IndexPage .modal_eventdetails .description { position: absolute; top: 230px; }
+
 #AccountPage #allLoginsTableContainer { overflow-x: auto; }
 
 #AccountPage #btnLogoutAll { margin-top: 10px; }

@@ -16,10 +16,10 @@ using UniEvents.Models.DBModels;
 
 namespace UniEvents.Core.Managers {
 
-   public class EventFeedManager {
+   public class EventManager {
       private readonly Factory Ctx;
 
-      internal EventFeedManager(Factory ctx) {
+      internal EventManager(Factory ctx) {
          this.Ctx = ctx;
       }
 
@@ -59,6 +59,21 @@ namespace UniEvents.Core.Managers {
          }
          return ls;
       }
+
+      public string GetEventDescription(long EventID) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_Details_GetOne]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), EventID);
+            if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+            using (SqlDataReader reader = cmd.ExecuteReader()) {
+               if (reader.Read()) {
+                  return reader.GetString("Details");
+               }
+            }
+         }
+         return "";
+      }
+
+
 
    }
 }

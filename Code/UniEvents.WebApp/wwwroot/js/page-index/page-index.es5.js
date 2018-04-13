@@ -4,93 +4,88 @@
     var feed = new U.EventFeed("EventFeed");
     feed.requestEvents();
 }(window, window.document, window.jQuery, window.U, window.ZMBA, function Factory(window, document, $, U, ZMBA) {
-    function GetTarget(el) {
-        return el && (el.getElementsByClassName('ef_value')[0] || el);
+    function initEventDataFields(target, data, dataFields) {
+        for (var i = 0, len = dataFields.length; i < len; i++) {
+            var key = dataFields[i];
+            target[key] = target.el.getElementsByClassName(key)[0].getElementsByClassName('ef_value')[0];
+            if (target[key] instanceof HTMLTimeElement) {
+                target[key].dateTime = data[key];
+                target[key].innerText = (new Date(data[key])).toLocaleString();
+            }
+            else {
+                target[key].innerText = data[key];
+            }
+        }
+        target.event_type = target.el.getElementsByClassName('event_type')[0];
+        target.event_type.appendChild(Element.From("<span title=\"" + data.event_type.description + "\">" + data.event_type.name + "</span>"));
+        target.tags = target.el.getElementsByClassName('tags')[0].getElementsByClassName('ef_value')[0];
+        while (target.tags.firstElementChild) {
+            target.tags.firstElementChild.remove();
+        }
+        if (data.tags) {
+            for (var i_1 = 0, len_1 = data.tags.length; i_1 < len_1; i_1++) {
+                var tag = data.tags[i_1];
+                var eltag = Element.From("<span class='tag' title=\"" + tag.description + "\">" + tag.name + "</span>");
+                target.tags.appendChild(eltag);
+            }
+        }
     }
     var EventModal = (function () {
-        var divTemplate = document.getElementById('Template_EventDetailsModal');
         var divEventModalContent = document.getElementById('EventModalContent');
-        EventModal.elemClassNames = ["title", "caption", "host", "location", "address", "rsvp_attending", "description", "close", "join_event"];
-        EventModal.elemClassNames.forEach(function (key) {
-            Object.defineProperty(EventModal.prototype, "el_" + key, { get: function () { return GetTarget(this.el.getElementsByClassName(key)[0]); } });
-        });
-        function _handleCloseClick(ev) {
-            ev.stopPropagation();
-            this.toggle(false);
-        }
-        function _handleModalClick(ev) {
-            ev.stopPropagation();
-        }
-        function _handleWindowClick(ev) {
-            this.toggle(false);
-        }
+        var divTemplate = document.getElementById('Template_EventDetailsModal');
+        var dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "rsvp_later", "rsvp_no", "time_start", "time_end", "description"];
         function EventModal(feedItem) {
+            U.Modal.call(this, divTemplate.cloneNode(true), feedItem.el);
             this.feedItem = feedItem;
-            this.el = divTemplate.cloneNode(true);
-            this.el.id = '';
-            this.handleWindowClick = _handleWindowClick.bind(this);
-            this.handleModalClick = _handleModalClick.bind(this);
-            this.handleCloseClick = _handleCloseClick.bind(this);
-            this.el_description.innerText = feedItem.description;
-            this.el.addEventListener('click', this.handleModalClick);
-            this.el_close.addEventListener('click', this.handleCloseClick);
+            this.el.id = 'efm_' + feedItem.data.id;
+            initEventDataFields(this, this.data, dataFields);
+            var self = this;
+            var oRequest = {
+                url: 'webapi/events/getdescription?id=' + self.data.id,
+                type: 'GET',
+                dataType: 'json',
+                error: function (ev) {
+                    console.log(oRequest, ev);
+                    U.setNotification(self.el, 'error', ev.message);
+                },
+                success: function (ev) {
+                    if (ev.success) {
+                        self.description.innerHTML = ev.result;
+                    }
+                    else {
+                        oRequest.error(ev);
+                    }
+                }
+            };
+            $.ajax(oRequest);
             divEventModalContent.appendChild(this.el);
         }
+        EventModal.prototype = U.Modal;
         ZMBA.extendType(EventModal.prototype, {
-            toggle: function (bool) {
-                if (arguments.length === 0) {
-                    bool = this.el.style.display === 'block' ? false : true;
-                }
-                if (bool) {
-                    window.addEventListener('click', this.handleWindowClick);
-                    this.el.style.display = 'block';
-                }
-                else {
-                    window.removeEventListener('click', this.handleWindowClick);
-                    this.el.style.display = 'none';
-                }
-            }
+            get data() { return this.feedItem.data; }
         });
         return EventModal;
     }());
     var FeedItem = (function () {
         var divTemplate = document.getElementById('Template_FeedItem');
-        FeedItem.dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "time_start", "time_end"];
-        FeedItem.dataFields.forEach(function (key) {
-            Object.defineProperty(FeedItem.prototype, "el_" + key, { get: function () { return GetTarget(this.el.getElementsByClassName(key)[0]); } });
-        });
+        var dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "time_start", "time_end"];
         function _handleClick(ev) {
             ev.stopPropagation();
             if (!this.modal) {
                 this.modal = new EventModal(this);
+                this.modal.open();
             }
-            this.modal.toggle(true);
+            else {
+                this.el.removeEventListener('click', this.handleClick);
+            }
         }
         function FeedItem(data) {
-            this.el = divTemplate.cloneNode(true);
-            this.data = data;
-            this.el.id = "efi_" + this.data.id;
-            for (var i = 0, len = FeedItem.dataFields.length; i < len; i++) {
-                var key = FeedItem.dataFields[i];
-                this["el_" + key].innerText = data[key];
-            }
-            this.el_time_start.dateTime = data.time_start;
-            this.el_time_end.dateTime = data.time_end;
-            this.el_time_start.innerText = (new Date(data.time_start)).toLocaleString();
-            this.el_time_end.innerText = (new Date(data.time_end)).toLocaleString();
             this.modal = null;
-            this.el_event_type = this.el.querySelector('.event_type');
-            if (data.event_type) {
-                this.el_event_type.appendChild(Element.From("<span title=\"" + data.event_type.description + "\">" + data.event_type.name + "</span>"));
-            }
-            this.el_tags = this.el.querySelector('.tags');
-            if (data.tags) {
-                for (var i = 0, len = data.tags.length; i < len; i++) {
-                    var tag = data.tags[i];
-                    var eltag = Element.From("<span class='tag' title=\"" + tag.description + "\">" + tag.name + "</span>");
-                    this.el_tags.appendChild(eltag);
-                }
-            }
+            this.data = data;
+            this.el = divTemplate.cloneNode(true);
+            this.el.id = "efi_" + this.data.id;
+            initEventDataFields(this, data, dataFields);
+            this.rsvp_stopby.innerText = data.rsvp_stopby + data.rsvp_later;
             this.handleClick = _handleClick.bind(this);
             this.enableListeners();
         }
@@ -115,6 +110,7 @@
         ZMBA.extendType(EventFeed.prototype, {
             requestEvents: function (dateFrom, dateTo) {
                 this.loading_spinner.style.opacity = '1';
+                this.loading_spinner.firstElementChild.style.display = 'block';
                 this.loading_spinner.classList.remove('fadeOut');
                 var self = this;
                 function handleFailure(ev) {
@@ -138,30 +134,17 @@
                 };
                 $.ajax(oRequest)
                     .done(function () {
-                    setTimeout(function () { self.loading_spinner.style.opacity = '0'; }, 1900);
+                    setTimeout(function () {
+                        self.loading_spinner.style.opacity = '0';
+                        self.loading_spinner.firstElementChild.style.display = 'none';
+                    }, 1900);
                     self.loading_spinner.classList.add('fadeOut');
                 });
             },
             addEvents: function (events) {
                 var ul = document.createElement('ul');
                 for (var i = 0; i < events.length; i++) {
-                    var event = events[i];
-                    var item = new FeedItem({
-                        id: event.eventID,
-                        title: event.title,
-                        caption: event.caption,
-                        host: event.host,
-                        location: event.locationName,
-                        address: event.addressLine,
-                        time_start: event.dateStart,
-                        time_end: event.dateEnd,
-                        rsvp_attending: event.rsvp_attending,
-                        rsvp_stopby: event.rsvp_stopby + event.rsvp_later,
-                        rsvp_maybe: event.rsvp_maybe,
-                        rsvp_no: event.rsvp_no,
-                        event_type: event.eventType,
-                        tags: event.tags
-                    });
+                    var item = new FeedItem(events[i]);
                     var li = document.createElement('li');
                     li.appendChild(item.el);
                     ul.appendChild(li);

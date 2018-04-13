@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -24,10 +26,11 @@ namespace UniEvents.Core.Managers {
       private Factory Ctx;
 
       private Task _initTask;
+      private ConcurrentDictionary<long, DBLocation> _dbLocationCache = new ConcurrentDictionary<long, DBLocation>();
 
       private Dictionary<string, AbbreviationEntry> DirectionAbbreviations;
       private Dictionary<string, AbbreviationEntry> AddressLineAbbreviations;
-
+    
       private PartialKeySearchTrie<LocationNode> QueryAutoComplete = new PartialKeySearchTrie<LocationNode>();
 
       internal LocationManager(Factory ctx) {
@@ -119,6 +122,7 @@ namespace UniEvents.Core.Managers {
                            if (city == null) {
                               city = new LocationNode.LocalityNode(cityname, state);
                               state.Children.Add(cityname, city);
+                              QueryAutoComplete.AddExact(city.CityName, city);
                               QueryAutoComplete.Add(city.StateName, city);
                               QueryAutoComplete.Add(city.Formatted, city);
                            }
@@ -146,44 +150,129 @@ namespace UniEvents.Core.Managers {
          return true;
       }
 
+      private void AddLocationToQueryAutoComplete(DBLocation model) {
+         bool bHasName = !String.IsNullOrWhiteSpace(model.Name);
+         bool bHasAddress = !String.IsNullOrWhiteSpace(model.AddressLine);
+         bool bHasZip = !String.IsNullOrWhiteSpace(model.PostalCode);
+         bool bHasCity = !String.IsNullOrWhiteSpace(model.Locality);
+         bool bHasState = !String.IsNullOrWhiteSpace(model.AdminDistrict);
+         bool bHasCountry = !String.IsNullOrWhiteSpace(model.CountryRegion);
 
-
-      public async Task<ApiResult<StreetAddress>> CreateLocation(StreetAddress address) {
-         var result = new ApiResult<StreetAddress>();
-         try {
-            DBLocation dbLocation = new DBLocation(address);
-            result.bSuccess = await DBLocation.SP_Locations_CreateOneAsync(Ctx, dbLocation).ConfigureAwait(false);
-            result.Result = new StreetAddress(dbLocation);
-            if (!result.bSuccess) {
-               result.sMessage = "Failed for Unknown Reason";
-            }
-         } catch (Exception ex) {
-            result.sMessage = ex.Message;
-         }
-         return result;
+         Helpers.BlockUntilFinished(ref _initTask);
+         LocationNode node;
+         //TODO:
       }
 
-      public async Task<StreetAddress> GetStreetAddressOrCreate(StreetAddress address) {
+      public DBLocation CreateDBLocation(StreetAddress address) {
+         if (String.IsNullOrWhiteSpace(address.CountryRegion)) { throw new ArgumentException("Country Required"); }
+         if (String.IsNullOrWhiteSpace(address.AdminDistrict)) { throw new ArgumentException("State Required"); }
+         if (String.IsNullOrWhiteSpace(address.Locality)) { throw new ArgumentException("City Required"); }
+
+         DBLocation model = new DBLocation(address);
+
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_CreateOne]", new SqlConnection(Ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
+            SqlParameter @LocationID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(model.@LocationID), null);
+            SqlParameter @ParentLocationID = cmd.AddParam(ParameterDirection.InputOutput, SqlDbType.BigInt, nameof(model.@ParentLocationID), model.ParentLocationID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.@Name), model.@Name);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.@AddressLine), model.@AddressLine);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.@Locality), model.@Locality);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.@AdminDistrict), model.@AdminDistrict);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.@PostalCode), model.@PostalCode);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.@CountryRegion), model.CountryRegion);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.@Description), model.@Description);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(model.@Latitude6x), model.@Latitude6x);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.Real, nameof(model.@Longitude6x), model.@Longitude6x);
+
+            int rowsAffected = cmd.ExecuteProcedure();
+            model.LocationID = (long)@LocationID.Value;
+            model.ParentLocationID = (long?)ParentLocationID.Value;
+
+            if(model.LocationID <= 0) {
+               throw new Exception("Failed for Unknown Reason");
+            } 
+         }
+
+         AddLocationToQueryAutoComplete(model);
+         return model;
+      }
+
+
+      public List<DBLocation> SearchDBLocations(StreetAddress address) {
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(address.@LocationID), null);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(address.@ParentLocationID), address.ParentLocationID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Name), address.@Name);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@AddressLine), address.@AddressLine);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Locality), address.@Locality);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@AdminDistrict), address.@AdminDistrict);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@PostalCode), address.@PostalCode);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@CountryRegion), address.CountryRegion);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Description), address.@Description);
+
+            return cmd.ExecuteReader_GetMany<DBLocation>().ToList();
+         }
+      }
+
+      public DBLocation GetOrCreateDBLocation(StreetAddress address) {
          DBLocation existing;
-         using (SqlCommand cmd = DBLocation.GetSqlCommandForSP_Locations_Search(Ctx, Name:address.Name, AddressLine:address.AddressLine, Locality:address.Locality, AdminDistrict:address.AdminDistrict, PostalCode:address.PostalCode)) {
-            existing = await cmd.ExecuteReader_GetOneAsync<DBLocation>().ConfigureAwait(false);
+         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(address.@LocationID), null);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(address.@ParentLocationID), address.ParentLocationID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Name), address.@Name);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@AddressLine), address.@AddressLine);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Locality), address.@Locality);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@AdminDistrict), address.@AdminDistrict);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@PostalCode), address.@PostalCode);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@CountryRegion), address.CountryRegion);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Description), address.@Description);
+            existing = cmd.ExecuteReader_GetOne<DBLocation>();
          }
+      
          if (existing != null) {
-            return new StreetAddress(existing);
+            return existing;
          } else {
-            DBLocation dbLocation = new DBLocation(address);
-            if (await DBLocation.SP_Locations_CreateOneAsync(Ctx, dbLocation).ConfigureAwait(false)) {
-               return new StreetAddress(dbLocation);
-            }           
+            return CreateDBLocation(address);
          }
-         return null;
       }
 
+      public DBLocation GetDBLocationByID(long LocationID) {
+         DBLocation location = _dbLocationCache.GetValueOrDefault(LocationID);
+         if(location == null || location.RetrievedOn > DateTime.UtcNow.AddHours(-1)) {
+            using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_GetOne]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+               cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@LocationID), LocationID);
+               location = cmd.ExecuteReader_GetOne<DBLocation>();
+            }
+            if(location != null) {
+               _dbLocationCache[LocationID] = location;
+            }
+         }
+         return location;
+      }
 
 
       public IEnumerable<LocationNode> QueryCachedLocations(string query) {
          Helpers.BlockUntilFinished(ref _initTask);
-         return QueryAutoComplete.FindMatches(query, 20);
+         return QueryAutoComplete.FindMatches<LocationNode>(query, 20, LocationQualityEvaluator);
+
+         int LocationQualityEvaluator(string key, string term, LocationNode item) {
+            if (term == null) { return 1; }
+            int len = Math.Min(key.Length, term.Length);
+            if (StringComparer.Ordinal.Equals(key, term)) {
+               if (item is LocationNode.PostalCodeNode) {
+                  return 6;
+               }
+               return 5;
+            }
+            int count = 0;
+            for (int i = 0; i < len; i++) {
+               if (key[i] == term[i]) {
+                  count++;
+               } else {
+                  break;
+               }
+            }
+            return 1 + (count / 5);
+         }
       }
       public IEnumerable<LocationNode.CountryRegionNode> QueryCachedCountries(string query) {
          Helpers.BlockUntilFinished(ref _initTask);
