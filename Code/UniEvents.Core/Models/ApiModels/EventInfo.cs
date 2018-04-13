@@ -7,22 +7,22 @@ using UniEvents.Models.DBModels;
 
 namespace UniEvents.Models.ApiModels {
    public class EventInfo {
-      public Int64 EventID { get; set; }
-      
-      public DateTime DateStart { get; set; }
-      public DateTime DateEnd { get; set; }
+      [JsonProperty(PropertyName = "id")] public Int64 EventID { get; set; }
+
+      [JsonProperty(PropertyName = "time_start")] public DateTime DateStart { get; set; }
+      [JsonProperty(PropertyName = "time_end")] public DateTime DateEnd { get; set; }
          
       public string Title { get; set; }
       public string Caption { get; set; }
 
 
       public long EventTypeID { get; set; }
-      public DBModels.DBEventType EventType { get; set; }
+      [JsonProperty(PropertyName = "event_type")] public DBModels.DBEventType EventType { get; set; }
 
       public Int64 LocationID { get; set; }
 
-      public string LocationName { get; set; }
-      public string AddressLine { get; set; }
+      [JsonProperty(PropertyName = "location")] public string LocationName { get; set; }
+      [JsonProperty(PropertyName = "address")] public string AddressLine { get; set; }
 
       public Int64 AccountID { get; set; }
       public string Host { get; set; }

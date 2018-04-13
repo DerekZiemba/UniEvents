@@ -182,27 +182,27 @@
       Modal: (function () {
          function open(ev) {
             this.btnOpen.enable = false;
-            this.elem.style.display = 'block';
+            this.el.style.display = 'block';
             var bounds = document.getElementsByClassName('body-content')[0].firstElementChild.getBoundingClientRect();
             this.content.style.top = '60px';
             this.content.style.width = (bounds.width * .8) + 'px';           
          }
          function close(ev) {
             if (ev) {
-               if (ev.target == this.elem || ev.target == this.btnClose) {
+               if (ev.target == this.el || ev.target == this.btnClose) {
                   this.close();
                }
                return;
             }
             this.btnOpen.enable = true;
-            this.elem.style.display = 'none';
+            this.el.style.display = 'none';
          }
 
-         function Modal(elem, btnOpen) {
-            this.elem = $(elem)[0];
+         function Modal(el, btnOpen) {
+            this.el = $(el)[0];
             this.btnOpen = $(btnOpen)[0];
-            this.btnClose = this.elem.querySelector('.close');
-            this.content = this.elem.querySelector('.modal-content');
+            this.btnClose = this.el.querySelector('.close');
+            this.content = this.el.querySelector('.modal-content');
             this.header = this.content.querySelector('.modal-header');
             this.body = this.content.querySelector('.modal-body');
             this.footer = this.content.querySelector('.modal-footer');

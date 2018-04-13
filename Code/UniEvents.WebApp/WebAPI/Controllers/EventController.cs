@@ -34,7 +34,7 @@ namespace UniEvents.WebAPI.Controllers {
 
          var apiresult = new ApiResult<List<EventInfo>>();
          try {
-            return apiresult.Success(await Factory.EventFeedManager.EventSearch());
+            return apiresult.Success(await Factory.EventManager.EventSearch());
          } catch (Exception ex) { return apiresult.Failure(ex); }
       }
 
@@ -115,6 +115,14 @@ namespace UniEvents.WebAPI.Controllers {
 
       }
 
+
+      [HttpGet, Route("webapi/events/getdescription/{id?}")]
+      public ApiResult<string> GetEventDescription(long id) {
+         var apiresult = new ApiResult<string>();
+         try {
+            return apiresult.Success("", Factory.EventManager.GetEventDescription(id));
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+      }
 
       public EventController(IHttpContextAccessor accessor): base(accessor) { }
    }
