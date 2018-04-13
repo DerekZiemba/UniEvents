@@ -1,119 +1,144 @@
 ﻿@page
 @model LoginModel
-
+@using System.Net
+@using System.Net.Mail
 @{
-   ViewData["Title"] = "SignUp";
-   Layout = "~/Pages/_Layout.cshtml";
+    ViewData["Title"] = "SignUp";
+    Layout = "~/Pages/_Layout.cshtml";
+}
+@functions{
+    String SendEmail()
+    {
+        int randomNumber = 1234;
+        Model.VerNumber = randomNumber;
+        SmtpClient smtp = new SmtpClient("smtp.gmail.com");
+        smtp.EnableSsl = true;
+        smtp.Port = 587;
+        smtp.Credentials = new NetworkCredential("UniEventsEmail@gmail.com",
+           "gbocwdvvqkvpwwiy");
+        smtp.Send("Nathan.j.ullman@gmail.com", "ullmanator12@gmail.com",
+           "ya boi", Model.VerNumber.ToString());
+        return "hellya";
+    }
+
 }
 @section Scripts {
-   <script src="~/lib/jquery.autocomplete/jquery.autocomplete.js" asp-append-version="false"></script>
-   <script src="~/js/page-signup/page-signup.es5.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery.autocomplete/jquery.autocomplete.js" asp-append-version="false"></script>
+    <script src="~/js/page-signup/page-signup.es5.js" asp-append-version="true"></script>
+    <script>
+        var sendEmailbtn = document.getElementById("sendEmail");
+        sendEmailbtn.onclick = function () {
+            @SendEmail();
+             
+    </script>
 }
 
-<h2>SignUp</h2>
+    <h2>SignUp</h2
 
 <div id="SignUpPage">
 
-   <div id="InputParams" class="vert_list">
+    <div id="InputParams" class="vert_list">
 
-      <h4>Account Info</h4>
-      <ul class="input_ul">
-         <li class="required">
-            <label class="input_label">UserName:</label>
-            <input class="input_param" type="text" param="UserName" required />
-            <span></span>
-         </li>
-         <li class="required">
-            <label class="input_label">Password:</label>
-            <input class="input_param" type="text" param="password" source="QueryString" required />
-            <span></span>
-         </li>
-         <li>
-            <label class="input_label">Display Name:</label>
-            <input class="input_param" type="text" param="DisplayName" placeholder="Name Other Users See" />
-            <span></span>
-         </li>
-      </ul>
+        <h4>Account Info</h4>
+        <ul class="input_ul">
+            <li class="required">
+                <label class="input_label">UserName:</label>
+                <input class="input_param" type="text" param="UserName" required />
+                <span></span>
+            </li>
+            <li class="required">
+                <label class="input_label">Password:</label>
+                <input class="input_param" type="text" param="password" source="QueryString" required />
+                <span></span>
+            </li>
+            <li>
+                <label class="input_label">Display Name:</label>
+                <input class="input_param" type="text" param="DisplayName" placeholder="Name Other Users See" />
+                <span></span>
+            </li>
+        </ul>
 
-      <h4>Personal Info</h4>
-      <ul class="input_ul">
-         <li>
-            <label class="input_label">First Name:</label>
-            <input class="input_param" type="text" param="FirstName" />
-            <span></span>
-         </li>
-         <li>
-            <label class="input_label">Last Name:</label>
-            <input class="input_param" type="text" param="LastName" />
-            <span></span>
-         </li>
-         <li>
-            <label class="input_label">School Email:</label>
-            <input class="input_param" type="text" param="SchoolEmail" />
-            <span></span>
-         </li>
-         <li>
-            <label class="input_label">Contact Email:</label>
-            <input class="input_param" type="text" param="ContactEmail" />
-            <span></span>
-         </li>
-         <li>
-            <label class="input_label">Phone Number:</label>
-            <input class="input_param" type="text" param="PhoneNumber" />
-            <span></span>
-         </li>
-      </ul>
+        <h4>Personal Info</h4>
+        <ul class="input_ul">
+            <li>
+                <label class="input_label">First Name:</label>
+                <input class="input_param" type="text" param="FirstName" />
+                <span></span>
+            </li>
+            <li>
+                <label class="input_label">Last Name:</label>
+                <input class="input_param" type="text" param="LastName" />
+                <span></span>
+            </li>
+            <li>
+                <label class="input_label">School Email:</label>
+                <input class="input_param" type="text" param="SchoolEmail" />
+                <button id="sendEmail"> Send Ver Code</button>
+                <span></span>
+            </li>
+
+            <li>
+                <label class="input_label">Contact Email:</label>
+                <input class="input_param" type="text" param="ContactEmail" />
+                <span></span>
+            </li>
+            <li>
+                <label class="input_label">Phone Number:</label>
+                <input class="input_param" type="text" param="PhoneNumber" />
+                <span></span>
+            </li>
+        </ul>
 
 
-      <h4>Location Info</h4>
-      <ul class="input_ul">
-         <li>
-            <label class="input_label">Location Search:</label>
-            <input class="input_param" type="text" placeholder="Search known locations to autocomplete." id="searchLocations" />
-            <span></span>
-         </li>
-         <li>
-            <label class="input_label">Name:</label>
-            <input class="input_param" type="text" param="Location.Name" placeholder="House, Apartment, etc." />
-            <span></span>
-         </li>
-         <li>
-            <label class="input_label">Address:</label>
-            <input class="input_param" type="text" param="Location.AddressLine" />
-            <span></span>
-         </li>
-         <li class="required">
-            <label class="input_label">City:</label>
-            <input class="input_param" type="text" param="Location.Locality" required />
-            <span></span>
-         </li>
-         <li class="required">
-            <label class="input_label">State:</label>
-            <input class="input_param" type="text" param="Location.AdminDistrict" required />
-            <span></span>
-         </li>
-         <li class="required">
-            <label class="input_label">Country:</label>
-            <input class="input_param" type="text" param="Location.CountryRegion" required />
-            <span></span>
-         </li>
-         <li class="required">
-            <label class="input_label">Postal Code:</label>
-            <input class="input_param" type="text" param="Location.PostalCode" required />
-            <span></span>
-         </li>
-      </ul>
+        <h4>Location Info</h4>
+        <ul class="input_ul">
+            <li>
+                <label class="input_label">Location Search:</label>
+                <input class="input_param" type="text" placeholder="Search known locations to autocomplete." id="searchLocations" />
+                <span></span>
+            </li>
+            <li>
+                <label class="input_label">Name:</label>
+                <input class="input_param" type="text" param="Location.Name" placeholder="House, Apartment, etc." />
+                <span></span>
+            </li>
+            <li>
+                <label class="input_label">Address:</label>
+                <input class="input_param" type="text" param="Location.AddressLine" />
+                <span></span>
+            </li>
+            <li class="required">
+                <label class="input_label">City:</label>
+                <input class="input_param" type="text" param="Location.Locality" required />
+                <span></span>
+            </li>
+            <li class="required">
+                <label class="input_label">State:</label>
+                <input class="input_param" type="text" param="Location.AdminDistrict" required />
+                <span></span>
+            </li>
+            <li class="required">
+                <label class="input_label">Country:</label>
+                <input class="input_param" type="text" param="Location.CountryRegion" required />
+                <span></span>
+            </li>
+            <li class="required">
+                <label class="input_label">Postal Code:</label>
+                <input class="input_param" type="text" param="Location.PostalCode" required />
+                <span></span>
+            </li>
+        </ul>
 
-   </div>
+    </div>
 
-   <br />
+    <br />
 
-   <ul>
-      <li>
-         <label id="signUpLabel"></label>
-         <input id="signUpButton" type="button" value="Create Account" />
-      </li>
-   </ul>
+    <ul>
+        <li>
+            <label id="signUpLabel"></label>
+            <input id="signUpButton" type="button" value="Create Account" />
+        </li>
+    </ul>
 </div>
 
 
