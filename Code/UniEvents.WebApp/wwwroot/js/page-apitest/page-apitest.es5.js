@@ -28,7 +28,7 @@
         while (inputParams.firstElementChild) {
             inputParams.removeChild(inputParams.firstElementChild);
         }
-        var option = this.options(this.selectedIndex);
+        var option = this.options[this.selectedIndex];
         metadata = U.dictMetaData[option.value];
         if (metadata) {
             btnExecute.disabled = false;
