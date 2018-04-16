@@ -83,41 +83,21 @@ namespace UniEvents.Models.DBModels {
          CountryRegion = reader.GetString(nameof(CountryRegion));
       }
 
+   }
 
-      public static DBEventFeedItem SP_Event_CreateOrUpdate(Factory ctx,
-         long EventTypeID, DateTime DateStart, DateTime DateEnd, long AccountID, long LocationID, string Title, string Caption, string Details) {
 
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_CreateOrUpdate]", conn) { CommandType = CommandType.StoredProcedure }) {
-            SqlParameter @EventID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(EventID), null);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateStart), DateStart);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateEnd), DateEnd);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(AccountID), AccountID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(LocationID), LocationID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Title), Title);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Caption), Caption);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Details), Details);
+   public class DBEventFeedItemExtended : DBEventFeedItem {
+      public Int64 LocationID { get; set; }
+      public Int64? ParentLocationID { get; set; }
+      public string Details { get; set; }
 
-            int rowsAffected = cmd.ExecuteProcedure();
+      public DBEventFeedItemExtended() { }
 
-            DBEventFeedItem result = new DBEventFeedItem(){
-               EventID = (Int64)@EventID.Value,
-               EventTypeID = EventTypeID,
-               DateStart = DateStart,
-               DateEnd = DateEnd,
-               AccountID = AccountID,
-               LocationID = LocationID,
-               Title = Title,
-               Caption = Caption
-            };
-            if (result.EventID > 0) {
-               return result;
-            }
-         }
-         return null;
+      public DBEventFeedItemExtended(IDataReader reader) : base(reader) {
+         LocationID = reader.GetInt64(nameof(LocationID));
+         ParentLocationID = reader.GetNInt64(nameof(ParentLocationID));
+         Details = reader.GetString(nameof(Details));
       }
-
    }
 
 }

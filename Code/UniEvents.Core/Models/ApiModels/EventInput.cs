@@ -20,4 +20,8 @@ namespace UniEvents.Models.ApiModels {
       public StreetAddress Location { get; set; }
 
    }
+
+
+
+
 }

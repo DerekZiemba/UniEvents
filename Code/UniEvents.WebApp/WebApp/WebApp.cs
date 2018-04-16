@@ -101,6 +101,8 @@ namespace UniEvents.WebApp {
       internal static IHostingEnvironment Environment;
       internal static MetaDataManager MetaData;
       internal static Factory Factory;
+      public static string EnvironmentString;
+      public static string ServerName;
       
       internal static void _init(IConfiguration value) { Configuration = value; }
       internal static void _init(IServiceCollection value) {
@@ -108,15 +110,20 @@ namespace UniEvents.WebApp {
          MetaData = new MetaDataManager(Services.BuildServiceProvider().GetService<IApiDescriptionGroupCollectionProvider>());
       }
       internal static void _init(IHostingEnvironment value) {
+         ServerName = System.Environment.MachineName;
          Environment = value;
          if (Environment.IsDevelopment()) {
             Factory = new Core.Factory("C:\\UniEvents.config.json");
+            EnvironmentString = "dev";
          } else if (Environment.IsStaging()) {
             Factory = new Core.Factory("C:\\UniEvents.config.json");
+            EnvironmentString = "stg";
          } else if (Environment.IsProduction()) {
             Factory = new Core.Factory("C:\\UniEvents.config.json");
+            EnvironmentString = "live";
          } else {
             Factory = new Core.Factory("C:\\UniEvents.config.json");
+            EnvironmentString = "unknown";
          }
       }
 
