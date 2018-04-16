@@ -1,0 +1,54 @@
+﻿@page
+@using System.Net
+@using System.Net.Mail
+@model UniEvents.WebApp.Pages.VerifEmailModel
+@{
+    ViewData["Title"] = "VerifyEmail";
+}
+@functions{
+
+    String SendEmail()
+    {
+        String email = Model.UserContext.ContactEmail;
+        SmtpClient smtp = new SmtpClient("smtp.gmail.com");
+        smtp.EnableSsl = true;
+        smtp.Port = 587;
+        smtp.Credentials = new NetworkCredential("UniEventsEmail@gmail.com",
+           "gbocwdvvqkvpwwiy");
+        smtp.Send("UniEventsEmail@gmail.com", email,
+           "Testing Stuff", Model.VerNumber.ToString());
+        return "";
+    }
+
+}
+<h2>VerifyEmail</h2>
+<li>
+    <p>Verification Code has been sent to your contact email, please input code =></p>
+</li>
+<li>
+    <input id ="VerCodeInput" type ="text" />
+    <button id="VerCodeBtn">Verify</button>
+</li>
+
+<script>
+     @SendEmail();
+    var input = document.getElementById("VerCodeInput");
+    var btn = document.getElementById("VerCodeBtn");
+
+    btn.onclick = function () {
+
+        console.log(@Model.VerNumber);
+        console.log(input.value);
+        if (input.value == @Model.VerNumber) {
+            input.value = "Verified!";
+            console.log("Verified!");
+        }
+        else {
+            console.log("Wrong confirmation Code!");
+            input.value= "Wrong Confirmation Code! Big Brother is Watching";
+
+        }
+
+    }
+
+</script>
