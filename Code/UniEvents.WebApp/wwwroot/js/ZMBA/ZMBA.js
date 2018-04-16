@@ -2,6 +2,21 @@
 
 /*! ZMBA.js */
 (function (window, document, extensionsAndPolyfills) {
+   const _startTimeMillis = window.performance.now();
+   console.log("start: " + _startTimeMillis + "ms");
+
+   if (!Object.getOwnPropertyDescriptors) {
+      Object.getOwnPropertyDescriptors = function getOwnPropertyDescriptors(obj) {
+         var desc = {};
+         var names = Object.getOwnPropertyNames(obj);
+         for (var i = 0, len = names.length; i < len; i++) {
+            var name = names[i];
+            desc[name] = Object.getOwnPropertyDescriptor(obj, name);
+         }
+         return desc;
+      }
+   }
+
    const extendType = (function () {
       function defMult(proto, name, prop, options, obj) { for (var i = 0, len = proto.length; i < len; i++) { defOne(proto[i], name, prop, options, obj); } };
       function defOne(proto, name, prop, options, obj) {
@@ -40,7 +55,6 @@
    extensionsAndPolyfills(window, document, extendType);
 
    const ZMBA = window.ZMBA = {
-      domainName: window.location.hostname.match(/(?:(\w{3,})(?=(?:\.[a-z]{2,4}){1,2}$))|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|(localhost)/igm)[0],
       extendType: extendType,
       loadJSFile: (function () {
          function append(src, cfg) {
@@ -138,6 +152,7 @@
 
    (function PageReadyModule() {
 
+
       function addCallback(cb) {
          var i = 1, len = arguments.length, args = new Array(len - i + 1); for (; i < len; i++) { args[i - 1] = arguments[i]; }
          this._isReady ? cb.apply(null, args) : this._callbacks.push({ cb, args });
@@ -159,7 +174,7 @@
                      ob.cb.apply(null, ob.args);
                   } catch (ex) { console.error(ex, ob); }
                }
-               console.log(this.name + ": " + performance.now() + "ms");
+               console.log(this.name + ": " + (performance.now() - _startTimeMillis) + "ms");
             }
          }
       };
@@ -183,21 +198,10 @@
 
    }());
 
+   console.log("ZMBAReady: " + (performance.now() - _startTimeMillis) + "ms");
 
 }(window, window.document,
    function ExtensionsAndPolyfills(window, document, extendType) {
-
-      if (!Object.getOwnPropertyDescriptors) {
-         Object.getOwnPropertyDescriptors = function getOwnPropertyDescriptors(obj) {
-            var desc = {};
-            var names = Object.getOwnPropertyNames(obj);
-            for (var i = 0, len = names.length; i < len; i++) {
-               var name = names[i];
-               desc[name] = Object.getOwnPropertyDescriptor(obj, name);
-            }
-            return desc;
-         }
-      }
 
       extendType(Object, {
          assign: function assign(target) { //Polyfill for InternetExplorer, Edge, Opera, and Android

@@ -1580,6 +1580,7 @@
 }));
 (function (window, document, $, ZMBA, U) {
     $.ajaxSetup({ cache: false });
+    U.pages = {};
     ZMBA.extendType(U, {
         loginCookie: document.cookies.getCookieObject("userlogin"),
         getRouteMetadata: function (route, cb) {
@@ -1799,3 +1800,538 @@
         });
     });
 }(window, window.document, window.jQuery, window.ZMBA, window.U = window.U || {}));
+U.pages.Account = (function (window, document, $, U, ZMBA) {
+    return function AccountPage() {
+        function handleFailure(ev) { U.setPageMessage('error', ev.message); }
+        document.querySelectorAll(".btnLogoutRecord").forEach(function (el) {
+            el.addEventListener('click', function () {
+                var tr = el.closest('tr');
+                var key = tr.querySelector('.apikey').innerHTML;
+                $.ajax({
+                    type: "GET",
+                    url: "webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)&apikeyorpassword=" + encodeURIComponent(key),
+                    error: handleFailure,
+                    success: function (ev) {
+                        if (!ev.success) {
+                            return handleFailure(ev);
+                        }
+                        U.setPageMessage('success', ev.message);
+                        tr.remove();
+                        if (tr.className === "current") {
+                            window.setTimeout(function () {
+                                location.pathname = "";
+                            }, 1000);
+                        }
+                    }
+                });
+            });
+        });
+        document.querySelector('#btnLogoutAll').addEventListener('click', function () {
+            $.ajax({
+                type: "GET",
+                url: "webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)",
+                error: handleFailure,
+                success: function (ev) {
+                    if (!ev.success) {
+                        return handleFailure(ev);
+                    }
+                    U.setPageMessage('success', ev.message);
+                    window.setTimeout(function () {
+                        location.pathname = "";
+                    }, 1000);
+                }
+            });
+        });
+    };
+}(window, window.document, window.jQuery, window.U, window.ZMBA));
+U.pages.ApiTest = (function (window, document, $, U, ZMBA) {
+    return function ApiTestPage() {
+        $.ajax('webapi/metadata').done(function (data) {
+            U.dictMetaData = data.result;
+            var webMethodSelect = document.getElementById('webMethodSelect');
+            webMethodSelect.addEventListener('change', handleWebMethodSelected);
+            for (var route in U.dictMetaData) {
+                var option = document.createElement('option');
+                option.value = route;
+                option.innerText = route;
+                webMethodSelect.appendChild(option);
+            }
+        });
+        var metadata;
+        var btnClear = document.getElementById('btnClear');
+        var btnExecute = document.getElementById('btnExecute');
+        var currentHttpType = document.getElementById('httpType');
+        var route = document.getElementById('route');
+        var postBody = document.getElementById('postBody');
+        var inputParams = document.getElementById('InputParams');
+        var resultJson = document.getElementById('resultJson');
+        var milliseconds = document.getElementById('millitime');
+        function handleWebMethodSelected(ev) {
+            btnClear.disabled = true;
+            btnExecute.enable = false;
+            while (inputParams.firstElementChild) {
+                inputParams.removeChild(inputParams.firstElementChild);
+            }
+            var option = this.options[this.selectedIndex];
+            metadata = U.dictMetaData[option.value];
+            if (metadata) {
+                btnExecute.disabled = false;
+                currentHttpType.value = metadata.httpMethod.toUpperCase();
+                route.value = metadata.path;
+                if (!metadata.params) {
+                    metadata.params = [];
+                    metadata.input.forEach(function (param) {
+                        param.elem = Element.From("<li class=\"inputparam\"><span>(" + param.typeName + ")</span><label>" + param.name + ":</label><input type=\"text\" param=\"" + param.name + "\" source=\"" + param.source + "\" jsType=\"" + param.jsType + "\" isCollection=\"" + param.isCollection + "\"/></li>");
+                        param.elemInput = param.elem.getElementsByTagName('input')[0];
+                        param.elemInput.addEventListener('change', handleParamChanage);
+                        param.elemInput.addEventListener('keyup', handleParamChanage);
+                        metadata.params.push(param.elemInput);
+                    });
+                }
+                metadata.input.forEach(function (param) {
+                    inputParams.appendChild(param.elem);
+                });
+                handleParamChanage();
+            }
+            else {
+                btnExecute.disabled = true;
+            }
+        }
+        function handleParamChanage(ev) {
+            if (ev) {
+                ev.stopPropagation();
+            }
+            btnClear.disabled = false;
+            var oData = U.buildAjaxRequestFromInputs(metadata.params, { url: metadata.path });
+            route.value = oData.url;
+            postBody.value = JSON.stringify(oData.data, null, '\t');
+            if (metadata.path.includes('autocomplete')) {
+                executeRequest();
+            }
+        }
+        btnClear.addEventListener('click', function () {
+            for (var i = 0, len = metadata.params.length; i < len; i++) {
+                metadata.params[i].value = '';
+            }
+        });
+        var start;
+        function logStart() { start = performance.now(); }
+        function executeRequest() {
+            $.ajax({
+                type: currentHttpType.value,
+                url: route.value,
+                data: postBody.value && JSON.parse(postBody.value),
+                beforeSend: logStart
+            }).done(function (data) {
+                milliseconds.innerText = performance.now() - start;
+                resultJson.value = JSON.stringify(data, null, '\t');
+            });
+        }
+        btnExecute.addEventListener('click', executeRequest);
+        U.executeRequest = executeRequest;
+    };
+}(window, window.document, window.jQuery, window.U, window.ZMBA));
+U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
+    function initAutoCompletion() {
+        U.locationAutoComplete = new U.LocationAutoComplete({ search: "#searchLocations" });
+        var autocompleteSettings = {
+            ajaxSettings: {
+                cache: true,
+                dataType: "json"
+            },
+            showNoSuggestionNotice: true,
+            paramName: 'query',
+            transformResult: function (response) { return { suggestions: response.result.map(function (x) { return { value: x.name, data: x }; }) }; },
+            formatResult: function (suggestion) { return suggestion.data.name + ((suggestion.data.description && " - " + suggestion.data.description) || ''); }
+        };
+        U.eventType = $("#eventType").autocomplete(Object.assign({}, autocompleteSettings, {
+            serviceUrl: 'webapi/autocomplete/eventtypes',
+            minChars: 0
+        })).autocomplete();
+        U.eventTags = new Taggle(document.querySelector('.event_tags_input'), {
+            allowDuplicates: false,
+            submitKeys: [],
+            tagFormatter: function (elem) {
+                var el = elem.firstElementChild;
+                var tagtext = el.innerText;
+                var data = U.eventTags.cache[tagtext];
+                if (data) {
+                    el.title = data.data.description;
+                }
+                return elem;
+            }
+        });
+        U.eventTags.cache = {};
+        U.eventTags.autocomplete = $(U.eventTags.getInput()).autocomplete(Object.assign({}, autocompleteSettings, {
+            serviceUrl: 'webapi/autocomplete/tags',
+            minChars: 0,
+            onSelect: function (data) {
+                U.eventTags.add(data);
+            },
+            transformResult: function (response) {
+                var data = autocompleteSettings.transformResult(response);
+                for (var i = 0, len = data.suggestions.length; i < len; i++) {
+                    U.eventTags.cache[data.suggestions[i].value.toLowerCase()] = data.suggestions[i];
+                }
+                return data;
+            }
+        })).autocomplete();
+    }
+    function initDatePickers() {
+        flatpickr.setDefaults({
+            enableTime: true,
+            inline: true,
+            dateFormat: "Z",
+            onReady: function (dObj, dStr, fp, elem) {
+                fp.showTimeInput = true;
+            }
+        });
+        var startPicker, endPicker;
+        startPicker = flatpickr('[param="DateStart"]', {
+            minDate: "today",
+            onChange: function (selectedDates, dateStr, fp) {
+                var startDate = new Date(startPicker.input.value);
+                var endDate = new Date(endPicker.input.value);
+                if (!endPicker.input.value || endDate < startDate) {
+                    endPicker.setDate(startDate);
+                }
+                if (startPicker.input.value) {
+                    endPicker.config.minDate = startDate;
+                    endPicker.config.minTime = startDate;
+                }
+            }
+        });
+        endPicker = flatpickr('[param="DateEnd"]', {
+            minDate: "today",
+            onChange: function (selectedDates, dateStr, fp) {
+                var startDate = new Date(startPicker.input.value);
+                var endDate = new Date(endPicker.input.value);
+                if (!startPicker.input.value) {
+                    startPicker.setDate(endDate);
+                }
+                if (startPicker.input.value) {
+                    startPicker.config.maxDate = endDate;
+                    startPicker.config.maxTime = endDate;
+                }
+            }
+        });
+        U.dateStart = startPicker;
+        U.dateEnd = endPicker;
+    }
+    function initEventCreation() {
+        var InputParams = document.getElementById("InputParams");
+        var EventCreationLabel = document.getElementById("EventCreationLabel");
+        var EventCreationButton = document.getElementById("EventCreationButton");
+        EventCreationButton.addEventListener("click", function () {
+            var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("[param]"), { type: "POST", url: "webapi/events/create " });
+            if (!U.eventType.selection) {
+                U.setPageMessage('error', 'Select an event type');
+                U.eventType.element.parentElement.classList.add('required-highlight');
+                return;
+            }
+            oRequest.data.EventTypeID = U.eventType.selection.data.eventTypeID;
+            oRequest.data.Tags = U.eventTags.getTagValues();
+            if (oRequest.data.Tags == null || oRequest.data.Tags.length === 0) {
+                U.setPageMessage('error', 'Add at least one tag');
+                U.eventTags.container.parentElement.classList.add('required-highlight');
+                return;
+            }
+            function handleFailure(ev) {
+                console.log(oRequest, ev);
+                EventCreationLabel.value = "Failed!";
+                InputParams.class = "Failed";
+                U.setPageMessage('error', ev.message);
+                U.highlightRequiredInputs(true);
+            }
+            $.ajax(oRequest)
+                .fail(handleFailure)
+                .done(function (ev) {
+                if (ev.success) {
+                    console.log(oRequest, ev);
+                    InputParams.class = "Success";
+                    U.setPageMessage('success', 'Success!  Go to the <a href="/Index">Event feed to see events </a>');
+                }
+                else {
+                    handleFailure(ev);
+                }
+            });
+        });
+    }
+    function initModals() {
+        U.modalCreateEventType = (function () {
+            var modal = new U.Modal('#modalCreateEventType', '#btnCreateEventType');
+            modal.footer.addEventListener('click', function () {
+                var oRequest = U.buildAjaxRequestFromInputs(modal.body.querySelectorAll("[param]"), { type: "POST", url: "webapi/eventtypes/create" });
+                function handleFailure(ev) {
+                    console.log(oRequest, ev);
+                    U.setNotification(modal.el, 'error', ev.message);
+                }
+                $.ajax(oRequest)
+                    .fail(handleFailure)
+                    .done(function (ev) {
+                    if (ev.success) {
+                        U.setNotification(modal.el, 'success', 'Success! EventType Created!');
+                        U.eventType.cachedResponse = {};
+                        U.eventType.suggestions = [{ value: ev.result.name, data: ev.result }];
+                        U.eventType.select(0);
+                        window.setTimeout(modal.close, 2000);
+                    }
+                    else {
+                        handleFailure(ev);
+                    }
+                });
+            });
+            return modal;
+        }());
+        U.modalCreateTag = (function () {
+            var modal = new U.Modal('#modalCreateTag', '#btnCreateTag');
+            modal.footer.addEventListener('click', function () {
+                var oRequest = U.buildAjaxRequestFromInputs(modal.body.querySelectorAll("[param]"), { type: "POST", url: "webapi/tags/create" });
+                function handleFailure(ev) {
+                    console.log(oRequest, ev);
+                    U.setNotification(modal.el, 'error', ev.message);
+                }
+                $.ajax(oRequest)
+                    .fail(handleFailure)
+                    .done(function (ev) {
+                    if (ev.success) {
+                        U.setNotification(modal.el, 'success', 'Success! Tag Created!');
+                        U.eventTags.add(ev.result.name);
+                        window.setTimeout(modal.close, 2000);
+                    }
+                    else {
+                        handleFailure(ev);
+                    }
+                });
+            });
+            return modal;
+        }());
+    }
+    return function CreateEventPage() {
+        initAutoCompletion();
+        initDatePickers();
+        initEventCreation();
+        initModals();
+    };
+}(window, window.document, window.jQuery, window.U, window.ZMBA, window.flatpickr));
+U.pages.Index = (function (window, document, $, U, ZMBA) {
+    function initEventDataFields(target, data, dataFields) {
+        for (var i = 0, len = dataFields.length; i < len; i++) {
+            var key = dataFields[i];
+            target[key] = target.el.getElementsByClassName(key)[0].getElementsByClassName('ef_value')[0];
+            if (target[key].tagName === 'TIME') {
+                target[key].dateTime = data[key];
+                target[key].innerText = (new Date(data[key])).toLocaleString();
+            }
+            else {
+                target[key].innerText = data[key];
+            }
+        }
+        target.event_type = target.el.getElementsByClassName('event_type')[0];
+        target.event_type.appendChild(Element.From("<span title=\"" + data.event_type.description + "\">" + data.event_type.name + "</span>"));
+        target.tags = target.el.getElementsByClassName('tags')[0].getElementsByClassName('ef_value')[0];
+        while (target.tags.firstElementChild) {
+            target.tags.firstElementChild.remove();
+        }
+        if (data.tags) {
+            for (var i_1 = 0, len_1 = data.tags.length; i_1 < len_1; i_1++) {
+                var tag = data.tags[i_1];
+                var eltag = Element.From("<span class='tag' title=\"" + tag.description + "\">" + tag.name + "</span>");
+                target.tags.appendChild(eltag);
+            }
+        }
+    }
+    var EventModal = (function () {
+        var dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "rsvp_later", "rsvp_no", "time_start", "time_end", "description"];
+        function EventModal(feedItem) {
+            U.Modal.call(this, document.getElementById('Template_EventDetailsModal').cloneNode(true), feedItem.el);
+            this.feedItem = feedItem;
+            this.el.id = 'efm_' + feedItem.data.id;
+            initEventDataFields(this, this.data, dataFields);
+            var self = this;
+            var oRequest = {
+                url: 'webapi/events/getdescription?id=' + self.data.id,
+                type: 'GET',
+                dataType: 'json',
+                error: function (ev) {
+                    console.log(oRequest, ev);
+                    U.setNotification(self.el, 'error', ev.message);
+                },
+                success: function (ev) {
+                    if (ev.success) {
+                        self.description.innerHTML = ev.result;
+                    }
+                    else {
+                        oRequest.error(ev);
+                    }
+                }
+            };
+            $.ajax(oRequest);
+            document.getElementById('EventModalContent').appendChild(this.el);
+        }
+        EventModal.prototype = U.Modal;
+        ZMBA.extendType(EventModal.prototype, {
+            get data() { return this.feedItem.data; }
+        });
+        return EventModal;
+    }());
+    var FeedItem = (function () {
+        var dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "time_start", "time_end"];
+        function _handleClick(ev) {
+            ev.stopPropagation();
+            if (!this.modal) {
+                this.modal = new EventModal(this);
+                this.modal.open();
+            }
+            else {
+                this.el.removeEventListener('click', this.handleClick);
+            }
+        }
+        function FeedItem(data) {
+            this.modal = null;
+            this.data = data;
+            this.el = document.getElementById('Template_FeedItem').cloneNode(true);
+            this.el.id = "efi_" + this.data.id;
+            initEventDataFields(this, data, dataFields);
+            this.rsvp_stopby.innerText = data.rsvp_stopby + data.rsvp_later;
+            this.handleClick = _handleClick.bind(this);
+            this.enableListeners();
+        }
+        ZMBA.extendType(FeedItem.prototype, {
+            enableListeners: function () {
+                this.el.addEventListener('click', this.handleClick);
+            }
+        });
+        return FeedItem;
+    }());
+    var EventFeed = (function () {
+        function EventFeed(id) {
+            this.loading_spinner = document.querySelector('.loading_spinner');
+            this.el = document.getElementById(id);
+            this.ul = this.el.querySelector('ul');
+            this.feedItems = [];
+            var existingItems = this.el.querySelectorAll('.ef_item');
+            for (var i = 0, len = existingItems.length; i < len; i++) {
+                this.feedItems.push(new FeedItem(existingItems[i]));
+            }
+        }
+        EventFeed.prototype = {
+            requestEvents: function (dateFrom, dateTo) {
+                this.loading_spinner.style.opacity = '1';
+                this.loading_spinner.firstElementChild.style.display = 'block';
+                this.loading_spinner.classList.remove('fadeOut');
+                var self = this;
+                function handleFailure(ev) {
+                    console.log(ev);
+                    U.setPageMessage('error', ev.message);
+                }
+                function handleSuccess(ev) {
+                    if (ev.success) {
+                        self.addEvents(ev.result);
+                    }
+                    else {
+                        handleFailure(ev);
+                    }
+                }
+                var oRequest = {
+                    url: 'webapi/events/search',
+                    type: 'GET',
+                    dataType: 'json',
+                    error: handleFailure,
+                    success: handleSuccess
+                };
+                $.ajax(oRequest)
+                    .done(function () {
+                    setTimeout(function () {
+                        self.loading_spinner.style.opacity = '0';
+                        self.loading_spinner.firstElementChild.style.display = 'none';
+                    }, 1900);
+                    self.loading_spinner.classList.add('fadeOut');
+                });
+            },
+            addEvents: function (events) {
+                var ul = document.createElement('ul');
+                for (var i = 0; i < events.length; i++) {
+                    var item = new FeedItem(events[i]);
+                    var li = document.createElement('li');
+                    li.appendChild(item.el);
+                    ul.appendChild(li);
+                    this.feedItems.push(item);
+                }
+                this.el.appendChild(ul);
+            }
+        };
+        return EventFeed;
+    }());
+    U.EventModal = EventModal;
+    U.FeedItem = FeedItem;
+    U.EventFeed = EventFeed;
+    return function IndexPage() {
+        var feed = new U.EventFeed("EventFeed");
+        feed.requestEvents();
+    };
+}(window, window.document, window.jQuery, window.U, window.ZMBA));
+U.pages.Login = (function (window, document, $, U, ZMBA) {
+    return function LoginPage() {
+        var btnLogin = document.getElementById("btnLogin");
+        btnLogin.addEventListener("click", handleLogin);
+        document.addEventListener('keyup', function (ev) {
+            if (ev.keyCode === 13) {
+                handleLogin();
+            }
+        });
+        function handleLogin() {
+            var oRequest = U.buildAjaxRequestFromInputs(document.querySelectorAll("input[param]"), { type: "GET", url: 'webapi/account/login' });
+            function handleError(ev) {
+                console.log(ev, oRequest);
+                U.setPageMessage('error', ev.message);
+                U.highlightRequiredInputs(true);
+            }
+            $.ajax(oRequest)
+                .fail(handleError)
+                .done(function (ev) {
+                if (ev.success) {
+                    U.setPageMessage('success', "Welcome " + ev.result.userName);
+                    window.setTimeout(function () {
+                        location.pathname = "";
+                    }, 1000);
+                }
+                else {
+                    handleError(ev);
+                }
+            });
+        }
+    };
+}(window, window.document, window.jQuery, window.U, window.ZMBA));
+U.pages.SignUp = (function (window, document, $, U) {
+    return function SignUpPage() {
+        var InputParams = document.getElementById("InputParams");
+        var signUpLabel = document.getElementById("signUpLabel");
+        var signUpButton = document.getElementById("signUpButton");
+        signUpButton.addEventListener("click", function () {
+            var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("input[param]"), { type: "POST", url: "webapi/account/createuser" });
+            function handleFailure(ev) {
+                console.log(oRequest, ev);
+                signUpLabel.value = "Failed!";
+                InputParams.class = "Failed";
+                U.setPageMessage('error', ev.message);
+                U.highlightRequiredInputs(true);
+            }
+            $.ajax(oRequest)
+                .fail(handleFailure)
+                .done(function (ev) {
+                if (ev.success) {
+                    signUpButton.disabled = true;
+                    console.log(oRequest, ev);
+                    signUpLabel.value = "Success!";
+                    InputParams.class = "Success";
+                    U.setPageMessage('success', 'Success!  Go to the <a href="/Login">Login Page to Login!</a>');
+                }
+                else {
+                    handleFailure(ev);
+                }
+            });
+        });
+        U._locationAutoComplete = new U.LocationAutoComplete({ search: "#searchLocations" });
+    };
+}(window, window.document, window.jQuery, window.U));

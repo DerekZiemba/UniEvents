@@ -3,6 +3,8 @@
 (function (window, document, $, ZMBA, U) {
    $.ajaxSetup({ cache: false });
 
+   U.pages = {};
+
    ZMBA.extendType(U, {
       loginCookie: document.cookies.getCookieObject("userlogin"),
       getRouteMetadata: function (route, cb) {
@@ -35,7 +37,7 @@
             if (source === "QueryString" || source === "Url") {
                querystring += name + "=" + encodeURIComponent(value) + "&";
             } else if (name.indexOf('.') === -1) {
-               setTargetValue(request.data, name, value, jsType, isCollection);
+               setTargetValue(request.data, name, value, jsType, isCollection); 
             } else {
                var target = request.data;
                var parts = name.split('.');
