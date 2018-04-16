@@ -19,12 +19,18 @@
          for (var i = 0, len = dataFields.length; i < len; i++) {
             var key = dataFields[i];
             target[key] = target.el.getElementsByClassName(key)[0].getElementsByClassName('ef_value')[0];
+            //if (data[key] == null) {
+            //   target[key].style.display = 'none';
+            //} else {
+
+            //}
             if (target[key].tagName === 'TIME') {
                target[key].dateTime = data[key];
                target[key].innerText = (new Date(data[key])).toLocaleString();
             } else {
                target[key].innerText = data[key];
             }
+
          }
 
          target.event_type = target.el.getElementsByClassName('event_type')[0];

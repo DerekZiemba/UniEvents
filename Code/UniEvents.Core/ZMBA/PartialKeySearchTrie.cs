@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -13,7 +14,7 @@ namespace ZMBA {
 
 
    public class PartialKeySearchTrie<T> {
-     
+      
       private CharNode RootNode = new CharNode('\n');
       public int Count { get; private set; }
       public int NodeCount { get; private set; }
@@ -47,9 +48,10 @@ namespace ZMBA {
       }
 
       public void Add(string key, T value) {
-         List<string> words = GetNormalizedWords(key);
-         if(words == null || words.Count == 0) { return; }
-         for(var i=0; i<words.Count; i++) {
+         ListCache<string>.Take();
+         List<string> words = ListCache<string>.Take();
+         GetNormalizedTerms(key, words);
+         for (var i = 0; i < words.Count; i++) {
             string word = words[i];
             CharNode current = RootNode;
             for (int idx = 0; idx < word.Length; idx++) {
@@ -84,7 +86,6 @@ namespace ZMBA {
       }
 
 
-
       public IEnumerable<T> FindMatches(string query, int maxCount)=> FindMatches<T>(query, maxCount);
 
       public IEnumerable<TSelect> FindMatches<TSelect>(string query, int maxCount) where TSelect : T => FindMatches<TSelect>(query, maxCount, null);
@@ -92,40 +93,15 @@ namespace ZMBA {
       public IEnumerable<TSelect> FindMatches<TSelect>(string query, int maxCount, Func<string, string, TSelect, int> evalQuality) where TSelect : T {
          if (evalQuality == null) { evalQuality = DefaultQualityEvaluator; }
 
-         List<string> lsWords = GetNormalizedWords(query);
-         Dictionary<NodeItem, Matched> matchLookup = new Dictionary<NodeItem, Matched>( Math.Min(Count, 64), NodeItem.NodeCmp);
-         HashSet<NodeItem> unique =  new HashSet<NodeItem>(NodeItem.NodeCmp);
-         Stack<CharNode> stack = StackCache<CharNode>.Take();
-
-         if (lsWords == null || lsWords.Count == 0) {
-            stack.Push(RootNode);
-            TraverseNodes<TSelect>(stack, unique, matchLookup, null, maxCount, evalQuality);
-            unique.Clear();
-         } else {
-            for (int i = 0; i < lsWords.Count; i++) {
-               stack.Push(GetBestMatchChildNode(RootNode, lsWords[i]));
-               TraverseNodes<TSelect>(stack, unique, matchLookup, lsWords[i], -1, evalQuality);
-               unique.Clear();
-            }
-         }
-
-         if (lsWords != null) { ListCache<string>.Return(ref lsWords); }
-         StackCache<CharNode>.Return(ref stack);
-
-         foreach (Matched match in matchLookup.Values.OrderByDescending(GetMatchRank)) {
-            if ((maxCount--) >= 0) {
-               yield return (TSelect)match.Value.Item;
-            } else {
-               matchLookup.Clear();
-               yield break;
+         using(var iter = PartialMatchEnumerator.GetInstance<TSelect>(RootNode, query, maxCount, evalQuality)) {
+            while (iter.MoveNext()) {
+               yield return (TSelect)iter.Current;
             }
          }
       }
 
 
       #region "Helper Methods"
-
-      private static int GetMatchRank(Matched match) => match.Rank;
 
       private static int DefaultQualityEvaluator<TSelect>(string key, string term, TSelect item) {
          if (term == null) { return 1; }
@@ -143,53 +119,6 @@ namespace ZMBA {
          }
          return 1 + (count / 5);
       }
-
-      private static CharNode GetBestMatchChildNode(CharNode current, string word) {
-         for (int idx = 0; idx < word.Length; idx++) {
-            if (current.Children != null && current.Children.TryGetValue(word[idx], out CharNode next)) { current = next; } else { break; }
-         }
-         return current;
-      }
-
-      private static void TraverseNodes<TSelect>(Stack<CharNode> stack, 
-                                                   HashSet<NodeItem> unique, 
-                                                   Dictionary<NodeItem, Matched> matchLookup,
-                                                   string word, 
-                                                   int maxCount, 
-                                                   Func<string, string, TSelect, int> evalQuality) where TSelect : T {
-
-         while (stack.Count > 0) {
-            CharNode current = stack.Pop();
-            if (current.Items != null) {
-               foreach (NodeItem item in current.Items) {
-                  if (item.Item is TSelect) {
-                     int quality = evalQuality(item.Key, word, (TSelect)item.Item);
-                     if(quality > 0) {
-                        Matched match;
-                        bool exists = matchLookup.TryGetValue(item, out match);
-
-                        if (unique.Add(item)) {
-                           if (!exists) {
-                              match.Value = item;
-                              maxCount--;
-                           }
-                           match.Rank += quality;
-                           matchLookup[item] = match;
-                        } else if (exists && match.Rank < quality) {
-                           match.Rank = quality;
-                           matchLookup[item] = match;
-                        }
-                     }                 
-                  }
-                  if (maxCount == 0) { return; }
-               }
-            }
-            if (current.Children != null) {
-               foreach (var child in current.Children) { stack.Push(child.Value); }
-            }
-         }
-      }
-
 
       private static string Normalize(string input) {
          if (String.IsNullOrWhiteSpace(input)) { return ""; }
@@ -229,13 +158,12 @@ namespace ZMBA {
          return StringBuilderCache.Release(ref sb);
       }
 
-      private static List<string> GetNormalizedWords(string input) {
-         if (String.IsNullOrWhiteSpace(input)) { return null; }
+      private static void GetNormalizedTerms(string input, List<string> lsTerms) {
+         if (String.IsNullOrWhiteSpace(input)) { return; }
 
          string str = input.Normalize(NormalizationForm.FormD);
          StringBuilder sbWord = StringBuilderCache.Take();
          List<string> words = ListCache<string>.Take();
-         List<string> terms = ListCache<string>.Take();
          char ch;
          for (var i = 0; i < str.Length; i++) {
             ch = str[i];
@@ -275,28 +203,143 @@ namespace ZMBA {
          StringBuilderCache.Return(ref sbWord);
          ListCache<string>.Return(ref words);
 
-         return terms;
-
          void WordsToTerms() {
-            int n = terms.Count;
+            int n = lsTerms.Count;
             sbWord.Clear();
             for (var i = 0; i < words.Count; i++) {
                if (i > 0) { sbWord.Append(" "); }
                sbWord.Append(words[i]);
-               if (i > 0) { terms.Add(sbWord.ToString()); }             
+               if (i > 0) { lsTerms.Add(sbWord.ToString()); }             
             }
             sbWord.Clear();
-            terms.Reverse(n, terms.Count - n);
-            for (var i = 0; i < words.Count; i++) { terms.Add(words[i]); }
+            lsTerms.Reverse(n, lsTerms.Count - n);
+            for (var i = 0; i < words.Count; i++) { lsTerms.Add(words[i]); }
             words.Clear(); 
          }
       }
-
 
       #endregion
 
 
       #region "Helper Classes"
+
+      private class PartialMatchEnumerator : IEnumerator<T> {
+         private static ConcurrentBag<PartialMatchEnumerator> _pool = new ConcurrentBag<PartialMatchEnumerator>();
+
+         T _current;
+         int remaining = -1;
+         List<string> lsTerms = new List<string>();
+         Dictionary<NodeItem, Matched> matchLookup = new Dictionary<NodeItem, Matched>(64, NodeItem.NodeCmp);
+         HashSet<NodeItem> unique =  new HashSet<NodeItem>(NodeItem.NodeCmp);
+         Stack<CharNode> stack = new Stack<CharNode>(16);
+
+         IEnumerator<Matched> sortedMatchEnumerator = null;
+
+         object IEnumerator.Current => _current;
+         public T Current => _current;
+
+         public void Dispose() {
+            sortedMatchEnumerator.Dispose();
+            sortedMatchEnumerator = null;
+            _current = default;
+            lsTerms.Clear();
+            matchLookup.Clear();
+            unique.Clear();
+            stack.Clear();
+            _pool.Add(this);
+         }
+
+         public bool MoveNext() {
+            if(remaining != 0 && sortedMatchEnumerator.MoveNext()) {
+               remaining--;
+               _current = sortedMatchEnumerator.Current.Value.Item;
+               return true;
+            }else {
+               _current = default;
+               return false;
+            }
+         }
+
+         public void Reset() { sortedMatchEnumerator.Reset(); }
+
+
+         public static PartialMatchEnumerator GetInstance<TSelect>(CharNode current, string query, int maxCount, Func<string, string, TSelect, int> evalQuality) where TSelect : T {            
+            PartialMatchEnumerator pme;
+            _pool.TryTake(out pme);
+
+            if (pme != null) {
+               pme.lsTerms.Clear();
+               pme.matchLookup.Clear();
+               pme.unique.Clear();
+               pme.stack.Clear();
+            } else { 
+               pme = new PartialMatchEnumerator();
+            }
+
+            pme.Init(current, query, maxCount, evalQuality);
+            return pme;
+         }
+
+         private void Init<TSelect>(CharNode current, string query, int maxCount, Func<string, string, TSelect, int> evalQuality) where TSelect : T {
+            remaining = maxCount;
+            GetNormalizedTerms(query, lsTerms);
+
+            if (lsTerms.Count == 0) {
+               stack.Push(current);
+               TraverseNodes<TSelect>(null, maxCount, evalQuality);
+               unique.Clear();
+            } else {
+               for (int i = 0; i < lsTerms.Count; i++) {
+                  stack.Push(GetBestMatchChildNode(current, lsTerms[i]));
+                  TraverseNodes<TSelect>(lsTerms[i], -1, evalQuality);
+                  unique.Clear();
+               }
+            }
+
+            sortedMatchEnumerator = matchLookup.Values.OrderByDescending((Matched match) => match.Rank).GetEnumerator();
+         }
+
+         private void TraverseNodes<TSelect>(string word, int maxCount, Func<string, string, TSelect, int> evalQuality) where TSelect : T {
+            while (stack.Count > 0) {
+               CharNode current = stack.Pop();
+               if (current.Items != null) {
+                  foreach (NodeItem item in current.Items) {
+                     if (item.Item is TSelect) {
+                        int quality = evalQuality(item.Key, word, (TSelect)item.Item);
+                        if (quality > 0) {
+                           Matched match;
+                           bool exists = matchLookup.TryGetValue(item, out match);
+
+                           if (unique.Add(item)) {
+                              if (!exists) {
+                                 match.Value = item;
+                                 maxCount--;
+                              }
+                              match.Rank += quality;
+                              matchLookup[item] = match;
+                           } else if (exists && match.Rank < quality) {
+                              match.Rank = quality;
+                              matchLookup[item] = match;
+                           }
+                        }
+                     }
+                     if (maxCount == 0) { return; }
+                  }
+               }
+               if (current.Children != null) {
+                  foreach (var child in current.Children) { stack.Push(child.Value); }
+               }
+            }
+         }
+
+         private static CharNode GetBestMatchChildNode(CharNode current, string word) {
+            for (int idx = 0; idx < word.Length; idx++) {
+               if (current.Children != null && current.Children.TryGetValue(word[idx], out CharNode next)) { current = next; } else { break; }
+            }
+            return current;
+         }
+
+      }
 
       private struct Matched {
          public int Rank;

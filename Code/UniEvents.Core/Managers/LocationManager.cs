@@ -185,7 +185,7 @@ namespace UniEvents.Core.Managers {
 
             int rowsAffected = cmd.ExecuteProcedure();
             model.LocationID = (long)@LocationID.Value;
-            model.ParentLocationID = (long?)ParentLocationID.Value;
+            model.ParentLocationID = TypeConversion.ConvertType<long?>(ParentLocationID.Value);
 
             if(model.LocationID <= 0) {
                throw new Exception("Failed for Unknown Reason");
@@ -197,7 +197,7 @@ namespace UniEvents.Core.Managers {
       }
 
 
-      public List<DBLocation> SearchDBLocations(StreetAddress address) {
+      public List<DBLocation> SearchDBLocations(StreetAddress address, int @SearchMode = 0) {
          using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(address.@LocationID), null);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(address.@ParentLocationID), address.ParentLocationID);
@@ -208,31 +208,20 @@ namespace UniEvents.Core.Managers {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@PostalCode), address.@PostalCode);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@CountryRegion), address.CountryRegion);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Description), address.@Description);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.TinyInt, nameof(@SearchMode), @SearchMode);
 
             return cmd.ExecuteReader_GetMany<DBLocation>().ToList();
          }
       }
 
       public DBLocation GetOrCreateDBLocation(StreetAddress address) {
-         DBLocation existing;
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Locations_Search]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(address.@LocationID), null);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(address.@ParentLocationID), address.ParentLocationID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Name), address.@Name);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@AddressLine), address.@AddressLine);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Locality), address.@Locality);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@AdminDistrict), address.@AdminDistrict);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@PostalCode), address.@PostalCode);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@CountryRegion), address.CountryRegion);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(address.@Description), address.@Description);
-            existing = cmd.ExecuteReader_GetOne<DBLocation>();
-         }
+         DBLocation existing = SearchDBLocations(address, 2).FirstOrDefault(); 
+
       
          if (existing != null) {
             return existing;
-         } else {
-            return CreateDBLocation(address);
-         }
+         } 
+         return CreateDBLocation(address);
       }
 
       public DBLocation GetDBLocationByID(long LocationID) {
