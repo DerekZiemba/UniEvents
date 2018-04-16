@@ -28,7 +28,7 @@
         while (inputParams.firstElementChild) {
             inputParams.removeChild(inputParams.firstElementChild);
         }
-        var option = this.selectedOptions[0];
+        var option = this.options(this.selectedIndex);
         metadata = U.dictMetaData[option.value];
         if (metadata) {
             btnExecute.disabled = false;
@@ -67,7 +67,7 @@
     }
     btnClear.addEventListener('click', function () {
         for (var i = 0, len = metadata.params.length; i < len; i++) {
-            metadata.params[i].elemInput.value = '';
+            metadata.params[i].value = '';
         }
     });
     var start;

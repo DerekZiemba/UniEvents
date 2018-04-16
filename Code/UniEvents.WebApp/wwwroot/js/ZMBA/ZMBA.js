@@ -187,6 +187,18 @@
 }(window, window.document,
    function ExtensionsAndPolyfills(window, document, extendType) {
 
+      if (!Object.getOwnPropertyDescriptors) {
+         Object.getOwnPropertyDescriptors = function getOwnPropertyDescriptors(obj) {
+            var desc = {};
+            var names = Object.getOwnPropertyNames(obj);
+            for (var i = 0, len = names.length; i < len; i++) {
+               var name = names[i];
+               desc[name] = Object.getOwnPropertyDescriptor(obj, name);
+            }
+            return desc;
+         }
+      }
+
       extendType(Object, {
          assign: function assign(target) { //Polyfill for InternetExplorer, Edge, Opera, and Android
             var to = Object(target);
@@ -206,6 +218,14 @@
 
 
       extendType(String.prototype, {
+         includes: function includes(search, start) {
+            start = start | 0;
+            if (start + search.length > this.length) {
+               return false;
+            } else {
+               return this.indexOf(search, start) !== -1;
+            }
+         },
          ReplaceAll: function ReplaceAll(sequence, value) {
             return this.split(sequence).join(value);
          },
@@ -266,7 +286,7 @@
             }
             return this;
          }
-      });
+      }, { override: false });
 
 
       extendType(Date.prototype, {
@@ -314,6 +334,7 @@
                return elem;
             };
          }())
+
       });
 
 

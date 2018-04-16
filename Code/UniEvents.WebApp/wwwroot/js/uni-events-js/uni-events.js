@@ -1,6 +1,4 @@
 ﻿
-/// <reference path="ZMBA.js" />
-
 /*! UniEvents.js */
 (function (window, document, $, ZMBA, U) {
    $.ajaxSetup({ cache: false });
@@ -212,7 +210,7 @@
 
             this.btnOpen.addEventListener('click', this.open);
             this.btnClose.addEventListener('click', this.close);
-            window.addEventListener('click', this.close);
+            window.addEventListener('click', this.close); 
          }
 
          Modal.prototype = {
@@ -229,7 +227,8 @@
    ZMBA.onDocumentReady(() => {        
       document.querySelectorAll("time").forEach(function (el) {
          if (!el.innerText) {
-            el.innerText = (new Date(el.dateTime)).toLocaleString();
+            var datetime = el.getAttribute('dateTime');
+            el.innerText = (new Date(datetime)).toLocaleString();
          }
       });
    });

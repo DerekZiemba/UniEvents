@@ -8,7 +8,7 @@
         for (var i = 0, len = dataFields.length; i < len; i++) {
             var key = dataFields[i];
             target[key] = target.el.getElementsByClassName(key)[0].getElementsByClassName('ef_value')[0];
-            if (target[key] instanceof HTMLTimeElement) {
+            if (target[key].tagName === 'TIME') {
                 target[key].dateTime = data[key];
                 target[key].innerText = (new Date(data[key])).toLocaleString();
             }
