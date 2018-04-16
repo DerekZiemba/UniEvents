@@ -147,9 +147,9 @@ namespace ZMBA {
          int ord = record.GetOrdinal(name);
          return record.IsDBNull(ord) ? default : record.GetDecimal(ord);
       }
-      public static DateTime GetDateTime(this IDataRecord record, string name) {
+      public static DateTime GetDateTime(this IDataRecord record, string name, DateTimeKind kind = DateTimeKind.Utc) {
          int ord = record.GetOrdinal(name);
-         return record.IsDBNull(ord) ? default : record.GetDateTime(ord);
+         return DateTime.SpecifyKind(record.IsDBNull(ord) ? default : record.GetDateTime(ord), kind);
       }
 
 

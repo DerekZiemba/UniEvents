@@ -8,7 +8,7 @@
 <head>
    <meta charset="utf-8" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>@ViewData["Title"] - UniEvents</title>
+   <title>@ViewData[ "Title" ] - UniEvents</title>
 
 
    <link rel="stylesheet"
@@ -17,6 +17,8 @@
          asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
 
    <link rel="stylesheet" href="~/bundles/uni-events.min.css" asp-append-version="true" />
+   @* Important polyfills: *@
+   <script type="text/javascript" src="~/js/ZMBA/ZMBA.es5.js"></script>
 
 </head>
 <body id="_Layout">
@@ -76,8 +78,7 @@
    <environment include="Development">
       <script src="~/lib/jquery-autocomplete/jquery.autocomplete.js"></script>
       <script src="~/lib/flatpickr/flatpickr.js"></script>
-      <script src="~/lib/taggle/taggle.js"></script>
-      <script src="~/js/uni-events-js/ZMBA.js"></script>
+      <script src="~/lib/taggle/taggle.js"></script>     
       <script src="~/js/uni-events-js/uni-events.js"></script>
    </environment>
    <environment exclude="Development">

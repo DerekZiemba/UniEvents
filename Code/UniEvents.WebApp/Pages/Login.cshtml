@@ -32,7 +32,7 @@
    });
 
    function handleLogin() {
-      var oRequest = U.buildAjaxRequestFromInputs(document.querySelectorAll("input[param]"), { type: "GET", url: `webapi/account/login` });
+      var oRequest = U.buildAjaxRequestFromInputs(document.querySelectorAll("input[param]"), { type: "GET", url: 'webapi/account/login' });
       function handleError(ev) {
             console.log(ev, oRequest);
             U.setPageMessage('error', ev.message);

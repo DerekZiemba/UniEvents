@@ -115,6 +115,8 @@ namespace UniEvents.WebApp {
             Factory = new Core.Factory("C:\\UniEvents.config.json");
          } else if (Environment.IsProduction()) {
             Factory = new Core.Factory("C:\\UniEvents.config.json");
+         } else {
+            Factory = new Core.Factory("C:\\UniEvents.config.json");
          }
       }
 
