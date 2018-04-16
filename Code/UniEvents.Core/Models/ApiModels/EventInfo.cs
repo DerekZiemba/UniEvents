@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using UniEvents.Core;
 using UniEvents.Models.DBModels;
 
 
@@ -39,6 +41,33 @@ namespace UniEvents.Models.ApiModels {
       public EventInfo() { }
 
 
+      public EventInfo(Factory Ctx, DBEventFeedItem item) {
+         AccountID = item.AccountID;
+         EventID = item.EventID;
+         EventTypeID = item.EventTypeID;
+         DateStart = item.DateStart;
+         DateEnd = item.DateEnd;
+         LocationID = item.LocationID;
+         Title = item.Title;
+         Caption = item.Caption;
+         RSVP_Attending = item.RSVP_Attending;
+         RSVP_Later = item.RSVP_Later;
+         RSVP_StopBy = item.RSVP_StopBy;
+         RSVP_Maybe = item.RSVP_Maybe;
+         RSVP_No = item.RSVP_No;
+
+         Host = String.IsNullOrWhiteSpace(item.UserDisplayName) ? item.UserName : item.UserDisplayName;
+
+         LocationName = item.LocationName;
+         AddressLine = Helpers.FormatAddress(null, item.AddressLine, item.Locality, item.AdminDistrict, item.PostalCode, item.CountryRegion, ", ");
+
+         EventType = Ctx.EventTypeManager[item.EventTypeID];
+         Tags = item.TagIds?.Select(x => Ctx.TagManager[x]).Where(x => x != null).ToArray();
+      }
 
    }
+
+
+
+
 }
