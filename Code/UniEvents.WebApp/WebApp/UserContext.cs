@@ -51,6 +51,8 @@ namespace UniEvents.WebApp {
       //public bool IsVerifiedLogin => this.VerifyDate >= DateTime.UtcNow.AddSeconds(-(60*10+1)) && this.VerifyDate <= DateTime.UtcNow;
       public bool IsVerifiedLogin { get; set; }
 
+      public bool IsAdmin { get; set; }
+
 
       public static void RemoveCurrentUserContext(HttpContext httpContext) {
          httpContext.Response.Cookies.Delete(CookieKey);
@@ -102,6 +104,7 @@ namespace UniEvents.WebApp {
 
             if (ctx.IsVerifiedLogin) {
                DBAccount acct = await WebAppContext.Factory.AccountManager.GetAccount(0, ctx.UserName).ConfigureAwait(false);
+               ctx.IsAdmin = acct.IsAdmin;
                ctx.AccountID = acct.AccountID;
                ctx.LocationID = acct.LocationID.UnBox();
                ctx.UserAccount = new UserAccount(acct, null);

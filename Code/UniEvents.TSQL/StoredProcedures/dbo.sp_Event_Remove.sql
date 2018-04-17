@@ -13,12 +13,22 @@ AS
 SET NOCOUNT ON;
 
 
-IF NOT EXISTS (SELECT TOP 1 * FROM dbo.EventFeed WHERE EventID = @EventID AND AccountID = @AccountID) THROW 50000, 'Event_Not_Exist_Or_Insufficient_Permission', 1;
+IF NOT EXISTS (SELECT TOP 1 * FROM dbo.EventFeed WHERE EventID = @EventID AND AccountID = @AccountID) 
+   AND NOT EXISTS(SELECT TOP 1 * FROM dbo.Accounts WHERE AccountID = @AccountID AND IsAdmin = 1) THROW 50000, 'Unauthorized. Must be creator or Admin.', 10;
 
-DELETE FROM dbo.EventRSVPs WHERE EventID = @EventID;
-DELETE FROM dbo.EventTagMap WHERE EventID = @EventID;
-DELETE FROM dbo.EventDetails WHERE EventID = @EventID;
-DELETE FROM dbo.EventFeed WHERE EventID = @EventID AND AccountID = @AccountID;
+BEGIN TRANSACTION;
+BEGIN TRY 
 
+   DELETE FROM dbo.EventRSVPs WHERE EventID = @EventID;
+   DELETE FROM dbo.EventTagMap WHERE EventID = @EventID;
+   DELETE FROM dbo.EventDetails WHERE EventID = @EventID;
+   DELETE FROM dbo.EventFeed WHERE EventID = @EventID AND AccountID = @AccountID;
+
+   COMMIT TRANSACTION;
+END TRY  
+BEGIN CATCH  
+   ROLLBACK TRANSACTION;  
+   THROW;
+END CATCH 
 
 GO

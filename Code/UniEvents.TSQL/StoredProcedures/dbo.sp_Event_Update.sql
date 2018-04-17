@@ -19,6 +19,9 @@ CREATE OR ALTER PROCEDURE [dbo].[sp_Event_Update]
 AS
 SET NOCOUNT ON;
 
+IF NOT EXISTS (SELECT TOP 1 * FROM dbo.EventFeed WHERE EventID = @EventID AND AccountID = @AccountID) 
+   AND NOT EXISTS(SELECT TOP 1 * FROM dbo.Accounts WHERE AccountID = @AccountID AND IsAdmin = 1) THROW 50000, 'Unauthorized. Must be creator or Admin.', 10;
+
 
 BEGIN TRANSACTION;
 BEGIN TRY 
