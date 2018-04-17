@@ -87,14 +87,12 @@ namespace UniEvents.Models.DBModels {
 
 
    public class DBEventFeedItemExtended : DBEventFeedItem {
-      public Int64 LocationID { get; set; }
       public Int64? ParentLocationID { get; set; }
       public string Details { get; set; }
 
       public DBEventFeedItemExtended() { }
 
       public DBEventFeedItemExtended(IDataReader reader) : base(reader) {
-         LocationID = reader.GetInt64(nameof(LocationID));
          ParentLocationID = reader.GetNInt64(nameof(ParentLocationID));
          Details = reader.GetString(nameof(Details));
       }

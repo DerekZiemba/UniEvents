@@ -49,10 +49,12 @@ namespace UniEvents.Models.DBModels {
       public bool IsGroup { get; set; }
 
       [DBCol("VerifiedSchoolEmail", SqlDbType.Bit, 1, true)]
-      public bool? VerifiedSchoolEmail { get; set; }
+      public bool VerifiedSchoolEmail { get; set; }
 
       [DBCol("VerifiedContactEmail", SqlDbType.Bit, 1, true)]
-      public bool? VerifiedContactEmail { get; set; }
+      public bool VerifiedContactEmail { get; set; }
+
+      public bool IsAdmin { get; set; }
 
       public DBAccount() { }
 
@@ -69,21 +71,9 @@ namespace UniEvents.Models.DBModels {
          SchoolEmail = reader.GetString(nameof(SchoolEmail));
          ContactEmail = reader.GetString(nameof(ContactEmail));
          IsGroup = reader.GetBoolean(nameof(IsGroup));
-         VerifiedSchoolEmail = reader.GetNBoolean(nameof(VerifiedSchoolEmail));
-         VerifiedContactEmail = reader.GetNBoolean(nameof(VerifiedContactEmail));
-      }
-
-
-      public static async Task<DBAccount> SP_Account_GetOneAsync(Factory ctx, long AccountID, string UserName = null) {
-         if(AccountID <= 0 && String.IsNullOrWhiteSpace(UserName)) { throw new ArgumentNullException("AccountID or UserName must be specified."); }
-
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_GetOne]", conn) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@AccountID), AccountID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@UserName), @UserName);
-
-            return await cmd.ExecuteReader_GetOneAsync<DBAccount>().ConfigureAwait(false);
-         }
+         VerifiedSchoolEmail = reader.GetNBoolean(nameof(VerifiedSchoolEmail)).UnBox();
+         VerifiedContactEmail = reader.GetNBoolean(nameof(VerifiedContactEmail)).UnBox();
+         IsAdmin = reader.GetNBoolean(nameof(IsAdmin)).UnBox();
       }
 
       public static async Task<bool> SP_Account_CreateAsync(Factory ctx, DBAccount model) {

@@ -113,7 +113,7 @@
     <None Include="StoredProcedures\dbo.sp_Tags_Search.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="StoredProcedures\dbo.sp_Event_CreateOrUpdate.sql" />
+    <None Include="StoredProcedures\dbo.sp_Event_Create.sql" />
   </ItemGroup>
   <ItemGroup>
     <ArtifactReference Include="dbUniHangouts.dacpac">
@@ -166,5 +166,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Event_Remove.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Event_Update.sql" />
   </ItemGroup>
 </Project>

@@ -101,7 +101,7 @@ namespace UniEvents.WebApp {
             }
 
             if (ctx.IsVerifiedLogin) {
-               DBAccount acct = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, ctx.UserName).ConfigureAwait(false);
+               DBAccount acct = await WebAppContext.Factory.AccountManager.GetAccount(0, ctx.UserName).ConfigureAwait(false);
                ctx.AccountID = acct.AccountID;
                ctx.LocationID = acct.LocationID.UnBox();
                ctx.UserAccount = new UserAccount(acct, null);

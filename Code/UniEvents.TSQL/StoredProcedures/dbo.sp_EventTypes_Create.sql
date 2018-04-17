@@ -13,7 +13,6 @@ CREATE OR ALTER PROCEDURE [dbo].[sp_EventTypes_Create]
 AS
 SET NOCOUNT ON;
 
-IF EXISTS (SELECT TOP 1 * FROM [dbo].EventTypes WHERE [Name] = @Name) THROW 50000, 'EventType_Already_Exists', 1;
 
 INSERT INTO [dbo].EventTypes([Name], [Description]) 
 	VALUES (@Name, @Description);
