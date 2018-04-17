@@ -1,6 +1,6 @@
 ﻿[
 	{
-		"outputFile": "wwwroot/styles/uni-events.css",
-		"inputFile": "wwwroot/styles/uni-events.scss"
+		"outputFile": "wwwroot/styles/unievents.css",
+		"inputFile": "wwwroot/styles/unievents.scss"
 	}
 ]

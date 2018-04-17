@@ -18,6 +18,8 @@ namespace UniEvents.Models.ApiModels {
       public string PhoneNumber { get; set; }
       public bool VerifiedSchoolEmail { get; set; }
       public bool VerifiedContactEmail { get; set; }
+      public bool IsAdmin { get; set; }
+
       public StreetAddress Location { get; set; }
 
       public string BestDisplayName => String.IsNullOrWhiteSpace(DisplayName) ? UserName : DisplayName;
@@ -33,8 +35,9 @@ namespace UniEvents.Models.ApiModels {
          SchoolEmail = acct.SchoolEmail;
          ContactEmail = acct.ContactEmail;
          PhoneNumber = acct.PhoneNumber;
-         VerifiedContactEmail = acct.VerifiedContactEmail.UnBox();
-         VerifiedSchoolEmail = acct.VerifiedSchoolEmail.UnBox();
+         VerifiedContactEmail = acct.VerifiedContactEmail;
+         VerifiedSchoolEmail = acct.VerifiedSchoolEmail;
+         IsAdmin = acct.IsAdmin;
          Location = loc;
       }
 

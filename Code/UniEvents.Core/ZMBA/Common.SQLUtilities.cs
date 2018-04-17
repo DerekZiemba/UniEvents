@@ -31,9 +31,26 @@ namespace ZMBA {
       }
       public static SqlParameter AddParam<T>(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, T? value) where T : struct, IConvertible, IFormattable, IComparable {
          SqlParameter param = new SqlParameter(name[ 0 ] != '@' ? '@' + name : name, dbtype) { Direction = direction };
-         if (value.HasValue) { param.Value = value; }
+         if (value.HasValue) {
+            if(typeof(T) == typeof(DateTime)) {
+               param.Value = ((DateTime)(object)value.Value).ToUniversalTime();
+            }else {
+               param.Value = value;
+            }            
+         }
          return cmd.Parameters.Add(param);
       }
+      public static SqlParameter AddParam(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, DateTime value) {
+         if(value.Kind != DateTimeKind.Utc) { value = value.ToUniversalTime(); }
+         return cmd.Parameters.Add(new SqlParameter(name[0] != '@' ? '@' + name : name, dbtype) { Direction = direction, Value = value });
+      }
+
+      //public static SqlParameter AddParam(this SqlCommand cmd, ParameterDirection direction, SqlDbType dbtype, string name, DateTime? value) {
+      //   if(value.HasValue && value.Value.Kind != DateTimeKind.Utc) { value = value.Value.ToUniversalTime(); }
+      //   return cmd.Parameters.Add(new SqlParameter(name[0] != '@' ? '@' + name : name, dbtype) { Direction = direction, Value = value });
+      //}
+
+
 
       public static int ExecuteProcedure(this SqlCommand cmd) {
          if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }

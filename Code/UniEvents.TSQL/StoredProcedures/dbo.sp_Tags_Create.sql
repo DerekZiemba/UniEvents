@@ -14,9 +14,6 @@ AS
 SET NOCOUNT ON;
 
 
-
-IF EXISTS (SELECT TOP 1 * FROM [dbo].Tags WHERE [Name] = @Name) THROW 50000, 'Tag_Already_Exists', 1;
-
 INSERT INTO [dbo].Tags([Name], [Description]) 
    VALUES (@Name, @Description);
 

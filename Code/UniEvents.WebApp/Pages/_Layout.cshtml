@@ -8,16 +8,15 @@
 <head>
    <meta charset="utf-8" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>@ViewData[ "Title" ] - UniEvents</title>
-
+   <title>@ViewData["Title"] - UniEvents</title>
 
    <link rel="stylesheet"
          href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.css"
          asp-fallback-href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css"
          asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
 
-   <link rel="stylesheet" href="~/bundles/uni-events.min.css" asp-append-version="true" />
-   @* Important polyfills: *@
+   <link rel="stylesheet" href="~/bundles/unievents.min.css" asp-append-version="true" />
+
    <script type="text/javascript" src="~/js/ZMBA/ZMBA.es5.js"></script>
 
 </head>
@@ -38,7 +37,7 @@
          <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                <li><a asp-page="/ApiTest">ApiTest</a></li>
-               @if (userContext != null && userContext.IsVerifiedLogin) {
+               @if(userContext != null && userContext.IsVerifiedLogin) {
                   <li><a asp-page="/Account">@userContext.UserDisplayName</a></li>
                } else {
                   <li><a asp-page="/Login">Login</a></li>
@@ -54,12 +53,10 @@
       @RenderBody()
       <hr />
       <footer>
-         <p>&copy; 2018 - UniEvents</p>
-         <p>@WebAppContext.EnvironmentString - @WebAppContext.ServerName</p>
+         <span>&copy; 2018 - UniEvents</span>
+         <span>@WebAppContext.EnvironmentString - @WebAppContext.ServerName</span>
       </footer>
    </div>
-
-
 
    <script asp-fallback-src="https://code.jquery.com/jquery-3.3.1.min.js"
            src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
@@ -67,27 +64,31 @@
            crossorigin="anonymous"
            integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
    </script>
-
    <script asp-fallback-src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
            src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
            asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
            crossorigin="anonymous"
            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
    </script>
+   @RenderSection("Scripts", required: false)
 
+   @{var pagename = ViewContext.RouteData.Values["page"].ToString().Trim('/');}
 
    <environment include="Development">
       <script src="~/lib/jquery-autocomplete/jquery.autocomplete.js"></script>
       <script src="~/lib/flatpickr/flatpickr.js"></script>
-      <script src="~/lib/taggle/taggle.js"></script>     
-      <script src="~/js/uni-events-js/uni-events.js"></script>
+      <script src="~/lib/taggle/taggle.js"></script>
+      <script src="~/js/unievents/unievents.js"></script>
+      <script src=@($"/js/unievents/page-{pagename}.js")></script>
    </environment>
-   <environment exclude="Development">
-      <script src="~/bundles/uni-events.es5.js" asp-append-version="true"></script>
+   <environment include="Staging">
+      <script src="~/bundles/unievents.es5.js" asp-append-version="true"></script>
+   </environment>
+   <environment exclude="Development,Staging">
+      <script src="~/bundles/unievents.es5.min.js" asp-append-version="true"></script>
    </environment>
 
-   @*<script src="~/bundles/uni-events-all.es5.min.js" asp-append-version="true"></script>*@
+   <script> ZMBA.onDocumentReady(function () { U.pages.@(pagename)(); }); </script>
 
-   @RenderSection("Scripts", required: false)
 </body>
 </html>

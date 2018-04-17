@@ -67,9 +67,10 @@ namespace UniEvents.Core.Managers {
       }
 
 
-      public DBEventFeedItem CreateOrUpdate(long? EventID, long EventTypeID, DateTime DateStart, DateTime DateEnd, long AccountID, long LocationID, string Title, string Caption, string Details) {
-         using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_CreateOrUpdate]", new SqlConnection(Ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
-            SqlParameter paramEventID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(EventID), EventID);
+
+      public DBEventFeedItem CreateEvent(long EventTypeID, DateTime DateStart, DateTime DateEnd, long AccountID, long LocationID, string Title, string Caption, string Details) {
+         using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_Create]", new SqlConnection(Ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
+            SqlParameter paramEventID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(DBEventFeedItem.EventID), null);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateStart), DateStart);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateEnd), DateEnd);
@@ -96,6 +97,23 @@ namespace UniEvents.Core.Managers {
             }
          }
          return null;
+      }
+
+
+      public void UpdateEvent(long EventID, long EventTypeID, DateTime DateStart, DateTime DateEnd, long AccountID, long LocationID, string Title, string Caption, string Details) {
+         using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_Update]", new SqlConnection(Ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), EventID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventTypeID), EventTypeID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateStart), DateStart);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.SmallDateTime, nameof(DateEnd), DateEnd);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(AccountID), AccountID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(LocationID), LocationID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Title), Title);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Caption), Caption);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(Details), Details);
+
+            int rowsAffected = cmd.ExecuteProcedure();
+         }
       }
 
 

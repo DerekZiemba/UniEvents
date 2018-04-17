@@ -98,7 +98,7 @@ namespace UniEvents.WebAPI.Controllers {
 
          try {
             StreetAddress address = new StreetAddress(Factory.LocationManager.GetOrCreateDBLocation(input.Location));
-            DBEventFeedItem dbEventItem = Factory.EventManager.CreateOrUpdate(null, eventType.EventTypeID, input.DateStart, input.DateEnd, UserContext.AccountID, address.LocationID.UnBox(), input.Title, input.Caption, input.Description);
+            DBEventFeedItem dbEventItem = Factory.EventManager.CreateEvent(eventType.EventTypeID, input.DateStart, input.DateEnd, UserContext.AccountID, address.LocationID.UnBox(), input.Title, input.Caption, input.Description);
             EventInfo info = new EventInfo(){
                EventID = dbEventItem.EventID,
                DateStart = dbEventItem.DateStart,
@@ -132,7 +132,7 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpPost, Route("webapi/events/update/{EventID?}")]
-      public async Task<ApiResult<EventInfo>> EventUpdate(long EventID, EventInput input) {
+      public ApiResult<EventInfo> EventUpdate(long EventID, EventInput input) {
          //TODO: Verify Event belongs to user if updating. Right now anyone can update any event. 
          var apiresult = new ApiResult<EventInfo>();
          if(UserContext == null) { return apiresult.Failure("Must be logged in."); }
@@ -161,25 +161,30 @@ namespace UniEvents.WebAPI.Controllers {
          if(existing.DateEnd.ToUniversalTime() < input.DateStart.ToUniversalTime()) { return apiresult.Failure("DateEnd is before DateStart"); }
          if(existing.DateStart.AddDays(14).ToUniversalTime() < input.DateEnd.ToUniversalTime()) { return apiresult.Failure("Events cannot last longer than 2 weeks."); }
 
+
+         DBEventType eventType = Factory.EventTypeManager[existing.EventTypeID];
+         if(eventType == null) { return apiresult.Failure("EventType does not exist."); }
+
+
+         DBTag[] eventTags = null;
          if(input.Tags != null && input.Tags.Length > 0) {
+            eventTags = new DBTag[input.Tags.Length];
             existing.TagIds = new long[input.Tags.Length];
             for(int i = 0; i < input.Tags.Length; i++) {
                DBTag tag = Factory.TagManager[input.Tags[i]];
                if(tag == null) { return apiresult.Failure("Invalid Tag: " + input.Tags[i].ToString()); }
                existing.TagIds[i] = tag.TagID;
+               eventTags[i] = tag;
+            }
+         } else {
+            eventTags = new DBTag[existing.TagIds.Length];
+            for(int i = 0; i < existing.TagIds.Length; i++) {
+               DBTag tag = Factory.TagManager[existing.TagIds[i]];
+               if(tag == null) { return apiresult.Failure("Invalid Tag: " + input.Tags[i].ToString()); }
+               eventTags[i] = tag;
             }
          }
 
-         DBEventType eventType = Factory.EventTypeManager[existing.EventTypeID];
-         if(eventType == null) { return apiresult.Failure("EventType does not exist."); }
-
-         if(input.Tags == null || input.Tags.Length == 0) { return apiresult.Failure("Include at least one EventTag."); }
-         DBTag[] eventTags = new DBTag[input.Tags.Length];
-         for(int i = 0; i < input.Tags.Length; i++) {
-            DBTag tag = Factory.TagManager[input.Tags[i]];
-            if(tag == null) { return apiresult.Failure("Invalid Tag: " + input.Tags[i].ToString()); }
-            eventTags[i] = tag;
-         }
 
 
          bool bLocChange = false;
@@ -193,19 +198,19 @@ namespace UniEvents.WebAPI.Controllers {
             if(loc.CountryRegion != null && existing.CountryRegion != loc.CountryRegion) { existing.CountryRegion = loc.CountryRegion; bLocChange = true; }
 
             if(bLocChange) {
-               LocationNode.CountryRegionNode oCountry = Factory.LocationManager.QueryCachedCountries(input.Location.CountryRegion).FirstOrDefault();
+               LocationNode.CountryRegionNode oCountry = Factory.LocationManager.QueryCachedCountries(existing.CountryRegion).FirstOrDefault();
                if(oCountry == null) { return apiresult.Failure("Invalid Country"); }
 
-               LocationNode.AdminDistrictNode oState = Factory.LocationManager.QueryCachedStates(input.Location.AdminDistrict).FirstOrDefault();
+               LocationNode.AdminDistrictNode oState = Factory.LocationManager.QueryCachedStates(existing.AdminDistrict).FirstOrDefault();
                if(oState == null) { return apiresult.Failure("Invalid State"); }
 
-               if(input.Location.PostalCode.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid PostalCode"); }
+               if(existing.PostalCode.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid PostalCode"); }
                if(oCountry.Abbreviation == "USA") {
-                  LocationNode.PostalCodeNode oZip = Factory.LocationManager.QueryCachedPostalCodes(input.Location.PostalCode).FirstOrDefault();
+                  LocationNode.PostalCodeNode oZip = Factory.LocationManager.QueryCachedPostalCodes(existing.PostalCode).FirstOrDefault();
                   if(oZip == null) { return apiresult.Failure("Invalid PostalCode"); }
                }
 
-               if(input.Location.Locality.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid City"); }
+               if(existing.Locality.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid City"); }
             }
          }
 
@@ -222,24 +227,24 @@ namespace UniEvents.WebAPI.Controllers {
 
          if(bLocChange) {
             try {
-               address = new StreetAddress(Factory.LocationManager.GetOrCreateDBLocation(input.Location));
+               address = new StreetAddress(Factory.LocationManager.GetOrCreateDBLocation(address));
             } catch(Exception ex) { return apiresult.Failure(ex); }
          }
 
          try {
-            DBEventFeedItem dbEventItem = Factory.EventManager.CreateOrUpdate(EventID, existing.EventTypeID, existing.DateStart, existing.DateEnd, UserContext.AccountID, existing.LocationID, existing.Title, existing.Caption, existing.Details);
+            Factory.EventManager.UpdateEvent(EventID, existing.EventTypeID, existing.DateStart, existing.DateEnd, UserContext.AccountID, existing.LocationID, existing.Title, existing.Caption, existing.Details);
             EventInfo info = new EventInfo(){
-               EventID = dbEventItem.EventID,
-               DateStart = dbEventItem.DateStart,
-               DateEnd = dbEventItem.DateEnd,
-               Title=dbEventItem.Title,
-               Caption = dbEventItem.Title,
-               EventTypeID = dbEventItem.EventTypeID,
+               EventID = existing.EventID,
+               DateStart = existing.DateStart,
+               DateEnd = existing.DateEnd,
+               Title=existing.Title,
+               Caption = existing.Title,
+               EventTypeID = existing.EventTypeID,
                EventType = eventType,
-               LocationID = dbEventItem.LocationID,
+               LocationID = existing.LocationID,
                LocationName = address.Name,
                AddressLine = Helpers.FormatAddress(null, address.AddressLine, address.Locality, address.AdminDistrict, address.PostalCode, address.CountryRegion),
-               AccountID = dbEventItem.AccountID,
+               AccountID = existing.AccountID,
                Host = String.IsNullOrWhiteSpace(UserContext.UserDisplayName) ? UserContext.UserName : UserContext.UserDisplayName,
                Tags = eventTags
             };

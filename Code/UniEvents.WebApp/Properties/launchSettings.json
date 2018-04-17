@@ -1,40 +1,57 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-   "iis": {
-      "applicationUrl": "http://localhost:13331/",
-      "sslPort": 0
-   },
-    "iisExpress": {
-      "applicationUrl": "http://localhost:51769/",
-      "sslPort": 0
-    }
-  },
-  "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_preventHostingStartup": "true",
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "UniEvents.WebApp": {
-      "commandName": "IIS",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_preventHostingStartup": "true",
-        "ASPNETCORE_ENVIRONMENT": "Development"
+   "iisSettings": {
+      "windowsAuthentication": false,
+      "anonymousAuthentication": true,
+      "iis": {
+         "applicationUrl": "http://localhost:13331/",
+         "sslPort": 0
       },
-      "applicationUrl": "http://localhost:1332/"
-    },
-    "IIS": {
-      "commandName": "IIS",
-      "environmentVariables": {
-         "ASPNETCORE_preventHostingStartup": "true",
-         "ASPNETCORE_ENVIRONMENT": "Development"
+      "iisExpress": {
+         "applicationUrl": "http://localhost:51769/",
+         "sslPort": 0
       }
-    }
-  }
+   },
+   "profiles": {
+      "IIS Express": {
+         "commandName": "IISExpress",
+         "launchBrowser": true,
+         "environmentVariables": {
+            "ASPNETCORE_preventHostingStartup": "true",
+            "ASPNETCORE_ENVIRONMENT": "Development"
+         }
+      },
+      "UniEvents.WebApp": {
+         "commandName": "IIS",
+         "launchBrowser": true,
+         "environmentVariables": {
+            "ASPNETCORE_preventHostingStartup": "true",
+            "ASPNETCORE_ENVIRONMENT": "Development"
+         },
+         "applicationUrl": "http://localhost:1332/"
+      },
+      "Development": {
+         "commandName": "IIS",
+         "environmentVariables": {
+            "ASPNETCORE_preventHostingStartup": "true",
+            "ASPNETCORE_ENVIRONMENT": "Development"
+         },
+         "applicationUrl": "http://localhost:13331/"
+      },
+      "Staging": {
+         "commandName": "IIS",
+         "environmentVariables": {
+            "ASPNETCORE_preventHostingStartup": "true",
+            "ASPNETCORE_ENVIRONMENT": "Staging"
+         },
+         "applicationUrl": "http://localhost:1332/"
+      },
+      "Production": {
+         "commandName": "IIS",
+         "environmentVariables": {
+            "ASPNETCORE_preventHostingStartup": "true",
+            "ASPNETCORE_ENVIRONMENT": "Production"
+         },
+         "applicationUrl": "http://localhost:1331/"
+      }
+   }
 }

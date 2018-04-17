@@ -30,7 +30,7 @@ namespace UniEvents.WebAPI.Controllers {
 
          DBAccount dbAccount = null;
          try {
-            dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, username).ConfigureAwait(false);
+            dbAccount = await WebAppContext.Factory.AccountManager.GetAccount(0, username).ConfigureAwait(false);
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
          if (dbAccount == null) {  return apiresult.Failure("Account does not exist.");  }
@@ -155,7 +155,7 @@ namespace UniEvents.WebAPI.Controllers {
             ApiResult apiresult = new ApiResult();          
             DBAccount dbAccount;
             try {
-               dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, _username).ConfigureAwait(false);
+               dbAccount = await WebAppContext.Factory.AccountManager.GetAccount( 0, _username).ConfigureAwait(false);
             } catch (Exception ex) { return apiresult.Failure(ex); }
 
             if (dbAccount == null) {
@@ -252,7 +252,7 @@ namespace UniEvents.WebAPI.Controllers {
          if (String.IsNullOrWhiteSpace(username)) { return apiresult.Failure("AccountID or UserName must be specified."); }
 
          try {
-            DBAccount dbAccount = await DBAccount.SP_Account_GetOneAsync(WebAppContext.Factory, 0, username).ConfigureAwait(false);
+            DBAccount dbAccount = await WebAppContext.Factory.AccountManager.GetAccount(0, username).ConfigureAwait(false);
             if (dbAccount == null) {
                return apiresult.Failure("User doesn't exist");
             }
