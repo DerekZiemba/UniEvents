@@ -22,7 +22,7 @@ BEGIN TRY
    DELETE FROM dbo.EventRSVPs WHERE EventID = @EventID;
    DELETE FROM dbo.EventTagMap WHERE EventID = @EventID;
    DELETE FROM dbo.EventDetails WHERE EventID = @EventID;
-   DELETE FROM dbo.EventFeed WHERE EventID = @EventID AND AccountID = @AccountID;
+   DELETE FROM dbo.EventFeed WHERE EventID = @EventID;
 
    COMMIT TRANSACTION;
 END TRY  
