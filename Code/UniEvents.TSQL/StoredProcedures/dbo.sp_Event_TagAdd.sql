@@ -13,7 +13,10 @@ AS
 SET NOCOUNT ON;
 
 
-INSERT INTO dbo.EventTagMap(EventID, TagID) VALUES (@EventID, @TagID);
+IF NOT EXISTS(SELECT TOP 1 * FROM dbo.EventTagMap WHERE EventID = @EventID AND TagID = @TagID)
+   Begin
+      INSERT INTO dbo.EventTagMap(EventID, TagID) VALUES (@EventID, @TagID);
+   END
 
 
 GO
