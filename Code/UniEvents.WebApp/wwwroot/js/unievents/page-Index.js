@@ -66,6 +66,41 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
          $.ajax(oRequest);
 
          document.getElementById('EventModalContent').appendChild(this.el);
+
+         self.el.getElementsByClassName("set_event_rsvp").forEach((el) => {
+            var name = el.name;
+            el.addEventListener('click', function () {
+               var req = {
+                  url: 'webapi/rsvp/toevent?eventid=' + self.data.id + '&rsvpName=' + encodeURIComponent(name),
+                  type: 'GET',
+                  dataType: 'json',
+                  error: function (ev) {
+                     console.log(req, ev);
+                     U.setNotification(self.el, 'error', ev.message);
+                  },
+                  success: function (ev) {
+                     if (ev.success) {
+                        self.el.getElementsByClassName("set_event_rsvp").forEach(x => { x.classList.remove("selected"); });
+                        el.classList.add("selected");
+                     } else {
+                        req.error(ev);
+                     }
+                  }
+               }
+               $.ajax(req);               
+            });
+         });
+
+         $.ajax({
+            url: 'webapi/rsvp/getrsvp?eventid=' + self.data.id,
+            type: 'GET',
+            dataType: 'json',
+            success: function (ev) {
+               if (ev.success) {
+                  self.el.querySelector(`.set_event_rsvp[name=${ev.result.name}]`).classList.add("selected");
+               }
+            }
+         });
       }
 
       EventModal.prototype = U.Modal;

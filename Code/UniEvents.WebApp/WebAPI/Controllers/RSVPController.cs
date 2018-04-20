@@ -45,10 +45,29 @@ namespace UniEvents.WebAPI.Controllers {
          }
          try {
             await Factory.RSVPTypeManager.AddOrUpdateRSVPToEvent(UserContext.AccountID, eventid, rsvp.RSVPTypeID);
-            return apiresult.Success("Succes");
+            return apiresult.Success("Success");
          } catch (Exception ex) { return apiresult.Failure(ex); }
 
       }
+
+      
+      [HttpGet, Route("webapi/rsvp/getrsvp/{eventid?}")]
+      public ApiResult<RSVPType> GetRsvpStatus(long eventid) {
+         var apiresult = new ApiResult<RSVPType>();
+         if (UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if (!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
+         if (eventid <= 0) { return apiresult.Failure("Invalid Event"); }
+
+         try {
+            var status = Factory.RSVPTypeManager.GetUsersRSVP(UserContext.AccountID, eventid);
+            if(status != null) {
+               return apiresult.Success(status);
+            }
+            return apiresult.Failure("");
+         } catch (Exception ex) { return apiresult.Failure(ex); }
+
+      }
+
 
       public RSVPController(IHttpContextAccessor accessor) : base(accessor) { }
    }
