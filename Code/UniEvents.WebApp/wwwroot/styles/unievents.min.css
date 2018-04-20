@@ -1054,6 +1054,11 @@ a
  position: absolute;
  top: 230px;
 }
+#IndexPage .selected
+{
+ background-color: #add8e6;
+ color: #008000;
+}
 #AccountPage #allLoginsTableContainer
 {
  overflow-x: auto;

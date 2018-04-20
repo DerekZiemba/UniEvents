@@ -1180,6 +1180,8 @@ a { cursor: pointer; }
 
 #IndexPage .modal_eventdetails .description { position: absolute; top: 230px; }
 
+#IndexPage .selected { background-color: lightblue; color: green; }
+
 #AccountPage #allLoginsTableContainer { overflow-x: auto; }
 
 #AccountPage #btnLogoutAll { margin-top: 10px; }

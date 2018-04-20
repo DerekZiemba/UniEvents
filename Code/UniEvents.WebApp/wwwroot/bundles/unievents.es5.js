@@ -2213,7 +2213,7 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 dataType: 'json',
                 success: function (ev) {
                     if (ev.success) {
-                        self.el.querySelector(".set_event_rsvp[name=" + ev.result.name + "]").classList.add("selected");
+                        self.el.querySelector(".set_event_rsvp[name='" + ev.result.name + "']").classList.add("selected");
                     }
                 }
             });
