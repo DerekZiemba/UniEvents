@@ -35,7 +35,9 @@ namespace UniEvents.WebApp {
       public string FirstName => UserAccount?.FirstName;
       public string LastName => UserAccount?.LastName;
       public string SchoolEmail => UserAccount?.SchoolEmail;
+      public bool IsSchoolEmailVerified => (UserAccount?.VerifiedSchoolEmail).UnBox();
       public string ContactEmail => UserAccount?.ContactEmail;
+       public bool IsContactEmailVerified => (UserAccount?.VerifiedContactEmail).UnBox();
       public string PhoneNumber => UserAccount?.PhoneNumber;
 
       public long ParentLocationID { get; set; }

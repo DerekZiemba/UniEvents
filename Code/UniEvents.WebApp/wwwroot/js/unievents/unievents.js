@@ -6,7 +6,7 @@
    U.pages = {};
 
    ZMBA.extendType(U, {
-      loginCookie: document.cookies.getCookieObject("userlogin"),
+      loginCookie: document.cookies.getCookieObject("uinfo"),
       getRouteMetadata: function (route, cb) {
          $.ajax({
             cache: false,

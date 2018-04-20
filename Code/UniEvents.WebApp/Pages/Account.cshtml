@@ -32,10 +32,20 @@
          <li>
             <label>School Email: </label>
             <span>@Model.UserContext.SchoolEmail</span>
+            @if(Model.UserContext.IsSchoolEmailVerified) {
+               <span style="color:green">Verified.</span>
+            } else if(!String.IsNullOrWhiteSpace(Model.UserContext.SchoolEmail)) {
+               <span><a name="school" class="sendEmailVerification">Send Verification Email</a></span>
+            }
          </li>
          <li>
             <label>Contact Email: </label>
             <span>@Model.UserContext.ContactEmail</span>
+            @if(Model.UserContext.IsContactEmailVerified) {
+               <span style="color:green">Verified.</span>
+            } else if(!String.IsNullOrWhiteSpace(Model.UserContext.ContactEmail)) {
+               <span><a name="contact" class="sendEmailVerification">Send Verification Email</a></span>
+            }
          </li>
          <li>
             <label>Phone Number: </label>

@@ -288,6 +288,40 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
+      [HttpGet, Route("webapi/account/sendverificationemail/{email?}")]
+      public ApiResult SendVerificationEmail(string email) {
+         var apiresult = new ApiResult();
+         if(UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if(!UserContext.IsVerifiedLogin) { return apiresult.Failure("Check your privilege. This is a privileged operation."); }       
+
+         if(email.EqIgCase("school")) {
+            email = UserContext.SchoolEmail;
+         }
+         if(email.EqIgCase("contact")) {
+            email = UserContext.ContactEmail;
+         }
+         if(!UserContext.ContactEmail.EqIgCase(email) && !UserContext.SchoolEmail.EqIgCase(email)) {
+            
+         }
+         if(String.IsNullOrWhiteSpace(email)) { return apiresult.Failure("Must provide an Email."); }
+
+         if(UserContext.ContactEmail.EqIgCase(email)) {
+            if(UserContext.IsContactEmailVerified) { return apiresult.Failure("Contact Email Already Verified."); }
+         } else if(UserContext.SchoolEmail.EqIgCase(email)) {
+            if(UserContext.IsSchoolEmailVerified) { return apiresult.Failure("School Email Already Verified."); }
+         } else {
+            return apiresult.Failure("You may only verify your ContactEmail or SchoolEmail");
+         }
+
+         try {
+            Factory.EmailManager.SendVerificationEmail(UserContext.AccountID, UserContext.UserName, email, "http://www.unievents.site/verifyemail");
+            return apiresult.Success("Email Sent");
+         } catch(Exception ex) {
+            return apiresult.Failure(ex);
+         }
+      }
+
+
       //[HttpGet, Route("webapi/account/verifyemail/{accountid?}/{verificationkey?}")]
       //public ApiResult VerifyEmail(long accountid, string verificationkey) {
       //   var apiresult = new ApiResult();

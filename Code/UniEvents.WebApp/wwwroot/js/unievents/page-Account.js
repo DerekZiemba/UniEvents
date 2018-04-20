@@ -13,7 +13,7 @@ U.pages.Account = (function (window, document, $, U, ZMBA) {
             var key = tr.querySelector('.apikey').innerHTML;
             $.ajax({
                type: "GET",
-               url: "webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)&apikeyorpassword=" + encodeURIComponent(key),
+               url: `webapi/account/logout?username=${encodeURIComponent(U.loginCookie.UserName)}&apikeyorpassword=${encodeURIComponent(key)}`,
                error: handleFailure,
                success: function (ev) {
                   if (!ev.success) { return handleFailure(ev); }
@@ -33,7 +33,7 @@ U.pages.Account = (function (window, document, $, U, ZMBA) {
       document.querySelector('#btnLogoutAll').addEventListener('click', function () {
          $.ajax({
             type: "GET",
-            url: "webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)",
+            url: `webapi/account/logout?username=${encodeURIComponent(U.loginCookie.UserName)}`,
             error: handleFailure,
             success: function (ev) {
                if (!ev.success) { return handleFailure(ev); }
@@ -45,6 +45,22 @@ U.pages.Account = (function (window, document, $, U, ZMBA) {
          });
       });
 
-   }
+      document.querySelectorAll('.sendEmailVerification').forEach(el => {
+         el.addEventListener('click', function () {
+            $.ajax({
+               type: "GET",
+               url: `webapi/account/sendverificationemail?email=${el.name}`,
+               error: handleFailure,
+               success: function (ev) {
+                  if (!ev.success) { return handleFailure(ev); }
+                  U.setPageMessage('success', ev.message);
+               }
+            });
+         });
+
+
+      });
+   };
+
 
 }(window, window.document, window.jQuery, window.U, window.ZMBA));
