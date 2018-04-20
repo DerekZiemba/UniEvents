@@ -179,4 +179,7 @@
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_EmailVerification_SetVerified.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_Event_RSVP_Get.sql" />
+  </ItemGroup>
 </Project>

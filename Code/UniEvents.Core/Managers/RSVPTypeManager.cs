@@ -92,6 +92,19 @@ namespace UniEvents.Core.Managers {
       }
 
 
+      public RSVPType GetUsersRSVP(long AccountID, long EventID) {
+         using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_RSVP_Get]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(AccountID), AccountID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), EventID);
+            var dbrsvp = cmd.ExecuteReader_GetOne<DBEventRSVP>();
+            if(dbrsvp != null) {
+               return _RSVPTypes.FirstOrDefault(x => x.RSVPTypeID == dbrsvp.RSVPTypeID);
+            }          
+         }
+         return null;
+      }
+
+
 
    }
 }
