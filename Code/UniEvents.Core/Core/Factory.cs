@@ -24,6 +24,7 @@ namespace UniEvents.Core {
       public EventTypeManager EventTypeManager { get; private set; }
       public RSVPTypeManager RSVPTypeManager { get; private set; }
       public EventManager EventManager { get; private set; }
+       public EmailManager EmailManager { get; private set; }
 
 
       public Factory(string configFilePath) {
@@ -37,6 +38,7 @@ namespace UniEvents.Core {
          this.EventTypeManager = new EventTypeManager(this);
          this.RSVPTypeManager = new RSVPTypeManager(this);
          this.EventManager = new EventManager(this);
+         this.EmailManager = new EmailManager(this);
       }
 
       private bool LoadConfiguration() {

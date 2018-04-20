@@ -47,6 +47,39 @@ namespace UniEvents.Core.Managers {
 
 
 
+      public void CreateAccount(DBAccount model) {
+         if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
+         if(model.IsGroup) { throw new ArgumentException("Is a Group not a User."); }
+         if(String.IsNullOrWhiteSpace(model.UserName)) { throw new ArgumentNullException("UserName_Invalid"); }
+         if(model.PasswordHash.IsEmpty() || model.Salt.IsNullOrEmpty()) { throw new ArgumentException("PasswordHash or Salt invalid."); }
+
+
+         using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Create]", new SqlConnection(Ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
+            SqlParameter AccountID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(model.AccountID), null);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(model.LocationID), model.LocationID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.Binary, nameof(model.PasswordHash), model.PasswordHash);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.Salt), model.Salt);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.UserName), model.UserName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(model.DisplayName), model.DisplayName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(model.FirstName), model.FirstName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(model.LastName), model.LastName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.SchoolEmail), model.SchoolEmail);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.ContactEmail), model.ContactEmail);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(model.PhoneNumber), model.PhoneNumber);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(IsGroup), model.IsGroup);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedSchoolEmail), model.VerifiedSchoolEmail);
+            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedContactEmail), model.VerifiedContactEmail);
+
+            int rowsAffected = cmd.ExecuteProcedure();
+            model.AccountID = (long)AccountID.Value;
+         }
+         if(model.AccountID <= 0) {
+            throw new DataException("AccountID was not set to positive integer. Something in the Database went wrong.");
+         }
+
+      }
+
+
 
    }
 }

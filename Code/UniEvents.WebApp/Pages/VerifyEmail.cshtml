@@ -1,0 +1,12 @@
+﻿@page
+@model UniEvents.WebApp.Pages.VerifyEmailModel
+@{
+    ViewData["Title"] = "VerifyEmail";
+}
+
+<h2>VerifyEmail</h2>
+
+
+<div name="notification_message" class="@(Model.SuccessfullyVerified ? "success" : "alert")">@Model.PageMessage</div>
+
+<div name="notification_message" class="error">@Model.PageErrorMessage</div>

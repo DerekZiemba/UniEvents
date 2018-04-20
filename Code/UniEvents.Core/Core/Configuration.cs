@@ -15,6 +15,8 @@ namespace UniEvents.Core {
       public string dbUniHangoutsRead { get; set; }
       public string dbUniHangoutsWrite { get; set; }
       public string dbUniHangoutsReadWrite { get; set; }
+      public string sEmailVerifyAccountName { get; set; }
+      public string sEmailVerifyAccountPassword { get; set; }
 
 
       [JsonProperty(PropertyName = "IsDebugMode")]private bool? _IsDebugMode;
