@@ -127,6 +127,15 @@ namespace UniEvents.Core.Managers {
          }
       }
 
+      public async Task RemoveTagFromEvent(long EventID, long TagID) {
+         using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_TagRemove]", new SqlConnection(Ctx.Config.dbUniHangoutsWrite)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), EventID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(TagID), TagID);
+            await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
+         }
+      }
+
+
       private class CachedEntry {
          public DBTag Item;
          public string NormName;

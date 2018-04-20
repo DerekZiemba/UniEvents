@@ -27,6 +27,11 @@ namespace UniEvents.Models.ApiModels {
          return (TDerived)this; ;
       }
 
+      public TDerived AppendMessage(Exception ex) {
+         return AppendMessage(ex.Message).AppendMessage(ex.InnerException?.Message);
+      }
+
+      public TDerived SetResult(T value) { this.Result = value; return (TDerived)this; }
       public TDerived Failure(string message) { this.bSuccess = false; this.sMessage = message; return (TDerived)this; }
       public TDerived Failure(Exception ex) { this.bSuccess = false; this.sMessage = ex.Message; AppendMessage(ex.InnerException?.Message); return (TDerived)this; }
       public TDerived Failure(string message, Exception ex) { return this.Failure(message).AppendMessage(ex.Message).AppendMessage(ex.InnerException?.Message); }

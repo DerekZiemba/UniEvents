@@ -166,16 +166,32 @@ namespace UniEvents.WebAPI.Controllers {
          if(eventType == null) { return apiresult.Failure("EventType does not exist."); }
 
 
+         List<DBTag> newTags = null;
+         List<DBTag> removedTags = null;
          DBTag[] eventTags = null;
+
          if(input.Tags != null && input.Tags.Length > 0) {
-            eventTags = new DBTag[input.Tags.Length];
+            DBTag[] previousTags = existing.TagIds.Select(x=>Factory.TagManager[x]).ToArray();
             existing.TagIds = new long[input.Tags.Length];
+            eventTags = new DBTag[input.Tags.Length];
+            newTags = new List<DBTag>();
+            removedTags = new List<DBTag>();
+
             for(int i = 0; i < input.Tags.Length; i++) {
-               DBTag tag = Factory.TagManager[input.Tags[i]];
+               DBTag tag = eventTags[i] = Factory.TagManager[input.Tags[i]];
                if(tag == null) { return apiresult.Failure("Invalid Tag: " + input.Tags[i].ToString()); }
                existing.TagIds[i] = tag.TagID;
-               eventTags[i] = tag;
+               if(Array.IndexOf(previousTags, tag) == -1) {
+                  newTags.Add(tag);
+               }
             }
+            for(int i = 0; i < previousTags.Length; i++) {
+               DBTag tag = previousTags[i];
+               if(Array.IndexOf(eventTags, tag) == -1) {
+                  removedTags.Add(tag);
+               }
+            }
+
          } else {
             eventTags = new DBTag[existing.TagIds.Length];
             for(int i = 0; i < existing.TagIds.Length; i++) {
@@ -249,12 +265,18 @@ namespace UniEvents.WebAPI.Controllers {
                Tags = eventTags
             };
 
-            for(int i = 0; i < eventTags.Length; i++) {
-               DBTag tag = eventTags[i];
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-               Factory.TagManager.LinkTagToEvent(info.EventID, tag.TagID);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            if(newTags != null) {
+               for(int i = 0; i < newTags.Count; i++) {
+                  Factory.TagManager.LinkTagToEvent(info.EventID, newTags[i].TagID);
+               }
             }
+            if(removedTags != null) {
+               for(int i = 0; i < removedTags.Count; i++) {
+                  Factory.TagManager.RemoveTagFromEvent(info.EventID, removedTags[i].TagID);
+               }
+            }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             return apiresult.Success(info);
 

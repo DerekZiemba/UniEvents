@@ -170,4 +170,13 @@
   <ItemGroup>
     <None Include="StoredProcedures\dbo.sp_Event_Update.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_EmailVerification_Add.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_EmailVerification_GetOne.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StoredProcedures\dbo.sp_EmailVerification_SetVerified.sql" />
+  </ItemGroup>
 </Project>

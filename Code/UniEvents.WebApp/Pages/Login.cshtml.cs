@@ -7,11 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace UniEvents.WebApp.Pages {
-   public class SignUpModel : WebAppPageModel {
-      public void OnGet() {
+   public class LoginModel : WebAppPageModel {
 
+
+      public void OnGet() {
       }
 
-      public SignUpModel(IHttpContextAccessor accessor): base(accessor) { }
+      public LoginModel(IHttpContextAccessor accessor): base(accessor) { }
    }
 }

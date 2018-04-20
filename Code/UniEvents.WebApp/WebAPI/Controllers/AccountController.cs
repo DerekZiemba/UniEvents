@@ -230,18 +230,34 @@ namespace UniEvents.WebAPI.Controllers {
          (dbAccount.PasswordHash, dbAccount.Salt) = HashUtils.HashPassword256(password);
          try {
             DBLocation dbLocation = Factory.LocationManager.CreateDBLocation(input.Location);
-
             dbAccount.LocationID = dbLocation.LocationID;
-            if (!await DBAccount.SP_Account_CreateAsync(WebAppContext.Factory, dbAccount).ConfigureAwait(false)) {
-               return apiresult.Failure("Failed to create account.");
-            }
+            Factory.AccountManager.CreateAccount(dbAccount);
 
-            return apiresult.Success("Account Created!", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+            apiresult.Success("Account Created!", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+
+            try {
+               if(!String.IsNullOrWhiteSpace(dbAccount.ContactEmail)) {
+                  Factory.EmailManager.SendVerificationEmail(dbAccount.AccountID, dbAccount.UserName, dbAccount.ContactEmail, "http://www.unievents.site/verifyemail");
+               }
+            } catch(Exception ex) {
+               apiresult.bSuccess = false;
+               return apiresult.AppendMessage("Invalid Contact Email: " + dbAccount.ContactEmail);
+            }
+            try {
+               if(!String.IsNullOrWhiteSpace(dbAccount.SchoolEmail)) {
+                  Factory.EmailManager.SendVerificationEmail(dbAccount.AccountID, dbAccount.UserName, dbAccount.SchoolEmail, "http://www.unievents.site/verifyemail");
+               }
+            } catch(Exception ex) {
+               apiresult.bSuccess = false;
+               return apiresult.AppendMessage("Invalid School Email: " + dbAccount.SchoolEmail);
+            }
 
          } catch (Exception ex) {
             return apiresult.Failure(ex);
          }
 
+
+         return apiresult;
       }
 
       [HttpGet, Route("webapi/account/getuserinfo/{username?}")]
@@ -270,6 +286,61 @@ namespace UniEvents.WebAPI.Controllers {
             return apiresult.Failure(ex);
          }
       }
+
+
+      [HttpGet, Route("webapi/account/sendverificationemail/{email?}")]
+      public ApiResult SendVerificationEmail(string email) {
+         var apiresult = new ApiResult();
+         if(UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if(!UserContext.IsVerifiedLogin) { return apiresult.Failure("Check your privilege. This is a privileged operation."); }       
+
+         if(email.EqIgCase("school")) {
+            email = UserContext.SchoolEmail;
+         }
+         if(email.EqIgCase("contact")) {
+            email = UserContext.ContactEmail;
+         }
+         if(!UserContext.ContactEmail.EqIgCase(email) && !UserContext.SchoolEmail.EqIgCase(email)) {
+            
+         }
+         if(String.IsNullOrWhiteSpace(email)) { return apiresult.Failure("Must provide an Email."); }
+
+         if(UserContext.ContactEmail.EqIgCase(email)) {
+            if(UserContext.IsContactEmailVerified) { return apiresult.Failure("Contact Email Already Verified."); }
+         } else if(UserContext.SchoolEmail.EqIgCase(email)) {
+            if(UserContext.IsSchoolEmailVerified) { return apiresult.Failure("School Email Already Verified."); }
+         } else {
+            return apiresult.Failure("You may only verify your ContactEmail or SchoolEmail");
+         }
+
+         try {
+            Factory.EmailManager.SendVerificationEmail(UserContext.AccountID, UserContext.UserName, email, "http://www.unievents.site/verifyemail");
+            return apiresult.Success("Email Sent");
+         } catch(Exception ex) {
+            return apiresult.Failure(ex);
+         }
+      }
+
+
+      //[HttpGet, Route("webapi/account/verifyemail/{accountid?}/{verificationkey?}")]
+      //public ApiResult VerifyEmail(long accountid, string verificationkey) {
+      //   var apiresult = new ApiResult();
+      //   if(accountid <= 0) { return apiresult.Failure("Invalid AccountID"); }
+      //   if(String.IsNullOrWhiteSpace(verificationkey)) { return apiresult.Failure("Invalid VerificationKey"); }
+
+      //   try {
+      //      var result = Factory.EmailManager.VerifyEmail(accountid, verificationkey);
+      //      if(result.bSuccess && result.Result.IsVerified) {
+      //         return apiresult.Success(result.sMessage);
+      //      } else {
+      //         return apiresult.Failure(result.sMessage);
+      //      }
+
+      //   } catch(Exception ex) {
+      //      return apiresult.Failure(ex);
+      //   }
+      //}
+
 
       public AccountsController(IHttpContextAccessor accessor): base(accessor) { }
    }

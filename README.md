@@ -1,6 +1,6 @@
 # UniEvents
 
-Graders: to access the system, just use any modern web browser to visit http://unievents.site
+Graders: to access the system, from your web browser visit http://www.unievents.site
 
 Code structure:
 
@@ -15,17 +15,18 @@ Code structure:
 * "UniEvents/Code/UniEvents.WebApp/WebAPI/Controllers" is the location of the database controllers.
 
 -----
-For development use:
+Provided my virtual machine is runnning and my IP hasn't changed, you can access the site at:
+http://www.unievents.site
 
-Provided my virtual machine is running and my IP hasn't changed, you can access the site by adding the following to your hosts file. 
-Each site corresponds to development branches. 
+Alternatively, access the site directly by ip and port numbers:
 
-    108.167.59.103 	unievents.com
-    108.167.59.103 	stg.unievents.com
-    108.167.59.103 	dev.unievents.com
+	http://108.167.59.103:1331/  --Master branch
+	http://108.167.59.103:1332/  --dev branch
+	http://108.167.59.103:1333/  --Changes not yet checked in on VirtualMachine
+	http://108.167.59.103:13331/ --Changes not yet checked in on LocalMachine (try if virtual machine not on)
 
-You may also access directly by IP address:
 
-    http://108.167.59.103:1331/  --master branch
-    http://108.167.59.103:1332/  --stg branch
-    http://108.167.59.103:1333/  --dev branch
+
+
+
+

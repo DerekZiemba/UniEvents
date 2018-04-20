@@ -1582,7 +1582,7 @@
     $.ajaxSetup({ cache: false });
     U.pages = {};
     ZMBA.extendType(U, {
-        loginCookie: document.cookies.getCookieObject("userlogin"),
+        loginCookie: document.cookies.getCookieObject("uinfo"),
         getRouteMetadata: function (route, cb) {
             $.ajax({
                 cache: false,
@@ -1809,7 +1809,7 @@ U.pages.Account = (function (window, document, $, U, ZMBA) {
                 var key = tr.querySelector('.apikey').innerHTML;
                 $.ajax({
                     type: "GET",
-                    url: "webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)&apikeyorpassword=" + encodeURIComponent(key),
+                    url: "webapi/account/logout?username=" + encodeURIComponent(U.loginCookie.UserName) + "&apikeyorpassword=" + encodeURIComponent(key),
                     error: handleFailure,
                     success: function (ev) {
                         if (!ev.success) {
@@ -1829,7 +1829,7 @@ U.pages.Account = (function (window, document, $, U, ZMBA) {
         document.querySelector('#btnLogoutAll').addEventListener('click', function () {
             $.ajax({
                 type: "GET",
-                url: "webapi/account/logout?username=@HttpUtility.UrlEncode(Model.UserContext.UserName)",
+                url: "webapi/account/logout?username=" + encodeURIComponent(U.loginCookie.UserName),
                 error: handleFailure,
                 success: function (ev) {
                     if (!ev.success) {
@@ -1840,6 +1840,21 @@ U.pages.Account = (function (window, document, $, U, ZMBA) {
                         location.pathname = "";
                     }, 1000);
                 }
+            });
+        });
+        document.querySelectorAll('.sendEmailVerification').forEach(function (el) {
+            el.addEventListener('click', function () {
+                $.ajax({
+                    type: "GET",
+                    url: "webapi/account/sendverificationemail?email=" + el.name,
+                    error: handleFailure,
+                    success: function (ev) {
+                        if (!ev.success) {
+                            return handleFailure(ev);
+                        }
+                        U.setPageMessage('success', ev.message);
+                    }
+                });
             });
         });
     };

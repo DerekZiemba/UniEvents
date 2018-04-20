@@ -76,37 +76,6 @@ namespace UniEvents.Models.DBModels {
          IsAdmin = reader.GetNBoolean(nameof(IsAdmin)).UnBox();
       }
 
-      public static async Task<bool> SP_Account_CreateAsync(Factory ctx, DBAccount model) {
-         if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
-         if (model.IsGroup) { throw new ArgumentException("Is a Group not a User."); }
-         if (String.IsNullOrWhiteSpace(model.UserName)) { throw new ArgumentNullException("UserName_Invalid"); }
-         if (model.PasswordHash.IsEmpty() || model.Salt.IsNullOrEmpty()) { throw new ArgumentException("PasswordHash or Salt invalid."); }
-
-         //TODO: Match params to properties
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
-            SqlParameter AccountID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(AccountID), null);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(LocationID), model.LocationID);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.Binary, nameof(PasswordHash), model.PasswordHash);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(Salt), model.Salt);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(UserName), model.UserName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(DisplayName), model.DisplayName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(FirstName), model.FirstName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(LastName), model.LastName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(SchoolEmail), model.SchoolEmail);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(ContactEmail), model.ContactEmail);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(PhoneNumber), model.PhoneNumber);
-            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(IsGroup), model.IsGroup);
-            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedSchoolEmail), model.VerifiedSchoolEmail);
-            //cmd.AddParam(ParameterDirection.Input, SqlDbType.Bit, nameof(VerifiedContactEmail), model.VerifiedContactEmail);
-
-            int rowsAffected = await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
-
-            model.AccountID = (long)AccountID.Value;
-            return model.AccountID > 0;
-         }
-      }
-
       public static async Task<bool> SP_Group_CreateAsync(Factory ctx, DBAccount model, long @GroupOwnerAccountID) {
          if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
          if (!model.IsGroup) { throw new ArgumentException("Is a User not a Group."); }
