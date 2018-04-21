@@ -52,6 +52,21 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
+      [HttpGet, Route("webapi/events/getbyidwithuserview/{EventID?}")]
+      public ApiResult<EventInfoUserView> GetEventInfoWithUserView(long EventID) {
+         var apiresult = new ApiResult<EventInfoUserView>();
+         if(UserContext == null) { return apiresult.Failure("Must be logged in."); }
+         if(!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
+
+
+         try {
+            DBEventFeedItemExtended item =  Factory.EventManager.EventGetByIDWithUserView(EventID, UserContext.AccountID);
+
+            return apiresult.Success(new EventInfoUserView(Factory, item));
+         } catch(Exception ex) { return apiresult.Failure(ex); }
+      }
+
+
 
       [HttpPost, Route("webapi/events/create")]
       public ApiResult<EventInfo> EventCreate(EventInput input) {
@@ -112,7 +127,8 @@ namespace UniEvents.WebAPI.Controllers {
                AddressLine = Helpers.FormatAddress(null, address.AddressLine, address.Locality, address.AdminDistrict, address.PostalCode, address.CountryRegion),
                AccountID = dbEventItem.AccountID,
                Host = String.IsNullOrWhiteSpace(UserContext.UserDisplayName) ? UserContext.UserName : UserContext.UserDisplayName,
-               Tags = eventTags
+               Tags = eventTags,
+               Details = input.Description
             };
 
             for(int i = 0; i < eventTags.Length; i++) {
@@ -262,7 +278,8 @@ namespace UniEvents.WebAPI.Controllers {
                AddressLine = Helpers.FormatAddress(null, address.AddressLine, address.Locality, address.AdminDistrict, address.PostalCode, address.CountryRegion),
                AccountID = existing.AccountID,
                Host = String.IsNullOrWhiteSpace(UserContext.UserDisplayName) ? UserContext.UserName : UserContext.UserDisplayName,
-               Tags = eventTags
+               Tags = eventTags,
+               Details = existing.Details
             };
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

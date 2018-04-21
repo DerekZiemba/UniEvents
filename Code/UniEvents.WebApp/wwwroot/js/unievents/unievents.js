@@ -184,7 +184,9 @@
             this.btnOpen.enable = false;
             this.el.style.display = 'block';
             var bounds = document.getElementsByClassName('body-content')[0].firstElementChild.getBoundingClientRect();
+
             this.content.style.top = '60px';
+
             this.content.style.width = (bounds.width * .8) + 'px';           
          }
          function close(ev) {
@@ -212,7 +214,8 @@
 
             this.btnOpen.addEventListener('click', this.open);
             this.btnClose.addEventListener('click', this.close);
-            window.addEventListener('click', this.close); 
+            window.addEventListener('click', this.close);
+            window.addEventListender('resize', this.open);
          }
 
          Modal.prototype = {

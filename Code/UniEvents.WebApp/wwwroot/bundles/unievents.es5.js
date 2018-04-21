@@ -1786,6 +1786,7 @@
                 this.btnOpen.addEventListener('click', this.open);
                 this.btnClose.addEventListener('click', this.close);
                 window.addEventListener('click', this.close);
+                window.addEventListender('resize', this.open);
             }
             Modal.prototype = {};
             return Modal;
@@ -1920,7 +1921,7 @@ U.pages.ApiTest = (function (window, document, $, U, ZMBA) {
             var oData = U.buildAjaxRequestFromInputs(metadata.params, { url: metadata.path });
             route.value = oData.url;
             postBody.value = JSON.stringify(oData.data, null, '\t');
-            if (metadata.path.includes('autocomplete')) {
+            if (metadata.path.includes('autocomplete') || ev != null && ev.keyCode === 13) {
                 executeRequest();
             }
         }
@@ -2147,7 +2148,10 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 target[key].innerText = data[key];
             }
         }
-        target.event_type = target.el.getElementsByClassName('event_type')[0];
+        target.event_type = target.el.getElementsByClassName('event_type')[0].getElementsByClassName('ef_value')[0];
+        while (target.event_type.firstElementChild) {
+            target.event_type.firstElementChild.remove();
+        }
         target.event_type.appendChild(Element.From("<span title=\"" + data.event_type.description + "\">" + data.event_type.name + "</span>"));
         target.tags = target.el.getElementsByClassName('tags')[0].getElementsByClassName('ef_value')[0];
         while (target.tags.firstElementChild) {
@@ -2162,7 +2166,7 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
         }
     }
     var EventModal = (function () {
-        var dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "rsvp_later", "rsvp_no", "time_start", "time_end", "description"];
+        var dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "rsvp_later", "rsvp_no", "time_start", "time_end", "details"];
         function rsvpToEventClickHandler(ev) {
             var self = this;
             var name = ev.target.name;
@@ -2176,7 +2180,7 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 },
                 success: function (data) {
                     if (data.success) {
-                        self._setActiveRSVP(name);
+                        self.doFullRefresh();
                     }
                     else {
                         req.error(data);
@@ -2189,23 +2193,34 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
             U.Modal.call(this, document.getElementById('Template_EventDetailsModal').cloneNode(true), feedItem.el);
             this.feedItem = feedItem;
             this.el.id = 'efm_' + feedItem.data.id;
-            initEventDataFields(this, this.data, dataFields);
-            this._requestEventDescription();
             this.rsvpButtons = this.el.getElementsByClassName("set_event_rsvp");
-            this._requestUserRSVPStatus();
+            this.updateFields(this.data);
             var rsvpToEvendHandler = rsvpToEventClickHandler.bind(this);
             for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
                 this.rsvpButtons[i].addEventListener('click', rsvpToEvendHandler);
             }
             document.getElementById('EventModalContent').appendChild(this.el);
+            this.doFullRefresh();
         }
         EventModal.prototype = U.Modal;
         ZMBA.extendType(EventModal.prototype, {
             get data() { return this.feedItem.data; },
-            _requestEventDescription: function () {
+            updateFields: function (data) {
+                initEventDataFields(this, data, dataFields);
+                ;
+                this.details.innerHTML = data.details;
+                if (data.user_rsvp_status) {
+                    var rsvpname = data.user_rsvp_status.toLowerCase();
+                    for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+                        var btn = this.rsvpButtons[i];
+                        btn.classList.toggle('selected', btn.name.toLowerCase() === rsvpname);
+                    }
+                }
+            },
+            doFullRefresh: function () {
                 var self = this;
                 var oRequest = {
-                    url: 'webapi/events/getdescription?id=' + self.data.id,
+                    url: 'webapi/events/getbyidwithuserview?EventID=' + self.data.id,
                     type: 'GET',
                     dataType: 'json',
                     error: function (ev) {
@@ -2214,7 +2229,8 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                     },
                     success: function (ev) {
                         if (ev.success) {
-                            self.description.innerHTML = ev.result;
+                            self.updateFields(ev.result);
+                            self.feedItem.updateFields(ev.result);
                         }
                         else {
                             oRequest.error(ev);
@@ -2223,27 +2239,12 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 };
                 $.ajax(oRequest);
             },
-            _requestUserRSVPStatus: function () {
-                var self = this;
-                $.ajax({
-                    url: 'webapi/rsvp/getrsvp?eventid=' + self.data.id,
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (ev) {
-                        if (ev.success) {
-                            self._setActiveRSVP(ev.result.name);
-                        }
-                    }
-                });
-            },
             _setActiveRSVP: function (name) {
                 name = name.toLowerCase();
                 for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
                     var btn = this.rsvpButtons[i];
                     btn.classList.toggle('selected', btn.name.toLowerCase() == name);
                 }
-            },
-            _rsvpToEventClickHandler: function (ev) {
             }
         });
         return EventModal;
@@ -2265,14 +2266,16 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
             this.data = data;
             this.el = document.getElementById('Template_FeedItem').cloneNode(true);
             this.el.id = "efi_" + this.data.id;
-            initEventDataFields(this, data, dataFields);
-            this.rsvp_stopby.innerText = data.rsvp_stopby + data.rsvp_later;
+            this.updateFields(data);
             this.handleClick = _handleClick.bind(this);
-            this.enableListeners();
+            this.el.addEventListener('click', this.handleClick);
         }
         ZMBA.extendType(FeedItem.prototype, {
-            enableListeners: function () {
-                this.el.addEventListener('click', this.handleClick);
+            updateFields: function (data) {
+                initEventDataFields(this, data, dataFields);
+                ;
+                this.rsvp_stopby.innerText = data.rsvp_stopby + data.rsvp_later;
+                this.data = data;
             }
         });
         return FeedItem;

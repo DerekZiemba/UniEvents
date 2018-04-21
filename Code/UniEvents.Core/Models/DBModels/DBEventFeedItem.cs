@@ -89,6 +89,7 @@ namespace UniEvents.Models.DBModels {
    public class DBEventFeedItemExtended : DBEventFeedItem {
       public Int64? ParentLocationID { get; set; }
       public string Details { get; set; }
+      public Int16 UserRsvpID { get; set; }
 
       public DBEventFeedItemExtended() { }
 

@@ -226,7 +226,7 @@ a { cursor: pointer; }
 
 #IndexPage .modal_eventdetails .modal-body { height: 60vh; }
 
-#IndexPage .modal_eventdetails .description { position: absolute; top: 230px; }
+#IndexPage .modal_eventdetails .details { position: absolute; top: 230px; }
 
 #IndexPage .modal_eventdetails .btn { color: #337ab7; }
 

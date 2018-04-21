@@ -38,6 +38,10 @@ namespace UniEvents.Models.ApiModels {
       [JsonProperty(PropertyName = "rsvp_no")] public long RSVP_No { get; set; }
 
 
+      public string Details { get; set; }
+
+
+
       public EventInfo() { }
 
 
@@ -68,6 +72,17 @@ namespace UniEvents.Models.ApiModels {
    }
 
 
+
+   public class EventInfoUserView : EventInfo {
+      [JsonProperty(PropertyName = "user_rsvp_status")] public string UserRsvpStatus { get; set; }
+
+      public EventInfoUserView(Factory Ctx, DBEventFeedItemExtended item) : base(Ctx, item) {
+         Details = item.Details;
+         if(item.UserRsvpID > 0) { UserRsvpStatus = Ctx.RSVPTypeManager[item.UserRsvpID].Name;}
+        
+      }
+
+   }
 
 
 }
