@@ -63,7 +63,6 @@
         }
         return extendType;
     }());
-    extensionsAndPolyfills(window, document, extendType);
     var ZMBA = window.ZMBA = {
         extendType: extendType,
         loadJSFile: (function () {
@@ -120,6 +119,7 @@
     ZMBA.isIE9 = /MSIE 9.0/i.test(navigator.userAgent);
     ZMBA.isInternetExplorer = ZMBA.isIE9 || /MSIE|Trident/i.test(navigator.userAgent);
     ZMBA.isMicrosoftBrowser = ZMBA.isInternetExplorer || /Edge/i.test(navigator.userAgent);
+    extensionsAndPolyfills(window, document, extendType, ZMBA);
     (function PageReadyModule() {
         function addCallback(cb) {
             var i = 1, len = arguments.length, args = new Array(len - i + 1);
@@ -172,7 +172,21 @@
         }
     }());
     console.log("ZMBAReady: " + (performance.now() - _startTimeMillis) + "ms");
-}(window, window.document, function ExtensionsAndPolyfills(window, document, extendType) {
+}(window, window.document, function ExtensionsAndPolyfills(window, document, extendType, ZMBA) {
+    if (ZMBA.isInternetExplorer) {
+        var nativeToggle = DOMTokenList.prototype.toggle;
+        DOMTokenList.prototype.toggle = function (cls, force) {
+            if (force === true) {
+                this.add(cls);
+            }
+            else if (force === false) {
+                this.remove(cls);
+            }
+            else {
+                nativeToggle.call(this, cls);
+            }
+        };
+    }
     extendType(Object, {
         assign: function assign(target) {
             var to = Object(target);

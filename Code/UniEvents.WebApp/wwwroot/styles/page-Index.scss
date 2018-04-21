@@ -36,13 +36,22 @@
 
    .ef_details {
       display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
    }
+
+
+   .ef_item_container {
+      label {
+         width: 8rem;
+      }
+   }
+
+
    .ef_left {
-      float: left;
    }
 
    .ef_right {
-      float: right;
    }
 
    .loading_spinner {
@@ -64,10 +73,15 @@
          position: absolute;
          top: 230px;
       }
-   }
 
-   .selected {
-      background-color: lightblue;
+      .btn {
+         color: rgb(51, 122,183);
+      }
+
+      .btn.selected {
+         background-color: lightblue;
+         color: green;
+      }
    }
 }
 

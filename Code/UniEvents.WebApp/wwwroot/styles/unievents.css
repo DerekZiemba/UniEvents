@@ -216,11 +216,9 @@ a { cursor: pointer; }
 
 #IndexPage .ef_item .title { font-size: 24px; }
 
-#IndexPage .ef_details { display: flex; }
+#IndexPage .ef_details { display: flex; flex-wrap: wrap; justify-content: space-between; }
 
-#IndexPage .ef_left { float: left; }
-
-#IndexPage .ef_right { float: right; }
+#IndexPage .ef_item_container label { width: 8rem; }
 
 #IndexPage .loading_spinner { /*transform: translateY(-20px);*/ height: 50px; }
 
@@ -230,7 +228,9 @@ a { cursor: pointer; }
 
 #IndexPage .modal_eventdetails .description { position: absolute; top: 230px; }
 
-#IndexPage .selected { background-color: lightblue; }
+#IndexPage .modal_eventdetails .btn { color: #337ab7; }
+
+#IndexPage .modal_eventdetails .btn.selected { background-color: lightblue; color: green; }
 
 .textarea { width: 100%; height: 300px; border: 1px solid red; }
 

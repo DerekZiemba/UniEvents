@@ -4,107 +4,108 @@
    ViewData["Title"] = "Home page";
 }
 
-<div class="HTMLTemplates">
-   <div id="Template_EventDetailsModal" class="modal modal_eventdetails">
+<div id="IndexPage">
+   <div class="HTMLTemplates">
+      <div id="Template_EventDetailsModal" class="modal modal_eventdetails">
 
-      <div class="modal-content">
-         <div class="modal-header">
-            <span class="close">&times;</span>
-            <h2>Event Information</h2>
-         </div>
-         <div class="modal-body">
-            <div name="notification_message"></div>
-            <div class="ef_item">
-               <div class="title"><span class="ef_value"></span></div>
-               <div class="caption"><span class="ef_value"></span></div>
-               <div class="ef_details">
-                  <div class="ef_left">
-                     <div class="host"><label>Host:</label><span class="ef_value"></span></div>
-                     <div class="location"><label>Location:</label><span class="ef_value"></span></div>
-                     <div class="address"><label>Address:</label><span class="ef_value"></span></div>
-                     <div class="event_type"><label>EventType:</label><span class="ef_value"></span></div>
-                     <div class="tags"><label>Tags:</label><span class="ef_value"></span></div>
-                     <div class="times">
-                        <div class="time_start"><label>Start Time:</label><time class="ef_value"></time></div>
-                        <div class="time_end"><label>End Time:</label><time class="ef_value"></time></div>
-                     </div>
-                  </div>
-                  <div class="ef_right">
-                     <div class="rsvp">
-                        <div class="rsvp_attending"><label>Attending:</label><span class="ef_value"></span></div>
-                        <div class="rsvp_stopby"><label>Will Stop By:</label><span class="ef_value"></span></div>
-                        <div class="rsvp_later"><label>Later:</label><span class="ef_value"></span></div>
-                        <div class="rsvp_maybe"><label>Maybe Attend:</label><span class="ef_value"></span></div>
-                        <div class="rsvp_no"><label title="because they don't like u (jk)">Will Not Attend:</label><span class="ef_value"></span></div>
-                     </div>
-                  </div>
-               </div>
-
-               <div class="description">
-                  <p class="ef_value"></p>
-               </div>
-               
+         <div class="modal-content">
+            <div class="modal-header">
+               <span class="close">&times;</span>
+               <h2>Event Information</h2>
             </div>
-         </div>
-         <div class="modal-footer">
-            @if(Model.UserContext != null && Model.UserContext.IsVerifiedLogin) {
+            <div class="modal-body">
+               <div name="notification_message"></div>
+               <div class="ef_item">
+                  <div class="title"><span class="ef_value"></span></div>
+                  <div class="caption"><span class="ef_value"></span></div>
+                  <div class="ef_details">
+                     <div class="ef_left">
+                        <div class="host"><label>Host:</label><span class="ef_value"></span></div>
+                        <div class="location"><label>Location:</label><span class="ef_value"></span></div>
+                        <div class="address"><label>Address:</label><span class="ef_value"></span></div>
+                        <div class="event_type"><label>EventType:</label><span class="ef_value"></span></div>
+                        <div class="tags"><label>Tags:</label><span class="ef_value"></span></div>
+                        <div class="times">
+                           <div class="time_start"><label>Start Time:</label><time class="ef_value"></time></div>
+                           <div class="time_end"><label>End Time:</label><time class="ef_value"></time></div>
+                        </div>
+                     </div>
+                     <div class="ef_right">
+                        <div class="rsvp">
+                           <div class="rsvp_attending"><label>Attending:</label><span class="ef_value"></span></div>
+                           <div class="rsvp_stopby"><label>Will Stop By:</label><span class="ef_value"></span></div>
+                           <div class="rsvp_later"><label>Later:</label><span class="ef_value"></span></div>
+                           <div class="rsvp_maybe"><label>Maybe Attend:</label><span class="ef_value"></span></div>
+                           <div class="rsvp_no"><label title="because they don't like u (jk)">Will Not Attend:</label><span class="ef_value"></span></div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="description">
+                     <p class="ef_value"></p>
+                  </div>
+
+               </div>
+            </div>
+            <div class="modal-footer">
+               @if(Model.UserContext != null && Model.UserContext.IsVerifiedLogin) {
                <button class="btn set_event_rsvp" name="Attending">Attend Event</button>
                <button class="btn set_event_rsvp" name="Maybe">Maybe Attend</button>
                <button class="btn set_event_rsvp" name="Stop By">Stop By</button>
                <button class="btn set_event_rsvp" name="Later">Attend Later</button>
                <button class="btn set_event_rsvp" name="No">Will not attend</button>
-            }
+               }
 
-         </div>
-      </div>
-
-   </div>
-
-   <div id="Template_FeedItem" class="ef_item_container">
-      <div class="ef_item">
-         <div class="title"><span class="ef_value"></span></div>
-         <div class="caption"><span class="ef_value"></span></div>
-         <div class="ef_details">
-            <div class="ef_left">
-               <div class="host"><label>Host:</label><span class="ef_value"></span></div>
-               <div class="location"><label>Location:</label><span class="ef_value"></span></div>
-               <div class="address"><label>Address:</label><span class="ef_value"></span></div>
-               <div class="event_type"><label>EventType:</label><span class="ef_value"></span></div>
-               <div class="tags"><label>Tags:</label><span class="ef_value"></span></div>
-            </div>
-            <div class="ef_right">
-               <div class="times">
-                  <div class="time_start"><label>Start Time:</label><time class="ef_value"></time></div>
-                  <div class="time_end"><label>End Time:</label><time class="ef_value"></time></div>
-               </div>
-               <div class="rsvp">
-                  <div class="rsvp_attending"><label>Attending:</label><span class="ef_value"></span></div>
-                  <div class="rsvp_stopby"><label>Will Stop By:</label><span class="ef_value"></span></div>
-                  <div class="rsvp_maybe"><label>Maybe Attend:</label><span class="ef_value"></span></div>
-               </div>
             </div>
          </div>
+
+      </div>
+
+      <div id="Template_FeedItem" class="ef_item_container">
+         <div class="ef_item">
+            <div class="title"><span class="ef_value"></span></div>
+            <div class="caption"><span class="ef_value"></span></div>
+            <div class="ef_details">
+               <div class="ef_left">
+                  <div class="host"><label>Host:</label><span class="ef_value"></span></div>
+                  <div class="location"><label>Location:</label><span class="ef_value"></span></div>
+                  <div class="address"><label>Address:</label><span class="ef_value"></span></div>
+                  <div class="event_type"><label>EventType:</label><span class="ef_value"></span></div>
+                  <div class="tags"><label>Tags:</label><span class="ef_value"></span></div>
+               </div>
+               <div class="ef_right">
+                  <div class="times">
+                     <div class="time_start"><label>Start Time:</label><time class="ef_value"></time></div>
+                     <div class="time_end"><label>End Time:</label><time class="ef_value"></time></div>
+                  </div>
+                  <div class="rsvp">
+                     <div class="rsvp_attending"><label>Attending:</label><span class="ef_value"></span></div>
+                     <div class="rsvp_stopby"><label>Stop By:</label><span class="ef_value"></span></div>
+                     <div class="rsvp_maybe"><label>Maybed:</label><span class="ef_value"></span></div>
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
    </div>
-</div>
 
-<div id="IndexPage">
+
    <h2>Event Feed</h2>
 
    <div id="EventModalContent">
    </div>
 
    @if (Model.UserContext != null && Model.UserContext.IsVerifiedLogin) {
-      <a asp-page="/CreateEvent">
-         <!-- i know we were planning on a popup, but time is short-->
-         <input id="CreateEventButton" type="button" value="Create New Event" />
-      </a>
+   <a asp-page="/CreateEvent">
+      <!-- i know we were planning on a popup, but time is short-->
+      <input id="CreateEventButton" type="button" value="Create New Event" />
+   </a>
    }
 
    <div id="EventFeed">
 
    </div>
-   
+
    <div class="loading_spinner">
       <div class="cssload-loader">
          <div class="cssload-dot"></div>
