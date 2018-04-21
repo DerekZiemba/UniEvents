@@ -215,7 +215,7 @@
             this.btnOpen.addEventListener('click', this.open);
             this.btnClose.addEventListener('click', this.close);
             window.addEventListener('click', this.close);
-            window.addEventListender('resize', this.open);
+            window.addEventListener('resize', this.open);
          }
 
          Modal.prototype = {
