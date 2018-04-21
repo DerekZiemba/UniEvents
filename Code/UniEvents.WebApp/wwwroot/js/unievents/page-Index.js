@@ -61,10 +61,11 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
 
 
       function EventModal(feedItem) {
-         U.Modal.call(this, document.getElementById('Template_EventDetailsModal').cloneNode(true), feedItem.el);
+         U.Modal.call(this, document.getElementById('Template_EventDetailsModal').cloneNode(true), feedItem.el);        
          this.feedItem = feedItem;
          this.el.id = 'efm_' + feedItem.data.id;
          this.rsvpButtons = this.el.getElementsByClassName("set_event_rsvp");
+         this.spinner = this.el.querySelector('.loading_spinner');
          this.updateFields(this.data);
          
          var rsvpToEvendHandler = rsvpToEventClickHandler.bind(this);
@@ -91,9 +92,12 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                   btn.classList.toggle('selected', btn.name.toLowerCase() === rsvpname);
                }
             }
-
+            this.spinner.classList.remove('details_loading');
+            this.spinner.classList.add('details_loaded');
          },
          doFullRefresh: function () {
+            this.spinner.classList.remove('details_loaded');
+            this.spinner.classList.add('details_loading');
             var self = this;
             var oRequest = {
                url: 'webapi/events/getbyidwithuserview?EventID=' + self.data.id,
@@ -169,7 +173,7 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
    const EventFeed = (function () { //Build a type
 
       function EventFeed(id) {
-         this.loading_spinner = document.querySelector('.loading_spinner');
+         this.loading_spinner = document.querySelector('.loading_spinner.feed_loading');
          this.el = document.getElementById(id);
          this.ul = this.el.querySelector('ul');
          this.feedItems = [];

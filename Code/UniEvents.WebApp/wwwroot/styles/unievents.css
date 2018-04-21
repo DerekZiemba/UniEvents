@@ -220,17 +220,25 @@ a { cursor: pointer; }
 
 #IndexPage .ef_item_container label { width: 8rem; }
 
-#IndexPage .loading_spinner { /*transform: translateY(-20px);*/ height: 50px; }
+#IndexPage .loading_spinner { height: 50px; }
 
 #IndexPage .fadeOut { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 2s; -moz-animation-duration: 2s; -ms-animation-duration: 2s; -webkit-animation-duration: 2s; animation-duration: 2s; }
 
-#IndexPage .modal_eventdetails .modal-body { height: 60vh; }
+#IndexPage .modal_eventdetails .modal-content { top: 60px; /*left:60px; right:60px; bottom:60px;*/ }
 
-#IndexPage .modal_eventdetails .details { position: absolute; top: 230px; }
+#IndexPage .modal_eventdetails .modal-body { padding-top: 0; /*height: 60vh;*/ }
+
+#IndexPage .modal_eventdetails .details { margin-top: 10px; }
 
 #IndexPage .modal_eventdetails .btn { color: #337ab7; }
 
 #IndexPage .modal_eventdetails .btn.selected { background-color: lightblue; color: green; }
+
+#IndexPage .modal_eventdetails .modal-footer .btn + .btn { margin: 1px 0 1px 15px; }
+
+#IndexPage .modal_eventdetails .loading_spinner { height: 75px; margin: auto; position: absolute; top: 50%; left: 50%; }
+
+#IndexPage .modal_eventdetails .details_loaded { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 1s; -moz-animation-duration: 1s; -ms-animation-duration: 1s; -webkit-animation-duration: 1s; animation-duration: 1s; animation-fill-mode: forwards; }
 
 .textarea { width: 100%; height: 300px; border: 1px solid red; }
 

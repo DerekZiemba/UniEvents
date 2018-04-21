@@ -53,17 +53,21 @@ namespace UniEvents.WebAPI.Controllers {
 
 
       [HttpGet, Route("webapi/events/getbyidwithuserview/{EventID?}")]
-      public ApiResult<EventInfoUserView> GetEventInfoWithUserView(long EventID) {
-         var apiresult = new ApiResult<EventInfoUserView>();
-         if(UserContext == null) { return apiresult.Failure("Must be logged in."); }
-         if(!UserContext.IsVerifiedLogin) { return apiresult.Failure("Insufficient account permissions."); }
+      public ApiResult<EventInfo> GetEventInfoWithUserView(long EventID) {
+         var apiresult = new ApiResult<EventInfo>();
 
+         if(UserContext == null || !UserContext.IsVerifiedLogin) {
+            try {
+               DBEventFeedItemExtended item =  Factory.EventManager.EventGetByID(EventID);
+               return apiresult.Success(new EventInfoUserView(Factory, item));
+            } catch(Exception ex) { return apiresult.Failure(ex); }
+         } else {
+            try {
+               DBEventFeedItemExtended item =  Factory.EventManager.EventGetByIDWithUserView(EventID, UserContext.AccountID);
+               return apiresult.Success(new EventInfoUserView(Factory, item));
+            } catch(Exception ex) { return apiresult.Failure(ex); }
+         }
 
-         try {
-            DBEventFeedItemExtended item =  Factory.EventManager.EventGetByIDWithUserView(EventID, UserContext.AccountID);
-
-            return apiresult.Success(new EventInfoUserView(Factory, item));
-         } catch(Exception ex) { return apiresult.Failure(ex); }
       }
 
 

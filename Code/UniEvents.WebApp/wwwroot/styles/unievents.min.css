@@ -804,14 +804,17 @@ a
  -webkit-animation-duration: 2s;
  animation-duration: 2s;
 }
+#IndexPage .modal_eventdetails .modal-content
+{
+ top: 60px;
+}
 #IndexPage .modal_eventdetails .modal-body
 {
- height: 60vh;
+ padding-top: 0;
 }
 #IndexPage .modal_eventdetails .details
 {
- position: absolute;
- top: 230px;
+ margin-top: 10px;
 }
 #IndexPage .modal_eventdetails .btn
 {
@@ -821,6 +824,32 @@ a
 {
  background-color: #add8e6;
  color: #008000;
+}
+#IndexPage .modal_eventdetails .modal-footer .btn+.btn
+{
+ margin: 1px 0 1px 15px;
+}
+#IndexPage .modal_eventdetails .loading_spinner
+{
+ height: 75px;
+ margin: auto;
+ position: absolute;
+ top: 50%;
+ left: 50%;
+}
+#IndexPage .modal_eventdetails .details_loaded
+{
+ -o-animation-name: fadeOut;
+ -moz-animation-name: fadeOut;
+ -ms-animation-name: fadeOut;
+ -webkit-animation-name: fadeOut;
+ animation-name: fadeOut;
+ -o-animation-duration: 1s;
+ -moz-animation-duration: 1s;
+ -ms-animation-duration: 1s;
+ -webkit-animation-duration: 1s;
+ animation-duration: 1s;
+ animation-fill-mode: forwards;
 }
 .textarea
 {

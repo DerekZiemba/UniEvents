@@ -183,11 +183,9 @@
          function open(ev) {
             this.btnOpen.enable = false;
             this.el.style.display = 'block';
-            var bounds = document.getElementsByClassName('body-content')[0].firstElementChild.getBoundingClientRect();
-
-            this.content.style.top = '60px';
-
-            this.content.style.width = (bounds.width * .8) + 'px';           
+            //var bounds = document.getElementsByClassName('body-content')[0].firstElementChild.getBoundingClientRect();
+            //this.content.style.top = '60px';
+            //this.content.style.width = (bounds.width * .8) + 'px';           
          }
          function close(ev) {
             if (ev) {

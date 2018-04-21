@@ -55,7 +55,6 @@
    }
 
    .loading_spinner {
-      /*transform: translateY(-20px);*/
       height: 50px;
    }
 
@@ -65,13 +64,20 @@
    }
 
    .modal_eventdetails {
+      .modal-content {
+         top: 60px;
+         /*left:60px;
+         right:60px;
+         bottom:60px;*/
+      }
+
       .modal-body {
-         height: 60vh;
+         padding-top: 0;
+         /*height: 60vh;*/
       }
 
       .details {
-         position: absolute;
-         top: 230px;
+         margin-top: 10px;
       }
 
       .btn {
@@ -81,6 +87,27 @@
       .btn.selected {
          background-color: lightblue;
          color: green;
+      }
+
+      .modal-footer .btn + .btn {
+         margin: 1px 0 1px 15px;
+      }
+
+      .loading_spinner {
+         height: 75px;
+         margin: auto;
+         position: absolute;
+         top: 50%;
+         left: 50%;
+      }
+
+      .details_loading {
+      }
+
+      .details_loaded {
+         @include vendor-property(animation-name, fadeOut);
+         @include vendor-property(animation-duration, 1s);
+         animation-fill-mode: forwards;
       }
    }
 }
