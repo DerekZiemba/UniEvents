@@ -1,26 +1,6 @@
 ﻿@import "_mixins.scss";
 
 #IndexPage {
-   #EventFeed {
-      padding: 1em;
-
-      ul {
-         overflow: auto;
-      }
-
-      li {
-         flex-direction: column;
-         background-color: lightgray;
-         width: 100%;
-         padding: 5px 2vw 5px 2vw;
-         border-radius: 5px;
-         opacity: 0.9;
-
-         &:hover {
-            opacity: 1;
-         }
-      }
-   }
 
    .ef_item_container {
       width: 100%;
@@ -34,11 +14,7 @@
       }
    }
 
-   .ef_details {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-   }
+
 
 
    .ef_item_container {
@@ -48,11 +24,6 @@
    }
 
 
-   .ef_left {
-   }
-
-   .ef_right {
-   }
 
    .loading_spinner {
       height: 50px;
@@ -61,6 +32,12 @@
    .fadeOut {
       @include vendor-property(animation-name, fadeOut);
       @include vendor-property(animation-duration, 2s);
+   }
+
+   .ef_details {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
    }
 
    .modal_eventdetails {
@@ -78,6 +55,11 @@
 
       .details {
          margin-top: 10px;
+
+         img {
+            display: block !important;
+            float: none !important;
+         }
       }
 
       .btn {
@@ -109,6 +91,36 @@
          @include vendor-property(animation-duration, 1s);
          animation-fill-mode: forwards;
       }
+
+      .ef_left, .ef_right {
+         label {
+            width: 8em;
+         }
+      }
    }
 }
 
+
+
+#EventFeed {
+   padding: 1em;
+
+   ul {
+      overflow: auto;
+   }
+
+   li {
+      flex-direction: column;
+      background-color: lightgray;
+      width: 100%;
+      padding: 5px 2vw 5px 2vw;
+      border-radius: 5px;
+      opacity: 0.9;
+
+      &:hover {
+         opacity: 1;
+      }
+   }
+
+
+}
