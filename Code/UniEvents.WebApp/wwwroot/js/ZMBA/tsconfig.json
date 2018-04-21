@@ -17,7 +17,7 @@
 		"exclude": [ "node" ] // Specific libs to not fetch .d.ts files for
 	},
 
-	"files": ["ZMBA.js" ] // list of explicit files to include in the project context. Highest priority.
+	"files": ["ZMBA.js", "ZMBA-CookieHelper.js" ] // list of explicit files to include in the project context. Highest priority.
 
 	//"include": [], // list of folders or glob patterns to include in the project context.
 

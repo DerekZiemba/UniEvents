@@ -2038,10 +2038,12 @@ U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
         var EventCreationLabel = document.getElementById("EventCreationLabel");
         var EventCreationButton = document.getElementById("EventCreationButton");
         EventCreationButton.addEventListener("click", function () {
+            EventCreationButton.disabled = true;
             var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("[param]"), { type: "POST", url: "webapi/events/create " });
             if (!U.eventType.selection) {
                 U.setPageMessage('error', 'Select an event type');
                 U.eventType.element.parentElement.classList.add('required-highlight');
+                EventCreationButton.disabled = false;
                 return;
             }
             oRequest.data.EventTypeID = U.eventType.selection.data.eventTypeID;
@@ -2049,6 +2051,7 @@ U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
             if (oRequest.data.Tags == null || oRequest.data.Tags.length === 0) {
                 U.setPageMessage('error', 'Add at least one tag');
                 U.eventTags.container.parentElement.classList.add('required-highlight');
+                EventCreationButton.disabled = false;
                 return;
             }
             function handleFailure(ev) {
@@ -2057,6 +2060,7 @@ U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
                 InputParams.class = "Failed";
                 U.setPageMessage('error', ev.message);
                 U.highlightRequiredInputs(true);
+                EventCreationButton.disabled = false;
             }
             $.ajax(oRequest)
                 .fail(handleFailure)
@@ -2069,6 +2073,7 @@ U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
                 else {
                     handleFailure(ev);
                 }
+                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
             });
         });
     }
@@ -2213,7 +2218,7 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 dataType: 'json',
                 success: function (ev) {
                     if (ev.success) {
-                        self.el.querySelector(".set_event_rsvp[name=" + ev.result.name + "]").classList.add("selected");
+                        self.el.querySelector(".set_event_rsvp[name='" + ev.result.name + "']").classList.add("selected");
                     }
                 }
             });

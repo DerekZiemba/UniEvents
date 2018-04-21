@@ -1,0 +1,73 @@
+﻿@import "_mixins.scss";
+
+#IndexPage {
+   #EventFeed {
+      padding: 1em;
+
+      ul {
+         overflow: auto;
+      }
+
+      li {
+         flex-direction: column;
+         background-color: lightgray;
+         width: 100%;
+         padding: 5px 2vw 5px 2vw;
+         border-radius: 5px;
+         opacity: 0.9;
+
+         &:hover {
+            opacity: 1;
+         }
+      }
+   }
+
+   .ef_item_container {
+      width: 100%;
+   }
+
+   .ef_item {
+      width: 100%;
+
+      .title {
+         font-size: 24px;
+      }
+   }
+
+   .ef_details {
+      display: flex;
+   }
+   .ef_left {
+      float: left;
+   }
+
+   .ef_right {
+      float: right;
+   }
+
+   .loading_spinner {
+      /*transform: translateY(-20px);*/
+      height: 50px;
+   }
+
+   .fadeOut {
+      @include vendor-property(animation-name, fadeOut);
+      @include vendor-property(animation-duration, 2s);
+   }
+
+   .modal_eventdetails {
+      .modal-body {
+         height: 60vh;
+      }
+
+      .description {
+         position: absolute;
+         top: 230px;
+      }
+   }
+
+   .selected {
+      background-color: lightblue;
+   }
+}
+
