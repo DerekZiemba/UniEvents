@@ -60,12 +60,90 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
       }
 
 
+      function handleSubmitEdit(ev) {
+         var self = this;
+         var oRequest = {
+            url: 'webapi/events/update?EventID=' + self.data.id,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+               Title: self.title.innerText,
+               Caption: self.caption.innerText,
+               Description: self._detailsEditor.value,
+               DateStart: self.time_start.innerText,
+               DateEnd: self.time_end.innerText
+            },
+            error: function (ev) {
+               console.log(oRequest, ev);
+               U.setNotification(self.el, 'error', ev.message);
+            },
+            success: function (ev) {
+               if (ev.success) {
+                  U.setNotification(self.el, 'success', "Success! " + ev.message);
+                  handleCancelEdit.call(self);
+                  self.doFullRefresh();
+               } else {
+                  oRequest.error(ev);
+               }
+            }
+         }
+         $.ajax(oRequest);
+      }
+
+      function handleCancelEdit(ev) {
+         this.btnStartEdit.style.display = 'block';
+         this.header.querySelector('h2').innerText = "Event Information";
+         while (this.footer.firstElementChild) { this.footer.firstElementChild.remove(); }
+         for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+            this.footer.appendChild(this.rsvpButtons[i]);
+         }
+
+         this.details.innerHTML = this._detailsEditor.value;
+         this._detailsEditor.remove();
+         this._detailsParent.appendChild(this.details);
+
+         this.el.querySelectorAll('.editable').forEach(elem => {
+            elem.contentEditable = 'false';
+            elem.classList.remove('editing');
+         });
+
+      }
+
+      function handleEditClick() {
+         this.btnStartEdit.style.display = 'none';
+         this.header.querySelector('h2').innerText = "Event Quick Editor";
+         for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+            this.rsvpButtons[i].remove();
+         }
+
+         this.btnCancelEdit = Element.From(`<button class="btn btnCancelEdit">Cancel Edit</button>`);
+         this.btnCancelEdit.addEventListener('click', handleCancelEdit.bind(this));
+         this.btnConfirmEdit = Element.From(`<button class="btn btnConfirmEdit">Save Changes</button>`);
+         this.btnConfirmEdit.addEventListener('click', handleSubmitEdit.bind(this));
+         this.footer.appendChild(this.btnConfirmEdit);
+         this.footer.appendChild(this.btnCancelEdit);     
+
+         var rect = this.details.getBoundingClientRect();
+         this._detailsParent = this.details.parentElement;
+         this._detailsEditor = Element.From(`<textarea class="editable" contenteditable="true" style="height:${Math.max(40, Math.min(window.innerWidth *.7, rect.height))}px"></textarea>`);
+         this._detailsEditor.innerHTML = this.details.innerHTML;
+         this.details.remove();
+         this._detailsParent.appendChild(this._detailsEditor);
+
+         this.el.querySelectorAll('.editable').forEach(elem => {
+            elem.contentEditable = 'true';
+            elem.classList.add('editing');
+         });
+
+      }
+
       function EventModal(feedItem) {
          U.Modal.call(this, document.getElementById('Template_EventDetailsModal').cloneNode(true), feedItem.el);        
          this.feedItem = feedItem;
          this.el.id = 'efm_' + feedItem.data.id;
-         this.rsvpButtons = this.el.getElementsByClassName("set_event_rsvp");
+         this.rsvpButtons = this.footer.querySelectorAll(".set_event_rsvp");
          this.spinner = this.el.querySelector('.loading_spinner');
+         this.btnStartEdit = this.header.querySelector('.btnStartEdit');
          this.updateFields(this.data);
          
          var rsvpToEvendHandler = rsvpToEventClickHandler.bind(this);
@@ -75,6 +153,8 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
 
          document.getElementById('EventModalContent').appendChild(this.el);
          this.doFullRefresh();
+
+         this.btnStartEdit.addEventListener('click', handleEditClick.bind(this));
 
       }
 
@@ -94,6 +174,7 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
             }
             this.spinner.classList.remove('details_loading');
             this.spinner.classList.add('details_loaded');
+            this.btnStartEdit.style.display = data.can_edit_event ? 'block' : 'none';
          },
          doFullRefresh: function () {
             this.spinner.classList.remove('details_loaded');

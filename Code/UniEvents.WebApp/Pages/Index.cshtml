@@ -7,17 +7,17 @@
 <div id="IndexPage">
    <div class="HTMLTemplates">
       <div id="Template_EventDetailsModal" class="modal modal_eventdetails">
-
          <div class="modal-content">
             <div class="modal-header">
+               <span class="btnStartEdit"><a>EDIT</a></span>
                <span class="close">&times;</span>
                <h2>Event Information</h2>
             </div>
             <div class="modal-body">
                <div name="notification_message"></div>
                <div class="ef_item">
-                  <div class="title"><span class="ef_value"></span></div>
-                  <div class="caption"><span class="ef_value"></span></div>
+                  <div class="title"><span class="ef_value editable"></span></div>
+                  <div class="caption"><span class="ef_value editable"></span></div>
                   <div class="ef_details">
                      <div class="ef_left">
                         <div class="host"><label>Host:</label><span class="ef_value"></span></div>
@@ -26,8 +26,8 @@
                         <div class="event_type"><label>EventType:</label><span class="ef_value"></span></div>
                         <div class="tags"><label>Tags:</label><span class="ef_value"></span></div>
                         <div class="times">
-                           <div class="time_start"><label>Start Time:</label><time class="ef_value"></time></div>
-                           <div class="time_end"><label>End Time:</label><time class="ef_value"></time></div>
+                           <div class="time_start"><label>Start Time:</label><time class="ef_value editable"></time></div>
+                           <div class="time_end"><label>End Time:</label><time class="ef_value editable"></time></div>
                         </div>
                      </div>
                      <div class="ef_right">
@@ -42,33 +42,32 @@
                   </div>
 
                   <div class="details">
-                     <p class="ef_value"></p>
-                     <div class="loading_spinner details_loading">
-                        <div class="cssload-loader">
-                           <div class="cssload-dot"></div>
-                           <div class="cssload-dot"></div>
-                           <div class="cssload-dot"></div>
-                           <div class="cssload-dot"></div>
-                           <div class="cssload-dot"></div>
-                        </div>
+                     <p class="ef_value editable"></p>
+                  </div>
+                  <div class="loading_spinner details_loading">
+                     <div class="cssload-loader">
+                        <div class="cssload-dot"></div>
+                        <div class="cssload-dot"></div>
+                        <div class="cssload-dot"></div>
+                        <div class="cssload-dot"></div>
+                        <div class="cssload-dot"></div>
                      </div>
                   </div>
-
                </div>
             </div>
             <div class="modal-footer">
                @if(Model.UserContext != null && Model.UserContext.IsVerifiedLogin) {
-                  <button class="btn set_event_rsvp" name="Attending">Attend Event</button>              
-                  <button class="btn set_event_rsvp" name="Stop By">Stop By</button>
-                  <button class="btn set_event_rsvp" name="Later">Attend Later</button>
-                  <button class="btn set_event_rsvp" name="Maybe">Maybe Attend</button>              
-                  <button class="btn set_event_rsvp" name="No">Will not attend</button>
-               }
+               <button class="btn set_event_rsvp" name="Attending">Attend Event</button>
+               <button class="btn set_event_rsvp" name="Stop By">Stop By</button>
+               <button class="btn set_event_rsvp" name="Later">Attend Later</button>
+               <button class="btn set_event_rsvp" name="Maybe">Maybe Attend</button>
+               <button class="btn set_event_rsvp" name="No">Will not attend</button>
+         }
 
             </div>
          </div>
-
       </div>
+
 
       <div id="Template_FeedItem" class="ef_item_container">
          <div class="ef_item">
@@ -96,6 +95,7 @@
             </div>
          </div>
       </div>
+
    </div>
 
 

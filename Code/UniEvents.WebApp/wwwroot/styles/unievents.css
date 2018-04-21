@@ -216,13 +216,17 @@ a { cursor: pointer; }
 
 #IndexPage .ef_details { display: flex; flex-wrap: wrap; justify-content: space-between; }
 
-#IndexPage .modal_eventdetails .modal-content { top: 60px; /*left:60px; right:60px; bottom:60px;*/ }
+#IndexPage .modal .modal-content { top: 60px; }
 
-#IndexPage .modal_eventdetails .modal-body { padding-top: 0; /*height: 60vh;*/ }
+#IndexPage .modal .modal-body { padding-top: 0; }
+
+#IndexPage .modal_eventdetails .btnStartEdit { -o-user-select: none; -moz-user-select: none; -ms-user-select: none; -webkit-user-select: none; user-select: none; float: left; font-weight: 700; font-size: x-large; display: none; }
+
+#IndexPage .modal_eventdetails .btnStartEdit a { opacity: .3; color: inherit; }
 
 #IndexPage .modal_eventdetails .details { margin-top: 10px; }
 
-#IndexPage .modal_eventdetails .details img { display: block !important; float: none !important; }
+#IndexPage .modal_eventdetails .details img { display: block !important; float: none !important; max-width: 75vw !important; max-height: 75vh !important; }
 
 #IndexPage .modal_eventdetails .btn { color: #337ab7; }
 
@@ -235,6 +239,10 @@ a { cursor: pointer; }
 #IndexPage .modal_eventdetails .details_loaded { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 1s; -moz-animation-duration: 1s; -ms-animation-duration: 1s; -webkit-animation-duration: 1s; animation-duration: 1s; animation-fill-mode: forwards; }
 
 #IndexPage .modal_eventdetails .ef_left label, #IndexPage .modal_eventdetails .ef_right label { width: 8em; }
+
+#IndexPage .modal_eventdetails .editable.editing { display: block; padding: 9.5px; margin: 0 0 10px; font-size: 13px; line-height: 1.42857143; color: #333; word-break: break-all; word-wrap: break-word; background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 4px; }
+
+#IndexPage .modal_eventdetails textarea.editable { width: 100%; }
 
 #EventFeed { padding: 1em; }
 
