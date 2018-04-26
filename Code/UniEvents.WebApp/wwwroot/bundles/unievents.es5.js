@@ -2348,9 +2348,22 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
             this.data = data;
             this.el = document.getElementById('Template_FeedItem').cloneNode(true);
             this.el.id = "efi_" + this.data.id;
+            this.el.dataset.id = this.data.id;
             this.updateFields(data);
             this.handleClick = _handleClick.bind(this);
             this.el.addEventListener('click', this.handleClick);
+            var start = new Date(data.time_start);
+            var end = new Date(data.time_end);
+            var now = Date.Current;
+            if (now < start) {
+                this.el.classList.add('event-future');
+            }
+            else if (end < now) {
+                this.el.classList.add('event-past');
+            }
+            else if (now < end && now > start) {
+                this.el.classList.add('event-ongoing');
+            }
         }
         ZMBA.extendType(FeedItem.prototype, {
             updateFields: function (data) {
@@ -2367,11 +2380,7 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
             this.loading_spinner = document.querySelector('.loading_spinner.feed_loading');
             this.el = document.getElementById(id);
             this.ul = this.el.querySelector('ul');
-            this.feedItems = [];
-            var existingItems = this.el.querySelectorAll('.ef_item');
-            for (var i = 0, len = existingItems.length; i < len; i++) {
-                this.feedItems.push(new FeedItem(existingItems[i]));
-            }
+            this.feedItems = {};
         }
         EventFeed.prototype = {
             requestEvents: function (dateFrom, dateTo) {
@@ -2385,6 +2394,8 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 }
                 function handleSuccess(ev) {
                     if (ev.success) {
+                        ev.result.dateFrom = dateFrom;
+                        ev.result.dateTo = dateTo;
                         self.addEvents(ev.result);
                     }
                     else {
@@ -2398,6 +2409,10 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                     error: handleFailure,
                     success: handleSuccess
                 };
+                oRequest = U.buildAjaxRequestFromInputs({
+                    DateFrom: { source: "QueryString", value: dateFrom },
+                    DateTo: { source: "QueryString", value: dateTo }
+                }, oRequest);
                 $.ajax(oRequest)
                     .done(function () {
                     setTimeout(function () {
@@ -2408,16 +2423,33 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 });
             },
             addEvents: function (events) {
-                var ul = document.createElement('ul');
                 for (var i = 0; i < events.length; i++) {
-                    var item = new FeedItem(events[i]);
-                    var li = document.createElement('li');
-                    li.appendChild(item.el);
-                    ul.appendChild(li);
-                    this.feedItems.push(item);
+                    var data = events[i];
+                    if (!this.feedItems[data.id]) {
+                        var item = new FeedItem(data);
+                        this.feedItems[data.id] = item;
+                        this.ul.appendChild(item.el);
+                    }
                 }
-                this.el.appendChild(ul);
-            }
+                this._sortEvents();
+            },
+            _sortEvents: (function () {
+                function cmp(el_a, el_b) {
+                    var a = this.feedItems[el_a.dataset.id];
+                    var b = this.feedItems[el_b.dataset.id];
+                    var astart = a.data.time_start;
+                    var bstart = b.data.time_start;
+                    var aend = a.data.time_end;
+                    var bend = b.data.time_end;
+                    return (astart < bstart ? -1 : (astart > bstart ? 1 : 0)) || (aend < bend ? -1 : (aend > bend ? 1 : 0));
+                }
+                return function () {
+                    var lis = this.ul.querySelectorAll("li.efi").ToArray().sort(cmp.bind(this));
+                    for (var i = 0, len = lis.length; i < len; i++) {
+                        this.ul.appendChild(lis[i]);
+                    }
+                };
+            }())
         };
         return EventFeed;
     }());
@@ -2425,8 +2457,13 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
     U.FeedItem = FeedItem;
     U.EventFeed = EventFeed;
     return function IndexPage() {
-        var feed = new U.EventFeed("EventFeed");
-        feed.requestEvents();
+        U.eventFeed = new U.EventFeed("EventFeed");
+        U.eventFeed.requestEvents(Date.Current.toUTCString());
+        var btnLoadOlderEvents = document.getElementById("btnLoadOlderEvents");
+        btnLoadOlderEvents.addEventListener("click", function () {
+            U.eventFeed.requestEvents(null, Date.Current.toUTCString());
+            btnLoadOlderEvents.style.display = 'none';
+        });
     };
 }(window, window.document, window.jQuery, window.U, window.ZMBA));
 U.pages.Login = (function (window, document, $, U, ZMBA) {

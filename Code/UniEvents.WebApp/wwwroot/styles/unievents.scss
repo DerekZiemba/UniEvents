@@ -3,7 +3,7 @@
 @import "_modal.scss";
 @import "cssload-loader.scss";
 @import "../lib/jquery-autocomplete/jquery.autocomplete.scss";
-@import "../lib/flatpickr/flatpickr-custom.scss";
+@import "flatpickr-custom.scss";
 @import "../lib/taggle/taggle.scss";
 @import "page-Index.scss"; 
 
@@ -15,6 +15,7 @@
 }
 
  
+
 
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
 .body-content {

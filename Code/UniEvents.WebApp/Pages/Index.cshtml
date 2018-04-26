@@ -69,32 +69,34 @@
       </div>
 
 
-      <div id="Template_FeedItem" class="ef_item_container">
-         <div class="ef_item">
-            <div class="title"><span class="ef_value"></span></div>
-            <div class="caption"><span class="ef_value"></span></div>
-            <div class="ef_details">
-               <div class="ef_left">
-                  <div class="host"><label>Host:</label><span class="ef_value"></span></div>
-                  <div class="location"><label>Location:</label><span class="ef_value"></span></div>
-                  <div class="address"><label>Address:</label><span class="ef_value"></span></div>
-                  <div class="event_type"><label>EventType:</label><span class="ef_value"></span></div>
-                  <div class="tags"><label>Tags:</label><span class="ef_value"></span></div>
-               </div>
-               <div class="ef_right">
-                  <div class="times">
-                     <div class="time_start"><label>Start Time:</label><time class="ef_value"></time></div>
-                     <div class="time_end"><label>End Time:</label><time class="ef_value"></time></div>
+      <li id="Template_FeedItem" class="efi">
+         <div class="ef_item_container">
+            <div class="ef_item">
+               <div class="title"><span class="ef_value"></span></div>
+               <div class="caption"><span class="ef_value"></span></div>
+               <div class="ef_details">
+                  <div class="ef_left">
+                     <div class="host"><label>Host:</label><span class="ef_value"></span></div>
+                     <div class="location"><label>Location:</label><span class="ef_value"></span></div>
+                     <div class="address"><label>Address:</label><span class="ef_value"></span></div>
+                     <div class="event_type"><label>EventType:</label><span class="ef_value"></span></div>
+                     <div class="tags"><label>Tags:</label><span class="ef_value"></span></div>
                   </div>
-                  <div class="rsvp">
-                     <div class="rsvp_attending"><label>Attending:</label><span class="ef_value"></span></div>
-                     <div class="rsvp_stopby"><label>Stop By:</label><span class="ef_value"></span></div>
-                     <div class="rsvp_maybe"><label>Maybed:</label><span class="ef_value"></span></div>
+                  <div class="ef_right">
+                     <div class="times">
+                        <div class="time_start"><label>Start Time:</label><time class="ef_value"></time></div>
+                        <div class="time_end"><label>End Time:</label><time class="ef_value"></time></div>
+                     </div>
+                     <div class="rsvp">
+                        <div class="rsvp_attending"><label>Attending:</label><span class="ef_value"></span></div>
+                        <div class="rsvp_stopby"><label>Stop By:</label><span class="ef_value"></span></div>
+                        <div class="rsvp_maybe"><label>Maybe:</label><span class="ef_value"></span></div>
+                     </div>
                   </div>
                </div>
             </div>
          </div>
-      </div>
+      </li>
 
    </div>
 
@@ -110,9 +112,14 @@
       <input id="CreateEventButton" type="button" value="Create New Event" />
    </a>
    }
+   
+   
+   <div id="btnLoadOlderEvents" ><a>Load Older Events</a></div>
 
    <div id="EventFeed">
-
+      <ul>
+         
+      </ul>
    </div>
 
    <div class="loading_spinner feed_loading">
@@ -124,10 +131,6 @@
          <div class="cssload-dot"></div>
       </div>
    </div>
-
-
-   <!--currently only adds one more button , only should need to change html and add a for loop-->
-   @*<input id="TenMoreButton" type="button" value="TenMore" />*@
 
 </div>
 

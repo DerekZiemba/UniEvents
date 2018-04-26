@@ -783,10 +783,6 @@ a
  flex-wrap: wrap;
  justify-content: space-between;
 }
-#IndexPage .modal .modal-content
-{
- top: 60px;
-}
 #IndexPage .modal .modal-body
 {
  padding-top: 0;
@@ -817,7 +813,7 @@ a
  display: block !important;
  float: none !important;
  max-width: 75vw !important;
- max-height: 75vh !important;
+ max-height: 55vh !important;
 }
 #IndexPage .modal_eventdetails .btn
 {
@@ -887,7 +883,6 @@ a
 #EventFeed li
 {
  flex-direction: column;
- background-color: #d3d3d3;
  width: 100%;
  padding: 5px 2vw 5px 2vw;
  border-radius: 5px;
@@ -896,6 +891,52 @@ a
 #EventFeed li:hover
 {
  opacity: 1;
+}
+#EventFeed .ef_item_container:hover:before
+{
+ color: #fff;
+ padding: 0 1em;
+ border-radius: 20px;
+ display: inline-block;
+ float: right;
+ margin: auto;
+ right: 50px;
+}
+#EventFeed .event-past
+{
+ background-color: #d2d2d2;
+}
+#EventFeed .event-past .ef_item_container:hover:before
+{
+ content: "Event Expired";
+ background-color: #aaa;
+}
+#EventFeed .event-ongoing
+{
+ background-color: #d2e6d2;
+}
+#EventFeed .event-ongoing .ef_item_container:hover:before
+{
+ content: "Event In Progress";
+ background-color: #aabeaa;
+}
+#EventFeed .event-future
+{
+ background-color: #d2d2f0;
+}
+#EventFeed .event-future .ef_item_container:hover:before
+{
+ content: "Future Event";
+ background-color: #aaaac8;
+}
+#btnLoadOlderEvents
+{
+ width: 100%;
+ text-align: center;
+}
+#btnLoadOlderEvents a
+{
+ width: 100%;
 }
 .textarea
 {

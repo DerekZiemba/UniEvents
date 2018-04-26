@@ -42,7 +42,7 @@
 
    .modal {
       .modal-content {
-         top: 60px;
+         /*top: 60px;*/
       }
 
       .modal-body {
@@ -72,7 +72,7 @@
             display: block !important;
             float: none !important;
             max-width: 75vw !important;
-            max-height:75vh !important;
+            max-height:55vh !important;
          }
       }
 
@@ -134,23 +134,68 @@
 
 
 
-   #EventFeed {
-      padding: 1em;
+#EventFeed {
+   padding: 1em;
 
-      ul {
-         overflow: auto;
-      }
+   ul {
+      overflow: auto;
+   }
 
-      li {
-         flex-direction: column;
-         background-color: lightgray;
-         width: 100%;
-         padding: 5px 2vw 5px 2vw;
-         border-radius: 5px;
-         opacity: 0.9;
+   li {
+      flex-direction: column;
+      width: 100%;
+      padding: 5px 2vw 5px 2vw;
+      border-radius: 5px;
+      opacity: 0.9;
 
-         &:hover {
-            opacity: 1;
-         }
+      &:hover {
+         opacity: 1;
       }
    }
+
+   .ef_item_container:hover:before {
+      color: white;
+      padding: 0rem 1em;
+      border-radius: 20px;
+      display: inline-block;
+      float: right;
+      margin: auto;
+      right: 50px;
+   }
+
+   .event-past {
+      background-color: rgb(210, 210, 210);
+
+      .ef_item_container:hover:before {
+         content: "Event Expired";
+         background-color: rgb(170, 170, 170);
+      }
+   }
+
+   .event-ongoing {
+      background-color: rgb(210, 230, 210);
+
+      .ef_item_container:hover:before {
+         content: "Event In Progress";
+         background-color: rgb(170, 190, 170);
+      }
+   }
+
+   .event-future {
+      background-color: rgb(210, 210, 240);
+
+      .ef_item_container:hover:before {
+         content: "Future Event";
+         background-color: rgb(170, 170, 200);
+      }
+   }
+}
+
+#btnLoadOlderEvents {
+   width: 100%;
+   text-align: center;
+
+   a {
+      width: 100%;
+   }
+}
