@@ -67,9 +67,9 @@ U.pages.ApiTest = (function (window, document, $, U, ZMBA) {
          var oData = U.buildAjaxRequestFromInputs(metadata.params, { url: metadata.path });
          route.value = oData.url;
          postBody.value = JSON.stringify(oData.data, null, '\t');
-         if (metadata.path.includes('autocomplete')) {
+         if (metadata.path.includes('autocomplete') || ev != null && ev.keyCode === 13) {
             executeRequest();
-         }
+         } 
       }
 
       btnClear.addEventListener('click', () => {

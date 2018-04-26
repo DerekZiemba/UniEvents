@@ -17,6 +17,14 @@ namespace UniEvents.WebApp {
 
       // This method gets called by the runtime. Use this method to add services to the container.
       public void ConfigureServices(IServiceCollection services) {
+         //services.AddCors(options => {
+         //   options.AddPolicy("CorsPolicy",
+         //       builder => builder.AllowAnyOrigin()
+         //       .AllowAnyMethod()
+         //       .AllowAnyHeader()
+         //       .AllowCredentials());
+         //});
+
          services.AddMvc().AddJsonOptions(options=> {
             options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
             options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
@@ -31,6 +39,8 @@ namespace UniEvents.WebApp {
 
          services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+         
+
          WebApp.WebAppContext._init(services);
       }
 
@@ -44,6 +54,10 @@ namespace UniEvents.WebApp {
             //app.UseExceptionHandler("/Error");
             app.UseDeveloperExceptionPage();
          }
+
+         //app.UseMiddleware<CorsMiddleware>();
+         //app.UseCors("CorsPolicy");
+
          WebApp.WebAppContext._init(env);
 
          app.UseStaticFiles();
@@ -52,8 +66,31 @@ namespace UniEvents.WebApp {
 
          //app.UseCookiePolicy();
 
+
+
          app.UseMvc();
 
+
+
       }
+
+
+      public class CorsMiddleware {
+         private readonly RequestDelegate _next;
+
+         public CorsMiddleware(RequestDelegate next) {
+            _next = next;
+         }
+
+         public Task Invoke(HttpContext httpContext) {
+            httpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            httpContext.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+            httpContext.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version, X-File-Name");
+            httpContext.Response.Headers.Add("Access-Control-Allow-Methods", "POST,GET,PUT,PATCH,DELETE,OPTIONS");
+            return _next(httpContext);
+         }
+      }
+
+
    }
 }

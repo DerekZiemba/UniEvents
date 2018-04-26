@@ -180,22 +180,28 @@
       }()),
 
       Modal: (function () {
+         function handleKeyUp(ev) {
+            if (ev.keyCode === 27) {
+               this.close();
+            }
+         }
          function open(ev) {
             this.btnOpen.enable = false;
             this.el.style.display = 'block';
-            var bounds = document.getElementsByClassName('body-content')[0].firstElementChild.getBoundingClientRect();
-            this.content.style.top = '60px';
-            this.content.style.width = (bounds.width * .8) + 'px';           
+            window.addEventListener('click', this.close);
+            document.addEventListener('keyup', this.handleKeyUp);
          }
          function close(ev) {
             if (ev) {
-               if (ev.target == this.el || ev.target == this.btnClose) {
+               if (ev.target === this.el || ev.target === this.btnClose) {
                   this.close();
                }
                return;
             }
             this.btnOpen.enable = true;
             this.el.style.display = 'none';
+            window.removeEventListener('click', this.close);
+            document.removeEventListener('keyup', this.handleKeyUp);
          }
 
          function Modal(el, btnOpen) {
@@ -209,15 +215,13 @@
 
             this.open = open.bind(this);
             this.close = close.bind(this);
+            this.handleKeyUp = handleKeyUp.bind(this);
 
             this.btnOpen.addEventListener('click', this.open);
-            this.btnClose.addEventListener('click', this.close);
-            window.addEventListener('click', this.close); 
+            this.btnClose.addEventListener('click', this.close);          
+            
          }
 
-         Modal.prototype = {
-
-         }
 
          return Modal;
 
