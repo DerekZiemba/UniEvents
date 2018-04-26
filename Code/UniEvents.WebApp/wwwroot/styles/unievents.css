@@ -210,7 +210,7 @@ a { cursor: pointer; }
 
 #IndexPage .ef_item_container label { width: 8rem; }
 
-#IndexPage .loading_spinner { height: 50px; }
+#IndexPage .loading_spinner { height: 50px; margin: auto; position: absolute; top: 50%; left: 50%; }
 
 #IndexPage .fadeOut { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 2s; -moz-animation-duration: 2s; -ms-animation-duration: 2s; -webkit-animation-duration: 2s; animation-duration: 2s; }
 
@@ -228,13 +228,15 @@ a { cursor: pointer; }
 
 #IndexPage .modal_eventdetails .details img { display: block !important; float: none !important; max-width: 75vw !important; max-height: 55vh !important; }
 
+#IndexPage .modal_eventdetails .details p { white-space: pre-wrap; }
+
 #IndexPage .modal_eventdetails .btn { color: #337ab7; }
 
 #IndexPage .modal_eventdetails .btn.selected { background-color: lightblue; color: green; }
 
 #IndexPage .modal_eventdetails .modal-footer .btn + .btn { margin: 1px 0 1px 15px; }
 
-#IndexPage .modal_eventdetails .loading_spinner { height: 75px; margin: auto; position: absolute; top: 50%; left: 50%; }
+#IndexPage .modal_eventdetails .loading_spinner { height: 75px; }
 
 #IndexPage .modal_eventdetails .details_loaded { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 1s; -moz-animation-duration: 1s; -ms-animation-duration: 1s; -webkit-animation-duration: 1s; animation-duration: 1s; animation-fill-mode: forwards; }
 

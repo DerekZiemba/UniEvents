@@ -27,6 +27,10 @@
 
    .loading_spinner {
       height: 50px;
+      margin: auto;
+      position: absolute;
+      top: 50%;
+      left: 50%;
    }
 
    .fadeOut {
@@ -72,7 +76,10 @@
             display: block !important;
             float: none !important;
             max-width: 75vw !important;
-            max-height:55vh !important;
+            max-height: 55vh !important;
+         }
+         p{
+            white-space:pre-wrap;
          }
       }
 
@@ -91,10 +98,6 @@
 
       .loading_spinner {
          height: 75px;
-         margin: auto;
-         position: absolute;
-         top: 50%;
-         left: 50%;
       }
 
       .details_loading {
@@ -127,7 +130,7 @@
       }
 
       textarea.editable {
-         width:100%;
+         width: 100%;
       }
    }
 }

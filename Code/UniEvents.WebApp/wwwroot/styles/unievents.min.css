@@ -763,6 +763,10 @@ a
 #IndexPage .loading_spinner
 {
  height: 50px;
+ margin: auto;
+ position: absolute;
+ top: 50%;
+ left: 50%;
 }
 #IndexPage .fadeOut
 {
@@ -815,6 +819,10 @@ a
  max-width: 75vw !important;
  max-height: 55vh !important;
 }
+#IndexPage .modal_eventdetails .details p
+{
+ white-space: pre-wrap;
+}
 #IndexPage .modal_eventdetails .btn
 {
  color: #337ab7;
@@ -831,10 +839,6 @@ a
 #IndexPage .modal_eventdetails .loading_spinner
 {
  height: 75px;
- margin: auto;
- position: absolute;
- top: 50%;
- left: 50%;
 }
 #IndexPage .modal_eventdetails .details_loaded
 {
