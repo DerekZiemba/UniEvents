@@ -226,7 +226,7 @@ a { cursor: pointer; }
 
 #IndexPage .modal_eventdetails .details { margin-top: 10px; }
 
-#IndexPage .modal_eventdetails .details img { display: block !important; float: none !important; max-width: 75vw !important; max-height: 55vh !important; }
+#IndexPage .modal_eventdetails .details img, #IndexPage .modal_eventdetails .details iframe, #IndexPage .modal_eventdetails .details video, #IndexPage .modal_eventdetails .details object { display: block !important; float: none !important; max-width: 75vw !important; max-height: 55vh !important; margin: auto; }
 
 #IndexPage .modal_eventdetails .details p { white-space: pre-wrap; }
 
@@ -260,7 +260,7 @@ a { cursor: pointer; }
 
 #EventFeed .event-past .ef_item_container:hover:before { content: "Event Expired"; background-color: #aaaaaa; }
 
-#EventFeed .event-ongoing { background-color: #d2e6d2; }
+#EventFeed .event-ongoing { background-color: #d2dcd2; }
 
 #EventFeed .event-ongoing .ef_item_container:hover:before { content: "Event In Progress"; background-color: #aabeaa; }
 

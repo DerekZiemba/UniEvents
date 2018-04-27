@@ -74,11 +74,12 @@
       .details {
          margin-top: 10px;
 
-         img {
+         img, iframe, video, object {
             display: block !important;
             float: none !important;
             max-width: 75vw !important;
             max-height: 55vh !important;
+            margin:auto;
          }
          p{
             white-space:pre-wrap;
@@ -178,7 +179,7 @@
    }
 
    .event-ongoing {
-      background-color: rgb(210, 230, 210);
+      background-color: rgb(210, 220, 210);
 
       .ef_item_container:hover:before {
          content: "Event In Progress";

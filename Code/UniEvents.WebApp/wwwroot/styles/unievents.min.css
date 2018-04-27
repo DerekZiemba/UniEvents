@@ -814,12 +814,13 @@ a
 {
  margin-top: 10px;
 }
-#IndexPage .modal_eventdetails .details img
+#IndexPage .modal_eventdetails .details img, #IndexPage .modal_eventdetails .details iframe, #IndexPage .modal_eventdetails .details video, #IndexPage .modal_eventdetails .details object
 {
  display: block !important;
  float: none !important;
  max-width: 75vw !important;
  max-height: 55vh !important;
+ margin: auto;
 }
 #IndexPage .modal_eventdetails .details p
 {
@@ -919,7 +920,7 @@ a
 }
 #EventFeed .event-ongoing
 {
- background-color: #d2e6d2;
+ background-color: #d2dcd2;
 }
 #EventFeed .event-ongoing .ef_item_container:hover:before
 {
