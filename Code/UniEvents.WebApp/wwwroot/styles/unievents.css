@@ -220,7 +220,7 @@ a { cursor: pointer; }
 
 #IndexPage .modal .modal-body { padding-top: 0; }
 
-#IndexPage .modal_eventdetails .btnStartEdit { -o-user-select: none; -moz-user-select: none; -ms-user-select: none; -webkit-user-select: none; user-select: none; float: left; font-weight: 700; font-size: x-large; display: none; }
+#IndexPage .modal_eventdetails .btnStartEdit { -o-user-select: none; -moz-user-select: none; -ms-user-select: none; -webkit-user-select: none; user-select: none; float: left; font-weight: 700; font-size: x-large; position: absolute; margin-top: .5rem; display: none; }
 
 #IndexPage .modal_eventdetails .btnStartEdit a { opacity: .3; color: inherit; }
 

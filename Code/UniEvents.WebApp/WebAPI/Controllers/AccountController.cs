@@ -262,6 +262,88 @@ namespace UniEvents.WebAPI.Controllers {
          return apiresult;
       }
 
+
+      //TODO:
+      [HttpPost, Route("webapi/account/updateuser/{password?}")]
+      public ApiResult<UserAccount> Update(UserAccount input, string password) {
+         ApiResult<UserAccount> apiresult = new ApiResult<UserAccount>();
+
+         if(input == null) {
+            return apiresult.Failure("Account Null.");
+         }
+         if(String.IsNullOrWhiteSpace(password)) {
+            return apiresult.Failure("Invalid Password.");
+         }
+         if(String.IsNullOrWhiteSpace(input.UserName)) {
+            return apiresult.Failure("Invalid UserName.");
+         }
+         if(input.Location == null) {
+            return apiresult.Failure("Location Invalid.");
+         }
+
+         LocationNode.CountryRegionNode oCountry = Factory.LocationManager.QueryCachedCountries(input.Location.CountryRegion).FirstOrDefault();
+         if(oCountry == null) { return apiresult.Failure("Invalid Country"); }
+
+         LocationNode.AdminDistrictNode oState = Factory.LocationManager.QueryCachedStates(input.Location.AdminDistrict).FirstOrDefault();
+         if(oState == null) { return apiresult.Failure("Invalid State"); }
+
+         if(input.Location.PostalCode.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid PostalCode"); }
+         if(oCountry.Abbreviation == "USA") {
+            LocationNode.PostalCodeNode oZip = Factory.LocationManager.QueryCachedPostalCodes(input.Location.PostalCode).FirstOrDefault();
+            if(oZip == null) { return apiresult.Failure("Invalid PostalCode"); }
+         }
+
+         if(input.Location.Locality.CountAlphaNumeric() < 3) { return apiresult.Failure("Invalid City"); }
+         if(input.VerifiedContactEmail || input.VerifiedSchoolEmail) {
+            return apiresult.Failure("Attempt to submit unverified Emails logged and detected."); //not really, but sounds scary.
+         }
+
+         DBAccount dbAccount = new DBAccount() {
+            UserName = input.UserName,
+            DisplayName = input.DisplayName,
+            FirstName = input.FirstName,
+            LastName = input.LastName,
+            SchoolEmail = input.SchoolEmail,
+            ContactEmail = input.ContactEmail,
+            PhoneNumber = input.PhoneNumber
+         };
+
+         (dbAccount.PasswordHash, dbAccount.Salt) = HashUtils.HashPassword256(password);
+         try {
+            DBLocation dbLocation = Factory.LocationManager.CreateDBLocation(input.Location);
+            dbAccount.LocationID = dbLocation.LocationID;
+            Factory.AccountManager.CreateAccount(dbAccount);
+
+            apiresult.Success("Account Created!", new UserAccount(dbAccount, new StreetAddress(dbLocation)));
+
+            try {
+               if(!String.IsNullOrWhiteSpace(dbAccount.ContactEmail)) {
+                  Factory.EmailManager.SendVerificationEmail(dbAccount.AccountID, dbAccount.UserName, dbAccount.ContactEmail, "http://www.unievents.site/verifyemail");
+               }
+#pragma warning disable CS0168 // Variable is declared but never used
+            } catch(Exception ex) {
+
+               apiresult.bSuccess = false;
+               return apiresult.AppendMessage("Invalid Contact Email: " + dbAccount.ContactEmail);
+            }
+            try {
+               if(!String.IsNullOrWhiteSpace(dbAccount.SchoolEmail)) {
+                  Factory.EmailManager.SendVerificationEmail(dbAccount.AccountID, dbAccount.UserName, dbAccount.SchoolEmail, "http://www.unievents.site/verifyemail");
+               }
+            } catch(Exception ex) {
+               apiresult.bSuccess = false;
+               return apiresult.AppendMessage("Invalid School Email: " + dbAccount.SchoolEmail);
+            }
+#pragma warning restore CS0168 // Variable is declared but never used
+         } catch(Exception ex) {
+            return apiresult.Failure(ex);
+         }
+
+
+         return apiresult;
+      }
+
+
       [HttpGet, Route("webapi/account/getuserinfo/{username?}")]
       public async Task<ApiResult<UserAccount>> GetUserInfo(string username) {
          var apiresult = new ApiResult<UserAccount>();
@@ -324,24 +406,24 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
-      //[HttpGet, Route("webapi/account/verifyemail/{accountid?}/{verificationkey?}")]
-      //public ApiResult VerifyEmail(long accountid, string verificationkey) {
-      //   var apiresult = new ApiResult();
-      //   if(accountid <= 0) { return apiresult.Failure("Invalid AccountID"); }
-      //   if(String.IsNullOrWhiteSpace(verificationkey)) { return apiresult.Failure("Invalid VerificationKey"); }
+      [HttpGet, Route("webapi/account/verifyemail/{accountid?}/{verificationkey?}")]
+      public ApiResult VerifyEmail(long accountid, string verificationkey) {
+         var apiresult = new ApiResult();
+         if(accountid <= 0) { return apiresult.Failure("Invalid AccountID"); }
+         if(String.IsNullOrWhiteSpace(verificationkey)) { return apiresult.Failure("Invalid VerificationKey"); }
 
-      //   try {
-      //      var result = Factory.EmailManager.VerifyEmail(accountid, verificationkey);
-      //      if(result.bSuccess && result.Result.IsVerified) {
-      //         return apiresult.Success(result.sMessage);
-      //      } else {
-      //         return apiresult.Failure(result.sMessage);
-      //      }
+         try {
+            var result = Factory.EmailManager.VerifyEmail(accountid, verificationkey);
+            if(result.bSuccess && result.Result.IsVerified) {
+               return apiresult.Success(result.sMessage);
+            } else {
+               return apiresult.Failure(result.sMessage);
+            }
 
-      //   } catch(Exception ex) {
-      //      return apiresult.Failure(ex);
-      //   }
-      //}
+         } catch(Exception ex) {
+            return apiresult.Failure(ex);
+         }
+      }
 
 
       public AccountsController(IHttpContextAccessor accessor) : base(accessor) { }

@@ -801,6 +801,8 @@ a
  float: left;
  font-weight: 700;
  font-size: x-large;
+ position: absolute;
+ margin-top: .5rem;
  display: none;
 }
 #IndexPage .modal_eventdetails .btnStartEdit a

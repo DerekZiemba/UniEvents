@@ -91,7 +91,9 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
       }
 
       function handleCancelEdit(ev) {
-         this.btnStartEdit.style.display = 'block';
+         this._isediting = false;
+         this.btnStartEdit.firstElementChild.innerText = "EDIT";    
+
          this.header.querySelector('h2').innerText = "Event Information";
          while (this.footer.firstElementChild) { this.footer.firstElementChild.remove(); }
          for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
@@ -110,31 +112,36 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
       }
 
       function handleEditClick() {
-         this.btnStartEdit.style.display = 'none';
-         this.header.querySelector('h2').innerText = "Event Quick Editor";
-         for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
-            this.rsvpButtons[i].remove();
+         if (this._isediting) {
+            this.editorCancel();
+         } else {
+            this._isediting = true;
+            this.btnStartEdit.firstElementChild.innerText = "CANCEL EDIT";
+
+            this.header.querySelector('h2').innerText = "Event Quick Editor";
+            for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+               this.rsvpButtons[i].remove();
+            }
+
+            this.btnCancelEdit = Element.From(`<button class="btn btnCancelEdit">Cancel Edit</button>`);
+            this.btnCancelEdit.addEventListener('click', this.editorCancel);
+            this.btnConfirmEdit = Element.From(`<button class="btn btnConfirmEdit">Save Changes</button>`);
+            this.btnConfirmEdit.addEventListener('click', this.editorSubmit);
+            this.footer.appendChild(this.btnConfirmEdit);
+            this.footer.appendChild(this.btnCancelEdit);
+
+            var rect = this.details.getBoundingClientRect();
+            this._detailsParent = this.details.parentElement;
+            this._detailsEditor = Element.From(`<textarea class="editable" contenteditable="true" style="height:${Math.max(150, Math.min(window.innerWidth * .7, rect.height))}px"></textarea>`);
+            this._detailsEditor.innerHTML = this.details.innerHTML;
+            this.details.remove();
+            this._detailsParent.appendChild(this._detailsEditor);
+
+            this.el.querySelectorAll('.editable').forEach(elem => {
+               elem.contentEditable = 'true';
+               elem.classList.add('editing');
+            });
          }
-
-         this.btnCancelEdit = Element.From(`<button class="btn btnCancelEdit">Cancel Edit</button>`);
-         this.btnCancelEdit.addEventListener('click', handleCancelEdit.bind(this));
-         this.btnConfirmEdit = Element.From(`<button class="btn btnConfirmEdit">Save Changes</button>`);
-         this.btnConfirmEdit.addEventListener('click', handleSubmitEdit.bind(this));
-         this.footer.appendChild(this.btnConfirmEdit);
-         this.footer.appendChild(this.btnCancelEdit);     
-
-         var rect = this.details.getBoundingClientRect();
-         this._detailsParent = this.details.parentElement;
-         this._detailsEditor = Element.From(`<textarea class="editable" contenteditable="true" style="height:${Math.max(40, Math.min(window.innerWidth *.7, rect.height))}px"></textarea>`);
-         this._detailsEditor.innerHTML = this.details.innerHTML;
-         this.details.remove();
-         this._detailsParent.appendChild(this._detailsEditor);
-
-         this.el.querySelectorAll('.editable').forEach(elem => {
-            elem.contentEditable = 'true';
-            elem.classList.add('editing');
-         });
-
       }
 
       function EventModal(feedItem) {
@@ -145,7 +152,11 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
          this.spinner = this.el.querySelector('.loading_spinner');
          this.btnStartEdit = this.header.querySelector('.btnStartEdit');
          this.updateFields(this.data);
-         
+
+         this.editorOpen = handleEditClick.bind(this);
+         this.editorCancel = handleCancelEdit.bind(this);
+         this.editorSubmit = handleSubmitEdit.bind(this);
+       
          var rsvpToEvendHandler = rsvpToEventClickHandler.bind(this);
          for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
             this.rsvpButtons[i].addEventListener('click', rsvpToEvendHandler);
@@ -154,7 +165,7 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
          document.getElementById('EventModalContent').appendChild(this.el);
          this.doFullRefresh();
 
-         this.btnStartEdit.addEventListener('click', handleEditClick.bind(this));
+         this.btnStartEdit.addEventListener('click', this.editorOpen);
 
       }
 
