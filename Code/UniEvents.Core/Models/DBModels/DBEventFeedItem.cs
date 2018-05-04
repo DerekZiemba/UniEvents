@@ -58,7 +58,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBEventFeedItem() { }
 
-      public DBEventFeedItem(IDataReader reader) {
+      public DBEventFeedItem(SqlDataReader reader) {
          EventID = reader.GetInt64(nameof(EventID));
          EventTypeID = reader.GetInt64(nameof(EventTypeID));
          DateStart = reader.GetDateTime(nameof(DateStart));
@@ -93,7 +93,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBEventFeedItemExtended() { }
 
-      public DBEventFeedItemExtended(IDataReader reader) : base(reader) {
+      public DBEventFeedItemExtended(SqlDataReader reader) : base(reader) {
          ParentLocationID = reader.GetNInt64(nameof(ParentLocationID));
          Details = reader.GetString(nameof(Details));
       }

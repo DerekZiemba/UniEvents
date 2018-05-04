@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Text;
 
 using ZMBA;
@@ -20,7 +21,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBEventRSVP() { }
 
-      public DBEventRSVP(IDataReader reader) {
+      public DBEventRSVP(SqlDataReader reader) {
          EventID = reader.GetInt64(nameof(EventID));
          AccountID = reader.GetInt64(nameof(AccountID));
          RSVPTypeID = reader.GetInt16(nameof(RSVPTypeID));

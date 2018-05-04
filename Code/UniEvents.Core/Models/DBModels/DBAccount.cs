@@ -59,7 +59,7 @@ namespace UniEvents.Models.DBModels {
       public DBAccount() { }
 
 
-      private DBAccount(IDataReader reader) {
+      internal DBAccount(SqlDataReader reader) {
          AccountID = reader.GetInt64(nameof(AccountID));
          LocationID = reader.GetInt64(nameof(LocationID));
          PasswordHash = reader.GetBytes(nameof(PasswordHash), 32);
@@ -76,73 +76,8 @@ namespace UniEvents.Models.DBModels {
          IsAdmin = reader.GetNBoolean(nameof(IsAdmin)).UnBox();
       }
 
-      public static async Task<bool> SP_Group_CreateAsync(Factory ctx, DBAccount model, long @GroupOwnerAccountID) {
-         if (model == null) { throw new ArgumentNullException("DBAccount_Null"); }
-         if (!model.IsGroup) { throw new ArgumentException("Is a User not a Group."); }
-         if (@GroupOwnerAccountID <= 0) { throw new ArgumentNullException("GroupOwnerAccountID_Invalid"); }
-         if (String.IsNullOrWhiteSpace(model.UserName)) { throw new ArgumentNullException("UserName_Invalid"); }
-         if (!model.PasswordHash.IsEmpty() || !model.Salt.IsNullOrEmpty()) { throw new ArgumentException("Groups don't have Passwords"); }
-         if (model.FirstName.IsNotWhitespace()) { throw new ArgumentException("Groups don't have FirstNames"); }
-         if (model.LastName.IsNotWhitespace()) { throw new ArgumentException("Groups don't have LastNames"); }
-
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsWrite))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Group_Create]", conn) { CommandType = CommandType.StoredProcedure }) {
-            SqlParameter @GroupID = cmd.AddParam(ParameterDirection.Output, SqlDbType.BigInt, nameof(@GroupID), null);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, "GroupName", model.UserName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@DisplayName), model.DisplayName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@ContactEmail), model.ContactEmail);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), model.PhoneNumber);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@LocationID), model.LocationID);
-
-            int rowsAffected = await cmd.ExecuteProcedureAsync().ConfigureAwait(false);
-
-            model.AccountID = (long)@GroupID.Value;
-            return model.AccountID > 0;
-         }
-      }
 
 
-      public static async Task<List<DBAccount>> SP_Account_SearchAsync(Factory ctx,
-                                                                        string UserName = null,
-                                                                        string DisplayName = null,
-                                                                        string FirstName = null,
-                                                                        string LastName = null,
-                                                                        string Email = null,
-                                                                        string PhoneNumber = null) {
-
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@UserName), @UserName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@DisplayName), @DisplayName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@FirstName), @FirstName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@LastName), @LastName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Email), @Email);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), @PhoneNumber);
-
-            return await cmd.ExecuteReader_GetManyAsync<DBAccount>().ConfigureAwait(false);
-         }
-      }
-
-      public static IEnumerable<DBAccount> SP_Account_Search(Factory ctx,
-                                                               string UserName = null,
-                                                               string DisplayName = null,
-                                                               string FirstName = null,
-                                                               string LastName = null,
-                                                               string Email = null,
-                                                               string PhoneNumber = null) {
-
-         using (SqlConnection conn = new SqlConnection(ctx.Config.dbUniHangoutsRead))
-         using (SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Search]", conn) { CommandType = CommandType.StoredProcedure }) {
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@UserName), @UserName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@DisplayName), @DisplayName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@FirstName), @FirstName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@LastName), @LastName);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Email), @Email);
-            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), @PhoneNumber);
-
-            foreach (var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBAccount(item); }
-         }
-      }
 
    }
 }

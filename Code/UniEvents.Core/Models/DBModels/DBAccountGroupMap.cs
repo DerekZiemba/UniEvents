@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Text;
 
 using ZMBA;
@@ -32,7 +33,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBAccountGroupMap() { }
 
-      public DBAccountGroupMap(IDataReader reader) {
+      public DBAccountGroupMap(SqlDataReader reader) {
         AccountID = reader.GetInt64(nameof(AccountID));
         GroupID = reader.GetInt64(nameof(GroupID));
         IsGroup = reader.GetBoolean(nameof(IsGroup));

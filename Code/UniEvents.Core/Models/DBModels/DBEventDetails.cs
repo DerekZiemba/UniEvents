@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Text;
 
 using ZMBA;
@@ -19,7 +20,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBEventDetails() { }
 
-      public DBEventDetails(IDataReader reader) {
+      public DBEventDetails(SqlDataReader reader) {
          EventID = reader.GetInt64(nameof(EventID));
          Description = reader.GetString(nameof(Description));
       }

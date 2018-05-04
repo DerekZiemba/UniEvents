@@ -25,7 +25,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBLogin() { }
 
-      public DBLogin(IDataReader reader) {
+      public DBLogin(SqlDataReader reader) {
          UserName = reader.GetString(nameof(UserName));
          APIKey = reader.GetString(nameof(APIKey));
          APIKeyHash = reader.GetBytes(nameof(APIKeyHash), 32);

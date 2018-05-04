@@ -66,7 +66,7 @@ namespace ZMBA {
          if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
          using (SqlDataReader reader = cmd.ExecuteReader()) {
             if (reader.Read()) {
-               return RuntimeCompiler.GetConstructor<Func<IDataReader, T>>()(reader);
+               return RuntimeCompiler.GetConstructor<Func<SqlDataReader, T>>()(reader);
             }
          }
          return default;
@@ -76,13 +76,13 @@ namespace ZMBA {
          if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
          using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
             if (await reader.ReadAsync().ConfigureAwait(false)) {
-               return RuntimeCompiler.GetConstructor<Func<IDataReader, T>>()(reader);
+               return RuntimeCompiler.GetConstructor<Func<SqlDataReader, T>>()(reader);
             }
          }
          return default;
       }
 
-      public static IEnumerable<IDataReader> ExecuteReader_GetManyRecords(this SqlCommand cmd) {
+      public static IEnumerable<SqlDataReader> ExecuteReader_GetManyRecords(this SqlCommand cmd) {
          if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
          using (SqlDataReader reader = cmd.ExecuteReader()) {
             while (reader.Read()) {
@@ -92,7 +92,7 @@ namespace ZMBA {
       }
 
       public static IEnumerable<T> ExecuteReader_GetMany<T>(this SqlCommand cmd) {
-         Func<IDataReader, T> ctor = RuntimeCompiler.GetConstructor<Func<IDataReader, T>>();
+         Func<SqlDataReader, T> ctor = RuntimeCompiler.GetConstructor<Func<SqlDataReader, T>>();
 
          if (cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
          
@@ -104,7 +104,7 @@ namespace ZMBA {
       }
 
       public static async Task<List<T>> ExecuteReader_GetManyAsync<T>(this SqlCommand cmd) {
-         Func<IDataReader, T> ctor = RuntimeCompiler.GetConstructor<Func<IDataReader, T>>();
+         Func<SqlDataReader, T> ctor = RuntimeCompiler.GetConstructor<Func<SqlDataReader, T>>();
 
          if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
          
@@ -119,91 +119,91 @@ namespace ZMBA {
 
 
 
-      public static byte[] GetBytes(this IDataRecord record, string name, int size) {
-         int ord = record.GetOrdinal(name);
+      public static byte[] GetBytes(this SqlDataReader record, string name, int size) {
+         int ord = record.GetColumnIndex(name);
          if (record.IsDBNull(ord)) { return null; }
          Byte[] buffer = new byte[size];
          record.GetBytes(ord, 0, buffer, 0, size);
          return buffer;
       }
 
-      public static string GetString(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static string GetString(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : record.GetString(ord);
       }
 
-      public static bool GetBoolean(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static bool GetBoolean(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? default : record.GetBoolean(ord);
       }
-      public static byte GetByte(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static byte GetByte(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? default : record.GetByte(ord);
       }
-      public static Int16 GetInt16(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static Int16 GetInt16(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? default : record.GetInt16(ord);
       }
-      public static Int32 GetInt32(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static Int32 GetInt32(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? default : record.GetInt32(ord);
       }
-      public static Int64 GetInt64(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static Int64 GetInt64(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? default : record.GetInt64(ord);
       }
-      public static float GetFloat32(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static float GetFloat32(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? default : record.GetFloat(ord);
       }
-      public static double GetFloat64(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static double GetFloat64(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? default : record.GetDouble(ord);
       }
-      public static decimal GetDecimal(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static decimal GetDecimal(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? default : record.GetDecimal(ord);
       }
-      public static DateTime GetDateTime(this IDataRecord record, string name, DateTimeKind kind = DateTimeKind.Utc) {
-         int ord = record.GetOrdinal(name);
+      public static DateTime GetDateTime(this SqlDataReader record, string name, DateTimeKind kind = DateTimeKind.Utc) {
+         int ord = record.GetColumnIndex(name);
          return DateTime.SpecifyKind(record.IsDBNull(ord) ? default : record.GetDateTime(ord), kind);
       }
 
 
-      public static bool? GetNBoolean(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static bool? GetNBoolean(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (bool?)record.GetBoolean(ord);
       }
-      public static byte? GetNByte(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static byte? GetNByte(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (byte?)record.GetByte(ord);
       }
-      public static Int16? GetNInt16(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static Int16? GetNInt16(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (Int16?)record.GetInt16(ord);
       }
-      public static Int32? GetNInt32(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static Int32? GetNInt32(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (Int32?)record.GetInt32(ord);
       }
-      public static Int64? GetNInt64(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static Int64? GetNInt64(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (Int64?)record.GetInt64(ord);
       }
-      public static float? GetNFloat32(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static float? GetNFloat32(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (float?)record.GetFloat(ord);
       }
-      public static double? GetNFloat64(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static double? GetNFloat64(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (double?)record.GetDouble(ord);
       }
-      public static decimal? GetNDecimal(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static decimal? GetNDecimal(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (decimal?)record.GetDecimal(ord);
       }
-      public static DateTime? GetNDateTime(this IDataRecord record, string name) {
-         int ord = record.GetOrdinal(name);
+      public static DateTime? GetNDateTime(this SqlDataReader record, string name) {
+         int ord = record.GetColumnIndex(name);
          return record.IsDBNull(ord) ? null : (DateTime?)record.GetDateTime(ord);
       }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Text;
 
 using ZMBA;
@@ -16,7 +17,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBEventTagMap() { }
 
-      public DBEventTagMap(IDataReader reader) {
+      public DBEventTagMap(SqlDataReader reader) {
          EventID = reader.GetInt64(nameof(EventID));
          TagID = reader.GetInt64(nameof(TagID));
       }

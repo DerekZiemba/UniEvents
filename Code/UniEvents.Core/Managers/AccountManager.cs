@@ -41,7 +41,15 @@ namespace UniEvents.Core.Managers {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@AccountID), AccountID);
             cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@UserName), @UserName);
 
-             return await cmd.ExecuteReader_GetOneAsync<DBAccount>().ConfigureAwait(false);
+            //if(cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
+            //using(SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {
+            //   if(await reader.ReadAsync().ConfigureAwait(false)) {
+            //      reader.FieldCount
+            //      return RuntimeCompiler.GetConstructor<Func<IDataReader, T>>()(reader);
+            //   }
+            //}
+
+            return await cmd.ExecuteReader_GetOneAsync<DBAccount>().ConfigureAwait(false);
          }
       }
 
@@ -77,6 +85,28 @@ namespace UniEvents.Core.Managers {
             throw new DataException("AccountID was not set to positive integer. Something in the Database went wrong.");
          }
 
+      }
+
+
+
+
+      public IEnumerable<DBAccount> SearchForAccount(string UserName = null,
+                                                               string DisplayName = null,
+                                                               string FirstName = null,
+                                                               string LastName = null,
+                                                               string Email = null,
+                                                               string PhoneNumber = null) {
+
+         using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Account_Search]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@UserName), @UserName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@DisplayName), @DisplayName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@FirstName), @FirstName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.NVarChar, nameof(@LastName), @LastName);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@Email), @Email);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.VarChar, nameof(@PhoneNumber), @PhoneNumber);
+
+            foreach(var item in cmd.ExecuteReader_GetManyRecords()) { yield return new DBAccount(item); }
+         }
       }
 
 

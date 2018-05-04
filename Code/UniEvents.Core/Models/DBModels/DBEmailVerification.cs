@@ -20,7 +20,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBEmailVerification() { }
 
-      public DBEmailVerification(IDataReader reader) {
+      public DBEmailVerification(SqlDataReader reader) {
          AccountID = reader.GetInt64(nameof(AccountID));
          VerificationKey = reader.GetString(nameof(VerificationKey));
          VerificationHash = reader.GetBytes(nameof(VerificationHash), 32);

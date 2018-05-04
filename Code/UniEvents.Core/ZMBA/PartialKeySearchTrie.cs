@@ -20,7 +20,7 @@ namespace ZMBA {
       public int NodeCount { get; private set; }
 
       public void Optimize() {
-         Stack<CharNode> stack = StackCache<CharNode>.Take();
+         Stack<CharNode> stack = new Stack<CharNode>(128);
          stack.Push(RootNode);
          while (stack.Count > 0) {
             var current = stack.Pop();
@@ -32,7 +32,6 @@ namespace ZMBA {
                current.Items.TrimExcess();
             }
          }
-         StackCache<CharNode>.Return(ref stack);
       }
 
       public void AddExact(string key, T value) {
@@ -48,8 +47,8 @@ namespace ZMBA {
       }
 
       public void Add(string key, T value) {
-         ListCache<string>.Take();
-         List<string> words = ListCache<string>.Take();
+         StringListCache.Take();
+         List<string> words = StringListCache.Take();
          GetNormalizedTerms(key, words);
          for (var i = 0; i < words.Count; i++) {
             string word = words[i];
@@ -61,7 +60,7 @@ namespace ZMBA {
             }
             AddNodeItem(current, word, value);
          }
-         ListCache<string>.Return(ref words);
+         StringListCache.Return(ref words);
       }
 
       private CharNode AddNodeChild(CharNode target, char ch) {
@@ -163,7 +162,7 @@ namespace ZMBA {
 
          string str = input.Normalize(NormalizationForm.FormD);
          StringBuilder sbWord = StringBuilderCache.Take();
-         List<string> words = ListCache<string>.Take();
+         List<string> words = StringListCache.Take();
          char ch;
          for (var i = 0; i < str.Length; i++) {
             ch = str[i];
@@ -201,7 +200,7 @@ namespace ZMBA {
          WordsToTerms();
 
          StringBuilderCache.Return(ref sbWord);
-         ListCache<string>.Return(ref words);
+         StringListCache.Return(ref words);
 
          void WordsToTerms() {
             int n = lsTerms.Count;

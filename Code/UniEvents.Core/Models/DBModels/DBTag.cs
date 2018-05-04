@@ -23,7 +23,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBTag() { }
 
-      public DBTag(IDataReader reader) {
+      public DBTag(SqlDataReader reader) {
          TagID = reader.GetInt64(nameof(TagID));
          Name = reader.GetString(nameof(Name));
          Description = reader.GetString(nameof(Description));

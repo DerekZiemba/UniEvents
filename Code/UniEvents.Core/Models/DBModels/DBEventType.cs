@@ -23,7 +23,7 @@ namespace UniEvents.Models.DBModels {
 
       public DBEventType() { }
 
-      public DBEventType(IDataReader reader) {
+      public DBEventType(SqlDataReader reader) {
          EventTypeID = reader.GetInt64(nameof(EventTypeID));
          Name = reader.GetString(nameof(Name));
          Description = reader.GetString(nameof(Description));

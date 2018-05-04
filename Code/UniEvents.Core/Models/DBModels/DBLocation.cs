@@ -62,7 +62,7 @@ namespace UniEvents.Models.DBModels {
          Longitude = other.Longitude;
       }
 
-      public DBLocation(IDataReader reader) {
+      public DBLocation(SqlDataReader reader) {
          LocationID = reader.GetInt64(nameof(LocationID));
          ParentLocationID = reader.GetNInt64(nameof(ParentLocationID));
          Name = reader.GetString(nameof(Name));
