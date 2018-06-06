@@ -1,0 +1,20 @@
+﻿@import "_mixins.scss";
+
+.flatpickr-day.today:hover:before {
+   content: "Today";
+   background-color: cornflowerblue;
+   color: white;
+   padding: 0rem 1em;
+   border-radius: 20px;
+   display: inline-block;
+   position: fixed;
+   line-height: 2;
+   @include vendor-property(transform, translate(-5em, -1em));
+}
+
+.dayContainer {
+   padding-top:2em;
+}
+.flatpickr-weekdays{
+   position: absolute;
+}

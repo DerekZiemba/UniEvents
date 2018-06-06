@@ -26,7 +26,7 @@ namespace UniEvents.Models.ApiModels {
       [JsonProperty(PropertyName = "location")] public string LocationName { get; set; }
       [JsonProperty(PropertyName = "address")] public string AddressLine { get; set; }
 
-      public Int64 AccountID { get; set; }
+      [JsonProperty(PropertyName = "account_id")] public Int64 AccountID { get; set; }
       public string Host { get; set; }
 
       public DBModels.DBTag[] Tags { get; set; }
@@ -36,6 +36,10 @@ namespace UniEvents.Models.ApiModels {
       [JsonProperty(PropertyName = "rsvp_stopby")] public long RSVP_StopBy { get; set; }
       [JsonProperty(PropertyName = "rsvp_maybe")] public long RSVP_Maybe { get; set; }
       [JsonProperty(PropertyName = "rsvp_no")] public long RSVP_No { get; set; }
+
+
+      public string Details { get; set; }
+
 
 
       public EventInfo() { }
@@ -68,6 +72,19 @@ namespace UniEvents.Models.ApiModels {
    }
 
 
+
+   public class EventInfoUserView : EventInfo {
+
+      [JsonProperty(PropertyName = "user_rsvp_status")] public string UserRsvpStatus { get; set; }
+      [JsonProperty(PropertyName = "can_edit_event")] public bool CanEditEvent { get; set; }
+
+      public EventInfoUserView(Factory Ctx, DBEventFeedItemExtended item) : base(Ctx, item) {
+         Details = item.Details;
+         if(item.UserRsvpID > 0) { UserRsvpStatus = Ctx.RSVPTypeManager[item.UserRsvpID].Name;}
+        
+      }
+
+   }
 
 
 }

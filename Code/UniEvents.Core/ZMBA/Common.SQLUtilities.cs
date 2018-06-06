@@ -71,7 +71,7 @@ namespace ZMBA {
          }
          return default;
       }
-
+      
       public static async Task<T> ExecuteReader_GetOneAsync<T>(this SqlCommand cmd) {
          if (cmd.Connection.State != ConnectionState.Open) { await cmd.Connection.OpenAsync().ConfigureAwait(false); }
          using (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)) {

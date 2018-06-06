@@ -1756,22 +1756,28 @@
             return LocAutoComplete;
         }()),
         Modal: (function () {
+            function handleKeyUp(ev) {
+                if (ev.keyCode === 27) {
+                    this.close();
+                }
+            }
             function open(ev) {
                 this.btnOpen.enable = false;
                 this.el.style.display = 'block';
-                var bounds = document.getElementsByClassName('body-content')[0].firstElementChild.getBoundingClientRect();
-                this.content.style.top = '60px';
-                this.content.style.width = (bounds.width * .8) + 'px';
+                window.addEventListener('click', this.close);
+                document.addEventListener('keyup', this.handleKeyUp);
             }
             function close(ev) {
                 if (ev) {
-                    if (ev.target == this.el || ev.target == this.btnClose) {
+                    if (ev.target === this.el || ev.target === this.btnClose) {
                         this.close();
                     }
                     return;
                 }
                 this.btnOpen.enable = true;
                 this.el.style.display = 'none';
+                window.removeEventListener('click', this.close);
+                document.removeEventListener('keyup', this.handleKeyUp);
             }
             function Modal(el, btnOpen) {
                 this.el = $(el)[0];
@@ -1783,11 +1789,10 @@
                 this.footer = this.content.querySelector('.modal-footer');
                 this.open = open.bind(this);
                 this.close = close.bind(this);
+                this.handleKeyUp = handleKeyUp.bind(this);
                 this.btnOpen.addEventListener('click', this.open);
                 this.btnClose.addEventListener('click', this.close);
-                window.addEventListener('click', this.close);
             }
-            Modal.prototype = {};
             return Modal;
         }())
     }, { override: false, merge: true });
@@ -1920,7 +1925,7 @@ U.pages.ApiTest = (function (window, document, $, U, ZMBA) {
             var oData = U.buildAjaxRequestFromInputs(metadata.params, { url: metadata.path });
             route.value = oData.url;
             postBody.value = JSON.stringify(oData.data, null, '\t');
-            if (metadata.path.includes('autocomplete')) {
+            if (metadata.path.includes('autocomplete') || ev != null && ev.keyCode === 13) {
                 executeRequest();
             }
         }
@@ -2038,10 +2043,12 @@ U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
         var EventCreationLabel = document.getElementById("EventCreationLabel");
         var EventCreationButton = document.getElementById("EventCreationButton");
         EventCreationButton.addEventListener("click", function () {
+            EventCreationButton.disabled = true;
             var oRequest = U.buildAjaxRequestFromInputs(InputParams.querySelectorAll("[param]"), { type: "POST", url: "webapi/events/create " });
             if (!U.eventType.selection) {
                 U.setPageMessage('error', 'Select an event type');
                 U.eventType.element.parentElement.classList.add('required-highlight');
+                EventCreationButton.disabled = false;
                 return;
             }
             oRequest.data.EventTypeID = U.eventType.selection.data.eventTypeID;
@@ -2049,6 +2056,7 @@ U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
             if (oRequest.data.Tags == null || oRequest.data.Tags.length === 0) {
                 U.setPageMessage('error', 'Add at least one tag');
                 U.eventTags.container.parentElement.classList.add('required-highlight');
+                EventCreationButton.disabled = false;
                 return;
             }
             function handleFailure(ev) {
@@ -2057,6 +2065,7 @@ U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
                 InputParams.class = "Failed";
                 U.setPageMessage('error', ev.message);
                 U.highlightRequiredInputs(true);
+                EventCreationButton.disabled = false;
             }
             $.ajax(oRequest)
                 .fail(handleFailure)
@@ -2069,6 +2078,7 @@ U.pages.CreateEvent = (function (window, document, $, U, ZMBA, flatpickr) {
                 else {
                     handleFailure(ev);
                 }
+                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
             });
         });
     }
@@ -2142,7 +2152,10 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 target[key].innerText = data[key];
             }
         }
-        target.event_type = target.el.getElementsByClassName('event_type')[0];
+        target.event_type = target.el.getElementsByClassName('event_type')[0].getElementsByClassName('ef_value')[0];
+        while (target.event_type.firstElementChild) {
+            target.event_type.firstElementChild.remove();
+        }
         target.event_type.appendChild(Element.From("<span title=\"" + data.event_type.description + "\">" + data.event_type.name + "</span>"));
         target.tags = target.el.getElementsByClassName('tags')[0].getElementsByClassName('ef_value')[0];
         while (target.tags.firstElementChild) {
@@ -2157,24 +2170,51 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
         }
     }
     var EventModal = (function () {
-        var dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "rsvp_later", "rsvp_no", "time_start", "time_end", "description"];
-        function EventModal(feedItem) {
-            U.Modal.call(this, document.getElementById('Template_EventDetailsModal').cloneNode(true), feedItem.el);
-            this.feedItem = feedItem;
-            this.el.id = 'efm_' + feedItem.data.id;
-            initEventDataFields(this, this.data, dataFields);
+        var dataFields = ["title", "caption", "host", "location", "address", "rsvp_attending", "rsvp_stopby", "rsvp_maybe", "rsvp_later", "rsvp_no", "time_start", "time_end", "details"];
+        function rsvpToEventClickHandler(ev) {
             var self = this;
-            var oRequest = {
-                url: 'webapi/events/getdescription?id=' + self.data.id,
+            var name = ev.target.name;
+            var req = {
+                url: 'webapi/rsvp/toevent?eventid=' + this.data.id + '&rsvpName=' + encodeURIComponent(name),
                 type: 'GET',
                 dataType: 'json',
+                error: function (data) {
+                    console.log(req, data);
+                    U.setNotification(self.el, 'error', data.message);
+                },
+                success: function (data) {
+                    if (data.success) {
+                        self.doFullRefresh();
+                    }
+                    else {
+                        req.error(data);
+                    }
+                }
+            };
+            $.ajax(req);
+        }
+        function handleSubmitEdit(ev) {
+            var self = this;
+            var oRequest = {
+                url: 'webapi/events/update?EventID=' + self.data.id,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    Title: self.title.innerText,
+                    Caption: self.caption.innerText,
+                    Description: self._detailsEditor.value,
+                    DateStart: self.time_start.innerText,
+                    DateEnd: self.time_end.innerText
+                },
                 error: function (ev) {
                     console.log(oRequest, ev);
                     U.setNotification(self.el, 'error', ev.message);
                 },
                 success: function (ev) {
                     if (ev.success) {
-                        self.description.innerHTML = ev.result;
+                        U.setNotification(self.el, 'success', "Success! " + ev.message);
+                        handleCancelEdit.call(self);
+                        self.doFullRefresh();
                     }
                     else {
                         oRequest.error(ev);
@@ -2182,45 +2222,122 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 }
             };
             $.ajax(oRequest);
-            document.getElementById('EventModalContent').appendChild(this.el);
-            self.el.getElementsByClassName("set_event_rsvp").forEach(function (el) {
-                var name = el.name;
-                el.addEventListener('click', function () {
-                    var req = {
-                        url: 'webapi/rsvp/toevent?eventid=' + self.data.id + '&rsvpName=' + encodeURIComponent(name),
-                        type: 'GET',
-                        dataType: 'json',
-                        error: function (ev) {
-                            console.log(req, ev);
-                            U.setNotification(self.el, 'error', ev.message);
-                        },
-                        success: function (ev) {
-                            if (ev.success) {
-                                self.el.getElementsByClassName("set_event_rsvp").forEach(function (x) { x.classList.remove("selected"); });
-                                el.classList.add("selected");
-                            }
-                            else {
-                                req.error(ev);
-                            }
-                        }
-                    };
-                    $.ajax(req);
-                });
+        }
+        function handleCancelEdit(ev) {
+            this._isediting = false;
+            this.btnStartEdit.firstElementChild.innerText = "EDIT";
+            this.header.querySelector('h2').innerText = "Event Information";
+            while (this.footer.firstElementChild) {
+                this.footer.firstElementChild.remove();
+            }
+            for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+                this.footer.appendChild(this.rsvpButtons[i]);
+            }
+            this.details.innerHTML = this._detailsEditor.value;
+            this._detailsEditor.remove();
+            this._detailsParent.appendChild(this.details);
+            this.el.querySelectorAll('.editable').forEach(function (elem) {
+                elem.contentEditable = 'false';
+                elem.classList.remove('editing');
             });
-            $.ajax({
-                url: 'webapi/rsvp/getrsvp?eventid=' + self.data.id,
-                type: 'GET',
-                dataType: 'json',
-                success: function (ev) {
-                    if (ev.success) {
-                        self.el.querySelector(".set_event_rsvp[name='" + ev.result.name + "']").classList.add("selected");
-                    }
+        }
+        function handleEditClick() {
+            if (this._isediting) {
+                this.editorCancel();
+            }
+            else {
+                this._isediting = true;
+                this.btnStartEdit.firstElementChild.innerText = "CANCEL EDIT";
+                this.header.querySelector('h2').innerText = "Event Quick Editor";
+                for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+                    this.rsvpButtons[i].remove();
                 }
-            });
+                this.btnCancelEdit = Element.From("<button class=\"btn btnCancelEdit\">Cancel Edit</button>");
+                this.btnCancelEdit.addEventListener('click', this.editorCancel);
+                this.btnConfirmEdit = Element.From("<button class=\"btn btnConfirmEdit\">Save Changes</button>");
+                this.btnConfirmEdit.addEventListener('click', this.editorSubmit);
+                this.footer.appendChild(this.btnConfirmEdit);
+                this.footer.appendChild(this.btnCancelEdit);
+                var rect = this.details.getBoundingClientRect();
+                this._detailsParent = this.details.parentElement;
+                this._detailsEditor = Element.From("<textarea class=\"editable\" contenteditable=\"true\" style=\"height:" + Math.max(150, Math.min(window.innerWidth * .7, rect.height)) + "px\"></textarea>");
+                this._detailsEditor.innerHTML = this.details.innerHTML;
+                this.details.remove();
+                this._detailsParent.appendChild(this._detailsEditor);
+                this.el.querySelectorAll('.editable').forEach(function (elem) {
+                    elem.contentEditable = 'true';
+                    elem.classList.add('editing');
+                });
+            }
+        }
+        function EventModal(feedItem) {
+            U.Modal.call(this, document.getElementById('Template_EventDetailsModal').cloneNode(true), feedItem.el);
+            this.feedItem = feedItem;
+            this.el.id = 'efm_' + feedItem.data.id;
+            this.rsvpButtons = this.footer.querySelectorAll(".set_event_rsvp");
+            this.spinner = this.el.querySelector('.loading_spinner');
+            this.btnStartEdit = this.header.querySelector('.btnStartEdit');
+            this.updateFields(this.data);
+            this.editorOpen = handleEditClick.bind(this);
+            this.editorCancel = handleCancelEdit.bind(this);
+            this.editorSubmit = handleSubmitEdit.bind(this);
+            var rsvpToEvendHandler = rsvpToEventClickHandler.bind(this);
+            for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+                this.rsvpButtons[i].addEventListener('click', rsvpToEvendHandler);
+            }
+            document.getElementById('EventModalContent').appendChild(this.el);
+            this.doFullRefresh();
+            this.btnStartEdit.addEventListener('click', this.editorOpen);
         }
         EventModal.prototype = U.Modal;
         ZMBA.extendType(EventModal.prototype, {
-            get data() { return this.feedItem.data; }
+            get data() { return this.feedItem.data; },
+            updateFields: function (data) {
+                initEventDataFields(this, data, dataFields);
+                ;
+                this.details.innerHTML = data.details;
+                if (data.user_rsvp_status) {
+                    var rsvpname = data.user_rsvp_status.toLowerCase();
+                    for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+                        var btn = this.rsvpButtons[i];
+                        btn.classList.toggle('selected', btn.name.toLowerCase() === rsvpname);
+                    }
+                }
+                this.spinner.classList.remove('details_loading');
+                this.spinner.classList.add('details_loaded');
+                this.btnStartEdit.style.display = data.can_edit_event ? 'block' : 'none';
+            },
+            doFullRefresh: function () {
+                this.spinner.classList.remove('details_loaded');
+                this.spinner.classList.add('details_loading');
+                var self = this;
+                var oRequest = {
+                    url: 'webapi/events/getbyidwithuserview?EventID=' + self.data.id,
+                    type: 'GET',
+                    dataType: 'json',
+                    error: function (ev) {
+                        console.log(oRequest, ev);
+                        U.setNotification(self.el, 'error', ev.message);
+                    },
+                    success: function (ev) {
+                        if (ev.success) {
+                            self.updateFields(ev.result);
+                            self.feedItem.updateFields(ev.result);
+                        }
+                        else {
+                            oRequest.error(ev);
+                        }
+                    }
+                };
+                $.ajax(oRequest);
+            },
+            _setActiveRSVP: function (name) {
+                name = name.toLowerCase();
+                for (var i = 0, len = this.rsvpButtons.length; i < len; i++) {
+                    var btn = this.rsvpButtons[i];
+                    btn.classList.toggle('selected', btn.name.toLowerCase() == name);
+                }
+            }
         });
         return EventModal;
     }());
@@ -2241,28 +2358,39 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
             this.data = data;
             this.el = document.getElementById('Template_FeedItem').cloneNode(true);
             this.el.id = "efi_" + this.data.id;
-            initEventDataFields(this, data, dataFields);
-            this.rsvp_stopby.innerText = data.rsvp_stopby + data.rsvp_later;
+            this.el.dataset.id = this.data.id;
+            this.updateFields(data);
             this.handleClick = _handleClick.bind(this);
-            this.enableListeners();
+            this.el.addEventListener('click', this.handleClick);
+            var start = new Date(data.time_start);
+            var end = new Date(data.time_end);
+            var now = Date.Current;
+            if (now < start) {
+                this.el.classList.add('event-future');
+            }
+            else if (end < now) {
+                this.el.classList.add('event-past');
+            }
+            else if (now < end && now > start) {
+                this.el.classList.add('event-ongoing');
+            }
         }
         ZMBA.extendType(FeedItem.prototype, {
-            enableListeners: function () {
-                this.el.addEventListener('click', this.handleClick);
+            updateFields: function (data) {
+                initEventDataFields(this, data, dataFields);
+                ;
+                this.rsvp_stopby.innerText = data.rsvp_stopby + data.rsvp_later;
+                this.data = data;
             }
         });
         return FeedItem;
     }());
     var EventFeed = (function () {
         function EventFeed(id) {
-            this.loading_spinner = document.querySelector('.loading_spinner');
+            this.loading_spinner = document.querySelector('.loading_spinner.feed_loading');
             this.el = document.getElementById(id);
             this.ul = this.el.querySelector('ul');
-            this.feedItems = [];
-            var existingItems = this.el.querySelectorAll('.ef_item');
-            for (var i = 0, len = existingItems.length; i < len; i++) {
-                this.feedItems.push(new FeedItem(existingItems[i]));
-            }
+            this.feedItems = {};
         }
         EventFeed.prototype = {
             requestEvents: function (dateFrom, dateTo) {
@@ -2276,6 +2404,8 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 }
                 function handleSuccess(ev) {
                     if (ev.success) {
+                        ev.result.dateFrom = dateFrom;
+                        ev.result.dateTo = dateTo;
                         self.addEvents(ev.result);
                     }
                     else {
@@ -2289,6 +2419,10 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                     error: handleFailure,
                     success: handleSuccess
                 };
+                oRequest = U.buildAjaxRequestFromInputs({
+                    DateFrom: { source: "QueryString", value: dateFrom },
+                    DateTo: { source: "QueryString", value: dateTo }
+                }, oRequest);
                 $.ajax(oRequest)
                     .done(function () {
                     setTimeout(function () {
@@ -2299,16 +2433,33 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
                 });
             },
             addEvents: function (events) {
-                var ul = document.createElement('ul');
                 for (var i = 0; i < events.length; i++) {
-                    var item = new FeedItem(events[i]);
-                    var li = document.createElement('li');
-                    li.appendChild(item.el);
-                    ul.appendChild(li);
-                    this.feedItems.push(item);
+                    var data = events[i];
+                    if (!this.feedItems[data.id]) {
+                        var item = new FeedItem(data);
+                        this.feedItems[data.id] = item;
+                        this.ul.appendChild(item.el);
+                    }
                 }
-                this.el.appendChild(ul);
-            }
+                this._sortEvents();
+            },
+            _sortEvents: (function () {
+                function cmp(el_a, el_b) {
+                    var a = this.feedItems[el_a.dataset.id];
+                    var b = this.feedItems[el_b.dataset.id];
+                    var astart = a.data.time_start;
+                    var bstart = b.data.time_start;
+                    var aend = a.data.time_end;
+                    var bend = b.data.time_end;
+                    return (astart < bstart ? -1 : (astart > bstart ? 1 : 0)) || (aend < bend ? -1 : (aend > bend ? 1 : 0));
+                }
+                return function () {
+                    var lis = this.ul.querySelectorAll("li.efi").ToArray().sort(cmp.bind(this));
+                    for (var i = 0, len = lis.length; i < len; i++) {
+                        this.ul.appendChild(lis[i]);
+                    }
+                };
+            }())
         };
         return EventFeed;
     }());
@@ -2316,8 +2467,13 @@ U.pages.Index = (function (window, document, $, U, ZMBA) {
     U.FeedItem = FeedItem;
     U.EventFeed = EventFeed;
     return function IndexPage() {
-        var feed = new U.EventFeed("EventFeed");
-        feed.requestEvents();
+        U.eventFeed = new U.EventFeed("EventFeed");
+        U.eventFeed.requestEvents(Date.Current.toUTCString());
+        var btnLoadOlderEvents = document.getElementById("btnLoadOlderEvents");
+        btnLoadOlderEvents.addEventListener("click", function () {
+            U.eventFeed.requestEvents(null, Date.Current.toUTCString());
+            btnLoadOlderEvents.style.display = 'none';
+        });
     };
 }(window, window.document, window.jQuery, window.U, window.ZMBA));
 U.pages.Login = (function (window, document, $, U, ZMBA) {

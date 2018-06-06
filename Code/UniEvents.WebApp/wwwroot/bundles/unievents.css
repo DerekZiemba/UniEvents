@@ -1048,6 +1048,76 @@ a { cursor: pointer; }
 
 .taggle_sizer { padding: 0; margin: 0; position: absolute; top: -500px; z-index: -1; visibility: hidden; }
 
+#IndexPage .ef_item_container { width: 100%; }
+
+#IndexPage .ef_item { width: 100%; }
+
+#IndexPage .ef_item .title { font-size: 24px; }
+
+#IndexPage .ef_item_container label { width: 8rem; }
+
+#IndexPage .loading_spinner { height: 50px; margin: auto; position: absolute; top: 50%; left: 50%; }
+
+#IndexPage .fadeOut { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 2s; -moz-animation-duration: 2s; -ms-animation-duration: 2s; -webkit-animation-duration: 2s; animation-duration: 2s; }
+
+#IndexPage .ef_details { display: flex; flex-wrap: wrap; justify-content: space-between; }
+
+#IndexPage .modal .modal-content { /*top: 60px;*/ }
+
+#IndexPage .modal .modal-body { padding-top: 0; }
+
+#IndexPage .modal_eventdetails .btnStartEdit { -o-user-select: none; -moz-user-select: none; -ms-user-select: none; -webkit-user-select: none; user-select: none; float: left; font-weight: 700; font-size: x-large; position: absolute; margin-top: .5rem; display: none; }
+
+#IndexPage .modal_eventdetails .btnStartEdit a { opacity: .3; color: inherit; }
+
+#IndexPage .modal_eventdetails .details { margin-top: 10px; }
+
+#IndexPage .modal_eventdetails .details img, #IndexPage .modal_eventdetails .details iframe, #IndexPage .modal_eventdetails .details video, #IndexPage .modal_eventdetails .details object { display: block !important; float: none !important; max-width: 75vw !important; max-height: 55vh !important; margin: auto; }
+
+#IndexPage .modal_eventdetails .details p { white-space: pre-wrap; }
+
+#IndexPage .modal_eventdetails .btn { color: #337ab7; }
+
+#IndexPage .modal_eventdetails .btn.selected { background-color: lightblue; color: green; }
+
+#IndexPage .modal_eventdetails .modal-footer .btn + .btn { margin: 1px 0 1px 15px; }
+
+#IndexPage .modal_eventdetails .loading_spinner { height: 75px; }
+
+#IndexPage .modal_eventdetails .details_loaded { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 1s; -moz-animation-duration: 1s; -ms-animation-duration: 1s; -webkit-animation-duration: 1s; animation-duration: 1s; animation-fill-mode: forwards; }
+
+#IndexPage .modal_eventdetails .ef_left label, #IndexPage .modal_eventdetails .ef_right label { width: 8em; }
+
+#IndexPage .modal_eventdetails .editable.editing { display: block; padding: 9.5px; margin: 0 0 10px; font-size: 13px; line-height: 1.42857143; color: #333; word-break: break-all; word-wrap: break-word; background-color: #f5f5f5; border: 1px solid #ccc; border-radius: 4px; }
+
+#IndexPage .modal_eventdetails textarea.editable { width: 100%; }
+
+#EventFeed { padding: 1em; }
+
+#EventFeed ul { overflow: auto; }
+
+#EventFeed li { flex-direction: column; width: 100%; padding: 5px 2vw 5px 2vw; border-radius: 5px; opacity: 0.9; }
+
+#EventFeed li:hover { opacity: 1; }
+
+#EventFeed .ef_item_container:hover:before { color: white; padding: 0rem 1em; border-radius: 20px; display: inline-block; float: right; margin: auto; right: 50px; }
+
+#EventFeed .event-past { background-color: #d2d2d2; }
+
+#EventFeed .event-past .ef_item_container:hover:before { content: "Event Expired"; background-color: #aaaaaa; }
+
+#EventFeed .event-ongoing { background-color: #d2dcd2; }
+
+#EventFeed .event-ongoing .ef_item_container:hover:before { content: "Event In Progress"; background-color: #aabeaa; }
+
+#EventFeed .event-future { background-color: #d2d2f0; }
+
+#EventFeed .event-future .ef_item_container:hover:before { content: "Future Event"; background-color: #aaaac8; }
+
+#btnLoadOlderEvents { width: 100%; text-align: center; }
+
+#btnLoadOlderEvents a { width: 100%; }
+
 .textarea { width: 100%; height: 300px; border: 1px solid red; }
 
 /*Place rules that need to override default css rules inherited from libraries like bootstrap*/
@@ -1152,35 +1222,6 @@ a { cursor: pointer; }
 #APITest #InputParams span { width: 50px; }
 
 #APITest input[type=button] { margin: 0 5px; }
-
-/*Place rules that target the IndexPage specifically*/
-#IndexPage #EventFeed { padding: 1em; }
-
-#IndexPage #EventFeed ul { overflow: auto; }
-
-#IndexPage #EventFeed li { flex-direction: column; background-color: lightgray; width: 100%; padding: 5px 2vw 5px 2vw; border-radius: 5px; opacity: 0.9; }
-
-#IndexPage #EventFeed li:hover { opacity: 1; }
-
-#IndexPage .ef_item_container { width: 100%; }
-
-#IndexPage .ef_item { width: 100%; }
-
-#IndexPage .ef_item .title { font-size: 24px; }
-
-#IndexPage .ef_left { float: left; }
-
-#IndexPage .ef_right { float: right; }
-
-#IndexPage .loading_spinner { /*transform: translateY(-20px);*/ height: 50px; }
-
-#IndexPage .fadeOut { -o-animation-name: fadeOut; -moz-animation-name: fadeOut; -ms-animation-name: fadeOut; -webkit-animation-name: fadeOut; animation-name: fadeOut; -o-animation-duration: 2s; -moz-animation-duration: 2s; -ms-animation-duration: 2s; -webkit-animation-duration: 2s; animation-duration: 2s; }
-
-#IndexPage .modal_eventdetails .modal-body { height: 60vh; }
-
-#IndexPage .modal_eventdetails .description { position: absolute; top: 230px; }
-
-#IndexPage .selected { background-color: lightblue; color: green; }
 
 #AccountPage #allLoginsTableContainer { overflow-x: auto; }
 

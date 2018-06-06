@@ -52,6 +52,25 @@ namespace UniEvents.WebAPI.Controllers {
       }
 
 
+      [HttpGet, Route("webapi/events/getbyidwithuserview/{EventID?}")]
+      public ApiResult<EventInfo> GetEventInfoWithUserView(long EventID) {
+         var apiresult = new ApiResult<EventInfo>();
+
+         if(UserContext == null || !UserContext.IsVerifiedLogin) {
+            try {
+               DBEventFeedItemExtended item =  Factory.EventManager.EventGetByID(EventID);
+               return apiresult.Success(new EventInfoUserView(Factory, item));
+            } catch(Exception ex) { return apiresult.Failure(ex); }
+         } else {
+            try {
+               DBEventFeedItemExtended item =  Factory.EventManager.EventGetByIDWithUserView(EventID, UserContext.AccountID);
+               return apiresult.Success(new EventInfoUserView(Factory, item) { CanEditEvent = (item.AccountID == UserContext.AccountID || UserContext.IsAdmin) });
+            } catch(Exception ex) { return apiresult.Failure(ex); }
+         }
+
+      }
+
+
 
       [HttpPost, Route("webapi/events/create")]
       public ApiResult<EventInfo> EventCreate(EventInput input) {
@@ -112,7 +131,8 @@ namespace UniEvents.WebAPI.Controllers {
                AddressLine = Helpers.FormatAddress(null, address.AddressLine, address.Locality, address.AdminDistrict, address.PostalCode, address.CountryRegion),
                AccountID = dbEventItem.AccountID,
                Host = String.IsNullOrWhiteSpace(UserContext.UserDisplayName) ? UserContext.UserName : UserContext.UserDisplayName,
-               Tags = eventTags
+               Tags = eventTags,
+               Details = input.Description
             };
 
             for(int i = 0; i < eventTags.Length; i++) {
@@ -157,7 +177,10 @@ namespace UniEvents.WebAPI.Controllers {
          //TODO sanitize Title, Caption, and Description to be free of javascript
          if(existing.Title.CountAlphaNumeric() <= 5) { return apiresult.Failure("Title to short."); }
          if(existing.Caption.CountAlphaNumeric() <= 8) { return apiresult.Failure("Caption to short."); }
-         if(existing.DateStart.ToUniversalTime() < DateTime.UtcNow) { return apiresult.Failure("DateStart in the past."); }
+         if(existing.DateStart.ToUniversalTime() < DateTime.UtcNow) {
+            apiresult.Failure("DateStart in the past.");
+            if(UserContext.IsAdmin) { apiresult.AppendMessage("(AdminOverride)"); } else { return apiresult; }
+         }
          if(existing.DateEnd.ToUniversalTime() < input.DateStart.ToUniversalTime()) { return apiresult.Failure("DateEnd is before DateStart"); }
          if(existing.DateStart.AddDays(14).ToUniversalTime() < input.DateEnd.ToUniversalTime()) { return apiresult.Failure("Events cannot last longer than 2 weeks."); }
 
@@ -262,7 +285,8 @@ namespace UniEvents.WebAPI.Controllers {
                AddressLine = Helpers.FormatAddress(null, address.AddressLine, address.Locality, address.AdminDistrict, address.PostalCode, address.CountryRegion),
                AccountID = existing.AccountID,
                Host = String.IsNullOrWhiteSpace(UserContext.UserDisplayName) ? UserContext.UserName : UserContext.UserDisplayName,
-               Tags = eventTags
+               Tags = eventTags,
+               Details = existing.Details
             };
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

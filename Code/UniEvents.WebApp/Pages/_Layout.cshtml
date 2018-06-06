@@ -15,7 +15,15 @@
          asp-fallback-href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css"
          asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
 
-   <link rel="stylesheet" href="~/bundles/unievents.min.css" asp-append-version="true" />
+
+
+   <environment include="Development,Staging">
+      <link rel="stylesheet" href="~/styles/unievents.css" asp-append-version="true" />
+      <link rel="stylesheet" href="~/lib/flatpickr/flatpickr-dark.css" asp-append-version="true" />
+   </environment>
+   <environment exclude="Development,Staging">
+      <link rel="stylesheet" href="~/bundles/unievents.min.css" asp-append-version="true" />
+   </environment>
 
    <script type="text/javascript" src="~/js/ZMBA/ZMBA.es5.js"></script>
 

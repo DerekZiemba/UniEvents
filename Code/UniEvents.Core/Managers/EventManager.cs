@@ -35,10 +35,27 @@ namespace UniEvents.Core.Managers {
 
 
       public DBEventFeedItemExtended EventGetByID(long EventID) {
+         
          using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_GetById]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
             cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), EventID);
             return cmd.ExecuteReader_GetOne<DBEventFeedItemExtended>();
          }
+      }
+
+      public DBEventFeedItemExtended EventGetByIDWithUserView(long EventID, long @RequestingUserID) {
+         using(SqlCommand cmd = new SqlCommand("[dbo].[sp_Event_GetById_UserView]", new SqlConnection(Ctx.Config.dbUniHangoutsRead)) { CommandType = CommandType.StoredProcedure }) {
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(EventID), EventID);
+            cmd.AddParam(ParameterDirection.Input, SqlDbType.BigInt, nameof(@RequestingUserID), @RequestingUserID);
+            if(cmd.Connection.State != ConnectionState.Open) { cmd.Connection.Open(); }
+            using(SqlDataReader reader = cmd.ExecuteReader()) {
+               if(reader.Read()) {
+                  var result = new DBEventFeedItemExtended(reader);
+                  result.UserRsvpID = reader.GetInt16("UserRsvpID");
+                  return result;
+               }
+            }
+         }
+         return null;
       }
 
 
