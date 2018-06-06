@@ -6,8 +6,9 @@ SET XACT_ABORT ON
 
 USE [$(dbUniHangouts)]
 GO
-CREATE OR ALTER PROCEDURE [dbo].[sp_Event_GetById]
-   @EventID BIGINT
+CREATE OR ALTER PROCEDURE [dbo].[sp_Event_GetById_UserView]
+   @EventID BIGINT,
+   @RequestingUserID BIGINT 
 AS
 SET NOCOUNT ON;
 
@@ -37,7 +38,8 @@ SELECT TOP 1
       loc.PostalCode,
       loc.AdminDistrict,
       loc.CountryRegion,
-      deets.Details
+      deets.Details,
+      (SELECT TOP 1 RSVPTypeID FROM dbo.EventRSVPs WHERE [EventID] = @EventID AND [AccountID] = @RequestingUserID) AS UserRsvpID
    FROM dbo.EventFeed AS feed
       LEFT OUTER JOIN dbo.EventRSVPs AS rsvp ON feed.EventID = rsvp.EventID
       LEFT OUTER JOIN dbo.Accounts AS acc ON feed.AccountID = acc.AccountID
@@ -48,7 +50,6 @@ SELECT TOP 1
       acc.DisplayName, acc.UserName,
       loc.CountryRegion, loc.AdminDistrict, loc.PostalCode, loc.Locality, loc.[Name], loc.AddressLine, loc.LocationID, loc.ParentLocationID,
       deets.Details;
-
 
 
 GO
